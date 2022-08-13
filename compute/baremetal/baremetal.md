@@ -1,4 +1,4 @@
-# BareMetal裸金属
+# BareMetal裸金属 {#zhou-shunli}
 
 ## 简介
 
@@ -12,8 +12,7 @@
 
 **裸金属服务的部署阶段**
 
-**部署阶段**  
-
+**部署阶段**
 
 部署阶段也称为Provision/Deploy阶段，租户向云平台申请裸金属资源，云平台为租户分配资源，并为裸金属加载系统镜像。
 
@@ -21,7 +20,7 @@
 
 2）启动后，ironic-python-agent会和Ironic控制节点互通，连接到Ironic控制节点的http server，获取完整的用户系统镜像。
 
-**运行阶段  
+**运行阶段    
 **
 
 也称为Tenant阶段，裸金属服务器启动系统镜像，业务开始运行
@@ -32,9 +31,9 @@
 
 [https://www.h3c.com/cn/d\_202012/1370744\_30005\_0.htm](https://www.h3c.com/cn/d_202012/1370744_30005_0.htm)
 
-https://docs.openstack.org/ironic/latest/
+[https://docs.openstack.org/ironic/latest/](https://docs.openstack.org/ironic/latest/)
 
-http://kimizhang.com/neutron-l2-gateway-hp-5930-switch-ovsdb-integration/
+[http://kimizhang.com/neutron-l2-gateway-hp-5930-switch-ovsdb-integration/](http://kimizhang.com/neutron-l2-gateway-hp-5930-switch-ovsdb-integration/)
 
 ### **flat网络模式**
 
@@ -64,7 +63,7 @@ http://kimizhang.com/neutron-l2-gateway-hp-5930-switch-ovsdb-integration/
 
 ![](/assets/network_ironic_vxlannetphy.png)\(4\) 在Ironic控制节点上需要创建一个部署网络里的虚拟网卡，通过这个虚拟网卡，裸金属可以与Ironic控制节点上的ironic服务/tftp server/http server互通，从而获取到部署镜像及用户系统镜像。
 
-![](/assets/network_ironic_vxlannetlp.png)\(5\) 计算节点与交换机建立的隧道信息，以及交换机上学习到的虚机MAC地址信息可以通过执行ovsdb-client dump --pretty tcp:
+![](/assets/network_ironic_vxlannetlp.png)\(5\) 计算节点与交换机建立的隧道信息，以及交换机上学习到的虚机MAC地址信息可以通过执行ovsdb-client dump --pretty tcp:
 
 &lt;交换机ip&gt;:6632 看到![](/assets/network_ironic_vxlannetsnap1.png)![](/assets/network_ironic_vxlansnap2.png)
 
