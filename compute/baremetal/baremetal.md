@@ -18,7 +18,11 @@
 
 ![](/assets/ironic_netswitch_deploy.png)
 
-### 
+### Active
+
+调用交换机，修改裸机对应的端口，使其和neutron的内网（租户网）连通。裸机从硬盘引导，通过neutron分配到内网ip地址
+
+![](/assets/ironic_netswitch_active.png)
 
 
 
