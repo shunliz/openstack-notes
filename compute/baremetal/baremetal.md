@@ -2,7 +2,9 @@
 
 ## 简介
 
-## xxxx
+## 裸机overlay多租户
+
+https://www.h3c.com/cn/d\_202012/1370744\_30005\_0.htm
 
 ## 网络切换
 
@@ -23,6 +25,4 @@
 调用交换机，修改裸机对应的端口，使其和neutron的内网（租户网）连通。裸机从硬盘引导，通过neutron分配到内网ip地址
 
 ![](/assets/ironic_netswitch_active.png)
-
-
 
