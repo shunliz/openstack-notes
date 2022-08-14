@@ -52,7 +52,8 @@ router 9eb2766d-dec8-4f73-8bc8-9f31dab3d6db (neutron-62e2ca59-b6cf-4a17-a531-776
         logical ip: "10.66.3.139"
         type: "dnat_and_snat"
 ```
-lrp-cc3da0db-31e8-40a0-ad9f-c54f7a848ac7落在的节点信息(lrp port在node-3上，但是vm1在node-1)
+
+lrp-cc3da0db-31e8-40a0-ad9f-c54f7a848ac7落在的节点信息\(lrp port在node-3上，但是vm1在node-1\)
 
 ```
 ()[root@ovn-ovsdb-sb-0 /]# ovn-sbctl show | grep -B 9 lrp-cc3da0db-31e8-40a0-ad9f-c54f7a848ac7
@@ -67,7 +68,8 @@ Chassis "9e7fc81f-12dc-4e83-b28c-a90060c579c6"
     Port_Binding "f57f5ac7-6491-416f-8eb5-e4d1cb5fd41f"
     Port_Binding cr-lrp-cc3da0db-31e8-40a0-ad9f-c54f7a848ac7
 ```
-数据包路径(vlan网络为例):
+
+数据包路径\(vlan网络为例\):
 
 ```
 vm1->br-int(node-1)->br-ex(node-1)->br-ex(node-3)->br-int(node-3)->br-ex(node-3)->public network->target ip->br-ex(node-3)->patch port to br-prv->private network->br-prv->patch port to br-int->br-int->vm1
@@ -81,6 +83,7 @@ vm1->br-int(node-1)->br-ex(node-1)->br-ex(node-3)->br-int(node-3)->br-ex(node-3)
 ```
 
 2, lrp port所在节点的逻辑路由将sip和smac转换成lrp port的ip和mac后通过br-ex发出（sip: ip lrp port, dip: dst ip, smac: mac lrp port）
+
 ```
 16:48:17.822127 fa:16:3e:e7:f2:d2 > f8:bc:12:4e:44:dd, ethertype 802.1Q (0x8100), length 102: vlan 2901, p 0, ethertype IPv4, (tos 0x0, ttl 62, id 39850, offset 0, flags [DF], proto ICMP (1), length 84)
     172.90.0.111 > 14.215.177.39: ICMP echo request, id 56321, seq 25, length 64
@@ -88,13 +91,18 @@ vm1->br-int(node-1)->br-ex(node-1)->br-ex(node-3)->br-int(node-3)->br-ex(node-3)
 
 3, 数据回包时lrp port所在的逻辑路由收到数据包（sip: target ip, dip: ip lrp port, dmac: mac lrp port）后直接路由，将数据包打上vlan后通过br-prv发出（sip: target ip, dip: ip vm1, dmac: mac vm1）
 
+```
+16:48:17.858433 00:1d:09:65:eb:63 > fa:16:3e:e7:f2:d2, ethertype 802.1Q (0x8100), length 102: vlan 2901, p 0, ethertype IPv4, (tos 0x0, ttl 51, id 39850, offset 0, flags [DF], proto ICMP (1), length 84)
+    14.215.177.39 > 172.90.0.111: ICMP echo reply, id 56321, seq 25, length 64
+16:48:17.858890 f2:d0:90:45:36:48 > fa:16:3e:d7:41:89, ethertype 802.1Q (0x8100), length 102: vlan 1157, p 0, ethertype IPv4, (tos 0x0, ttl 50, id 39850, offset 0, flags [DF], proto ICMP (1), length 84)
+    14.215.177.39 > 192.168.112.13: ICMP echo reply, id 56321, seq 25, length 64
+```
 
+![](/assets/network-vnentwork-neutron-neutronovn-sn2.png)**geneve网络下虚机访问外部网络（lrp port和虚机在同一节点）**
 
-![](/assets/network-vnentwork-neutron-neutronovn-sn2.png)
+## 南北向流量floagintip（SNAT and DNAT）模式
 
-**geneve网络下虚机访问外部网络（lrp port和虚机在同一节点）**
+![](/assets/network-vnetwork-neutron-neutronovn-snatdnat.png)
 
-
-
-
+![](/assets/network-vnetwork-neutron-neutronovn-snatdnat2.png)**通过floatingip访问外部网络**
 
