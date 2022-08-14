@@ -2,7 +2,7 @@
 
 原文地址：https://www.jianshu.com/p/44153cf101dd
 
-### 东西向二层流量![](/assets/network-vnetwork-neutron-neutronovn.png)vlan网络net1下的云主机vm1访问vm3（上图标号1.\*）
+### 东西向二层流量![](../../assets/network-vnetwork-neutron-neutronovn.png)vlan网络net1下的云主机vm1访问vm3（上图标号1.\*）
 
 vm1的流量到br-int走逻辑交换机，打上vlan标签从br-int和br-prv的patch口发出\(每个网络OVN都会自动创建一个patch口\)
 
