@@ -16,13 +16,13 @@ vm1的流量到br-int走逻辑交换机，打上vlan标签从br-int和br-prv的p
  cookie=0xefb298f1, duration=345143.445s, table=0, n_packets=74, n_bytes=7084, idle_age=65534, hard_age=65534, priority=150,in_port=1125,dl_vlan=1157 actions=strip_vlan,load:0x61->NXM_NX_REG13[],load:0x5f->NXM_NX_REG11[],load:0x60->NXM_NX_REG12[],load:0x1f->OXM_OF_METADATA[],load:0x1->NXM_NX_REG14[],resubmit(,8)
 ```
 
-## ![](/assets/network-vnetwork-neutron-neutronovn2.png)东西向三层流量
+## ![](../../assets/network-vnetwork-neutron-neutronovn2.png)东西向三层流量
 
-![](/assets/network-vnetwork-neutron-neutronovn-l3ew.png)![](/assets/network-vnentwork-neutron-neutronovn-l3ew2.png)![](/assets/network-vnetwork-neutron-neutronovn-l3gg.png)
+![](../../assets/network-vnetwork-neutron-neutronovn-l3ew.png)![](../../assets/network-vnentwork-neutron-neutronovn-l3ew2.png)![](../../assets/network-vnetwork-neutron-neutronovn-l3gg.png)
 
 ## 南北向流量SNAT模式
 
-![](/assets/network-vnetwork-neutron-neutronovn-sn1.png)![](/assets/network-vnentwork-neutron-neutronovn-snnat.png)**geneve网络下虚机访问外部网络（lrp port和虚机在不同一节点）**
+![](../../assets/network-vnetwork-neutron-neutronovn-sn1.png)![](../../assets/network-vnentwork-neutron-neutronovn-snnat.png)**geneve网络下虚机访问外部网络（lrp port和虚机在不同一节点)**
 
 **vlan网络net1下的云主机vm1访问外部ip，但是逻辑路由的lrp port不在vm1所在的节点**
 
@@ -100,11 +100,11 @@ vm1->br-int(node-1)->br-ex(node-1)->br-ex(node-3)->br-int(node-3)->br-ex(node-3)
     14.215.177.39 > 192.168.112.13: ICMP echo reply, id 56321, seq 25, length 64
 ```
 
-![](/assets/network-vnentwork-neutron-neutronovn-sn2.png)**geneve网络下虚机访问外部网络（lrp port和虚机在同一节点）**
+![](../../assets/network-vnentwork-neutron-neutronovn-sn2.png)**geneve网络下虚机访问外部网络（lrp port和虚机在同一节点)**
 
 ## 南北向流量floagintip（SNAT and DNAT）模式
 
-![](/assets/network-vnetwork-neutron-neutronovn-snatdnat.png)
+![](../../assets/network-vnetwork-neutron-neutronovn-snatdnat.png)
 
-![](/assets/network-vnetwork-neutron-neutronovn-snatdnat2.png)**通过floatingip访问外部网络**
+![](../../assets/network-vnetwork-neutron-neutronovn-snatdnat2.png)**通过floatingip访问外部网络**
 
