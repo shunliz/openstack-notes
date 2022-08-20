@@ -422,8 +422,6 @@ ovn-northd文档中描述了对特定chassis的流量限制的详细信息。
 
 OVN允许您为分布式网关端口指定chassis的优先级列表。这是通过将多个`Gateway_Chassis`行与`OVN_Northbound`数据库中的`Logical_Router_Port`关联来完成的。当为网关指定了多个chassis时，所有可能向该网关发送数据包的chassis都将启用通道上的BFD，这些隧道通往所有配置的网关chassis。当前网关的主chassis是当前最高优先级的网关chassis，该chassis根据BFD状态被当做主chassis。
 
-
-
 ## 连接到逻辑路由器的多个LocalNet逻辑交换机 {#9连接到逻辑路由器的多个localnet逻辑交换机}
 
 可以有多个逻辑交换机，每个交换机都有一个本地网络端口（代表物理网络）连接到逻辑路由器，其中一个localnet逻辑交换机可以通过分布式网关端口提供外部连接，其余的localnet逻辑交换机在物理网络中使用VLAN标记。需要为所有这些localnet网络在chassis上正确配置`ovn网桥映射`（ovn-bridge-mappings）。
@@ -451,8 +449,6 @@ OVN允许您为分布式网关端口指定chassis的优先级列表。这是通�
 * 3、网关chassis通过隧道端口接收数据包，数据包进入逻辑路由器数据路径的出口管道。NAT规则将在这里被应用。然后，数据包进入提供外部连接的localnet逻辑交换机数据路径的入口管道，接着离开管道，最后通过提供外部连接的逻辑交换机的localnet端口离开。
 
 尽管这样做有效，但当从计算chassis发送到网关chassis时，VM通信量将被隧道化。为了使其正常工作，必须降低localnet逻辑交换机的MTU，以考虑隧道封装
-
-
 
 ### 连接到逻辑路由器的带有`localnet VLAN`标记的逻辑交换机的集中路由
 
@@ -491,9 +487,123 @@ CMS可以配置选项：将所有连接到相应逻辑交换机（带有`localne
 
 * 3、源chassis通过localnet端口接收数据包并将其发送到集成网桥。数据包进入源localnet逻辑交换机的入口管道，然后离开管道，最后被送到源VM端口。
 
+### 
+
+### VTEP网关的生命周期
+
+网关其实是一种chassis，用于在逻辑网络的OVN管理部分和物理VLAN之间转发流量，将基于隧道的逻辑网络扩展到物理网络。
+
+以下步骤通常涉及OVN和VTEP数据库模式的详细信息。请分别参阅ovn-sb，ovn-nb和vtep，了解关于这些数据库的详细信息。
+
+* 1、VTEP网关的生命周期始于管理员将VTEP网关注册为VTEP数据库中的`Physical_Switch`表项。连接到此VTEP数据库的`ovn-controller-vtep`将识别新的VTEP网关，并在OVN\_Southbound数据库中为其创建新的Chassis表条目。
+
+* 2、然后，管理员可以创建一个新的`Logical_Switch`表项，并将VTEP网关端口上的特定vlan绑定到任意VTEP逻辑交换机。  
+  一旦VTEP逻辑交换机绑定到VTEP网关，ovn-controller-vtep将检测到它，并将其名称添加到OVN\_Southbound数据库中chassis表的vtep\_logical\_switches列。
+
+> 请注意，VTEP逻辑交换机的tunnel\_key列在创建时未被填充。当相应的vtep逻辑交换机绑定到OVN逻辑网络时，`ovn-controller-vtep`才将设置列内容。
+
+* 3、现在，管理员可以使用CMS将VTEP逻辑交换机添加到OVN逻辑网络。为此，CMS必须首先在OVN\_Northbound数据库中创建一个新的Logical\_Switch\_Port表项。然后，该条目的类型列必须设置为“vtep”。接下来，还必须指定options列中的vtep-logical-switch和vtep-physical-switch密钥，因为多个VTEP网关可以连接到同一个VTEP逻辑交换机。
+
+* 4、OVN\_Northbound数据库中新创建的逻辑端口及其配置将作为新的Port\_Binding表项传递给OVN\_Southbound数据库。  
+  ovn-controller-vtep将识别更改内容并将逻辑端口绑定到相应的VTEP网关chassis。
+
+> 禁止将同一个VTEP逻辑交换机绑定到不同的OVN逻辑网络，否则会在日志中产生警告。
+
+* 5、除绑定到VTEP网关chassis外，ovn-controller-vtep还会将VTEP逻辑交换机的tunnel\_key列，更新为绑定OVN逻辑网络的相应Datapath\_Binding表项的tunnel\_key。
+
+* 6、接下来，ovn-controller-vtep将对OVN\_Northbound数据库中的Port\_Binding中的配置更改作出反应，并更新VTEP数据库中的`Ucast_Macs_Remote`表。这使得VTEP网关可以了解从哪里转发来自扩展外部网络的单播流量。
+
+* 7、最终，当管理员从VTEP数据库注销VTEP网关时，VTEP网关的生命周期结束。ovn-controller-vtep将识别该事件并删除OVN\_Southbound数据库中的所有相关配置（chassis表条目和端口绑定）。
+
+* 8、当ovn-controller-vtep终止时，将清除OVN\_Southbound数据库和VTEP数据库中的所有相关配置，包括所有注册的VTEP网关及其端口绑定的Chassis表条目，以及所有Ucast\_Macs\_Remote表项和Logical\_Switch隧道密钥。
+
+## 12 安全
+
+### 12.1、针对南向数据库的基于角色的访问控制
+
+为了提供额外的安全性以防止OVN chassis受到攻击，从而防止流氓软件对南向数据库状态进行任意修改，从而中断OVN网络，  
+从而有了针对南向数据库的基于角色的访问控制策略（请参阅ovsdb-server部分以获取更多详细信息）。
+
+基于角色的访问控制（RBAC）的实现需要在OVSDB模式中添加两个表：`RBAC_Role`表，该表由角色名称进行索引，并将可以对给定角色进行修改的各个表的名称映射到权限表中的单个行，其中包含该角色的详细权限信息，权限表本身由包含以下信息的行组成：
+
+* Table Name  
+  关联表的名称。本栏存在主要是为了帮助人们阅读本表内容。
+
+* 认证（Auth Criteria）  
+  一组包含列名称的字符串（或者是列的column:key对，这些列包含了string:string映射关系）。至少一个列或列的内容：要修改，插入或删除的行中的键值必须等于尝试作用于该行的客户端的ID,要删改的行中，至少有一个column:key值或者列的内容，必须和尝试作用于该行的客户端的ID相同，以便授权检查通过。如果授权标准为空，则禁用授权检查，并且该角色扥所有客户端将被视为已授权。
+
+* 插入/删除（Insert/Delete）  
+  行插入/删除权限\(布尔值\)，指示相关表是否允许增删行。 如果为true，则授权客户端增删行。
+
+* 可更新的列（Updatable Columns）一组字符串，他们包含了可能由授权客户端更新或变异的列或 column:key对。只有在客户的授权检查通过，并且所有要修改的列都包含在这组可修改的列中时，才允许修改行中的列。
+
+  OVN南向数据库的RBAC配置由ovn-northd维护。启用RBAC时，只允许对Chassis / Encap / Port\_Binding和MAC\_Binding表进行修改，并且重新分配如下：
+
+  * Chassis
+
+    * 授权：客户端ID必须与chassis 名称匹配。
+    * 插入/删除：允许授权的行插入和删除。
+    * 更新：授权时可以修改列`nb_cfg`，`external_ids`，`encaps`和`vtep_logical_switches`。
+
+  * Encap授权
+
+    * 授权：客户端ID必须与chassis 名称匹配。
+    * 插入/删除：允许授权的行插入和删除。
+    * 更新：列类型，选项和IP可以修改。
+
+  * Port\_Binding
+
+    * 授权：禁用（所有客户端都被认为是授权的\)。
+      未来改进可能会添加列（或external\_ids的key），以控制哪个chassis允许绑定每个端口。
+    * 插入/删除：不允许行插入/删除（ovn-northd维护此表中的行）
+    * 更新：只允许对chassis列进行修改。
+
+  * MAC\_Binding
+
+    * 授权：禁用（所有客户被认为是授权的）
+    * 插入/删除：允许行插入/删除。
+    * 更新：`logical_port`，`ip`，`mac`和`datapath`列可以由ovn-controller修改。
+
+要为ovn-controller连接到南向数据库启用RBAC，需要以下步骤：
+
+* 1、为证书CN字段设置为chassis名称的每个chassis创建SSL证书
+
+  例如，对于带有`external-ids：system-id = chassis-1`的chassis，通过命令`ovs-pki -B 1024 -u req + sign chassis-1 switch`。
+
+* 2、当连接到南向数据库时配置每个ovn-controller使用SSL。
+
+* 例如通过`ovs-vsctl set open . external-ids:ovn-remote=ssl:x.x.x.x:6642`。
+
+* 3、使用“ovn-controller”角色配置南向数据库SSL远程。
+
+  例如通过`ovn-sbctl set-connection role=ovn-controller pssl:6642`。
 
 
 
+
+
+### 12.2、使用IPsec加密隧道通信 {#122使用ipsec加密隧道通信}
+
+OVN隧道流量需流经物理路由器和交换机，而这些物理设备可能不受信任（公共网络中的设备），或者可能受到危害。  
+对隧道流量启用加密可以防止对流量数据进行监视和操作。
+
+隧道流量是用`IPsec`加密的。  
+CMS设置北向`NB_Global`表中的`IPsec`列，以启用或禁用IPsec加密。  
+如果ipsec为true，则所有OVN隧道都将加密。  
+如果ipsec为false，则不会加密OVN隧道。
+
+当CMS更新北向NB\_Global表中的ipsec列时，ovn-northd将该值复制到南向SB\_Global表中的ipsec列。  
+每个chassis中的ovn-controller监视南向数据库，并相应地设置OVS隧道接口的选项。  
+OVS隧道接口选项由`ovs-monitor-ipsec`守护程序监视，该守护程序通过配置IKE守护程序来启动ipsec连接。
+
+Chassis使用证书相互验证。如果隧道中的另一端提供由受信任的CA签名的证书，  
+并且公用名（CN）与预期的Chassis名匹配，则验证成功。
+
+基于角色的访问控制（RBAC）中使用的SSL证书可以在IPsec中使用。也可以使用`ovs-pki`创建不同的证书。  
+证书要求是x.509 version 3，并且将`CN`字段和`SubjectAltName`字段设置为Chassis名称。
+
+在启用IPsec之前，需要在每个Chassis中安装CA证书、Chassis证书和私钥。  
+请参阅`ovs vswitchd.conf.db`来设置基于CA的IPsec身份验证。
 
 ### VTEP 网关 {#OVN架构--高正伟-VTEP网关}
 
