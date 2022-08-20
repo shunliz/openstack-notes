@@ -578,32 +578,71 @@ CMS可以配置选项：将所有连接到相应逻辑交换机（带有`localne
 
   例如通过`ovn-sbctl set-connection role=ovn-controller pssl:6642`。
 
+### 12.2、使用IPsec加密隧道通信
 
+OVN隧道流量需流经物理路由器和交换机，而这些物理设备可能不受信任（公共网络中的设备），或者可能受到危害。对隧道流量启用加密可以防止对流量数据进行监视和操作。
 
+隧道流量是用`IPsec`加密的。CMS设置北向`NB_Global`表中的`IPsec`列，以启用或禁用IPsec加密。如果ipsec为true，则所有OVN隧道都将加密。如果ipsec为false，则不会加密OVN隧道。
 
+当CMS更新北向NB\_Global表中的ipsec列时，ovn-northd将该值复制到南向SB\_Global表中的ipsec列。每个chassis中的ovn-controller监视南向数据库，并相应地设置OVS隧道接口的选项。OVS隧道接口选项由`ovs-monitor-ipsec`守护程序监视，该守护程序通过配置IKE守护程序来启动ipsec连接。
 
-### 12.2、使用IPsec加密隧道通信 {#122使用ipsec加密隧道通信}
+Chassis使用证书相互验证。如果隧道中的另一端提供由受信任的CA签名的证书，并且公用名（CN）与预期的Chassis名匹配，则验证成功。
 
-OVN隧道流量需流经物理路由器和交换机，而这些物理设备可能不受信任（公共网络中的设备），或者可能受到危害。  
-对隧道流量启用加密可以防止对流量数据进行监视和操作。
-
-隧道流量是用`IPsec`加密的。  
-CMS设置北向`NB_Global`表中的`IPsec`列，以启用或禁用IPsec加密。  
-如果ipsec为true，则所有OVN隧道都将加密。  
-如果ipsec为false，则不会加密OVN隧道。
-
-当CMS更新北向NB\_Global表中的ipsec列时，ovn-northd将该值复制到南向SB\_Global表中的ipsec列。  
-每个chassis中的ovn-controller监视南向数据库，并相应地设置OVS隧道接口的选项。  
-OVS隧道接口选项由`ovs-monitor-ipsec`守护程序监视，该守护程序通过配置IKE守护程序来启动ipsec连接。
-
-Chassis使用证书相互验证。如果隧道中的另一端提供由受信任的CA签名的证书，  
-并且公用名（CN）与预期的Chassis名匹配，则验证成功。
-
-基于角色的访问控制（RBAC）中使用的SSL证书可以在IPsec中使用。也可以使用`ovs-pki`创建不同的证书。  
-证书要求是x.509 version 3，并且将`CN`字段和`SubjectAltName`字段设置为Chassis名称。
+基于角色的访问控制（RBAC）中使用的SSL证书可以在IPsec中使用。也可以使用`ovs-pki`创建不同的证书。证书要求是x.509 version 3，并且将`CN`字段和`SubjectAltName`字段设置为Chassis名称。
 
 在启用IPsec之前，需要在每个Chassis中安装CA证书、Chassis证书和私钥。  
 请参阅`ovs vswitchd.conf.db`来设置基于CA的IPsec身份验证。
+
+
+
+## 13 设计决策
+
+### 13.1、隧道（tunnel）封装
+
+OVN标注从一个hypervisor发送到另一个的逻辑网络包，这些包包含以下三个元数据，他们以encapsulation-specific的方式编码：
+
+* 1、**24位逻辑数据路径标识符**，来自OVN Southbound数据库Datapath\_Binding表中的隧道密钥列。
+* 2、**15位逻辑入口端口标识符**。`ID 0`被保留在OVN内部供内部使用。可以将ID 1到32767（包括端点）分配给逻辑端口（请参阅OVN Southbound Port\_Binding表中的tunnel\_key列）。
+* 3、**16位逻辑出口端口标识符**。ID 0到32767与逻辑入口端口具有相同的含义。可以将32768到65535的ID分配给logical多播组（请参阅OVN Southbound Multicast\_Group表中的tunnel\_key列）。
+
+对于hypervisor到hypervisor的流量，OVN仅支持Geneve和STT封装，原因如下：
+
+* 1、只有STT和Geneve支持OVN使用的大量元数据（每个数据包超过32位）（如上所述）。
+* 2、STT和Geneve使用随机化的UDP或TCP源端口，允许在底层使用ECMP的环境中，在多个路径之间进行高效分发。
+* 3、NIC支持对STT和Geneve封装和解封装。
+
+由于其灵活性，hypervisor之间的首选封装方案是`Geneve`。对于Geneve封装，OVN在`Geneve VNI`中传输逻辑数据路径标识符。  
+OVN将类别为`0x0102`，类型为`0x80`的TLV中的逻辑入口端口和逻辑出口端口从MSB传输到LSB，其编码为32位，如下所示：
+
+```
+1
+15
+16
+
++---+------------+-----------+
+|rsv|ingress port|egress port|
++---+------------+-----------+
+ 
+0
+```
+
+不支持Geneve的网卡环境，因为性能的原因，可能更偏向STT封装。对于STT封装，OVN将STT 64位隧道ID中所有三个逻辑元数据编码如下，从MSB到LSB分别是：
+
+```
+9
+15
+16
+24
+
++--------+------------+-----------+--------+
+|reserved|ingress port|egress port|datapath|
++--------+------------+-----------+--------+
+   
+0
+```
+
+为了连接到网关，除了Geneve和STT之外，OVN还支持`VXLAN`，因为在top-of-rack \(ToR\)交换机上，只有VXLAN是普遍支持的。、  
+目前，网关具有与由VTEP模式定义的能力匹配的特征集，因此元数据的比特数是必需的。将来，不支持封装大量元数据的网关可能会继续减少功能集。
 
 ### VTEP 网关 {#OVN架构--高正伟-VTEP网关}
 
