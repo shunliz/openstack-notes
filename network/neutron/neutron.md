@@ -169,7 +169,9 @@ ovs-vsctl add-port br-vxlan tun0 -- set Interface tun0 type=vxlan options:remote
 
 ---
 
+OVN 提供的是一个轻量级控制器，提供了比 openvSwitch 更高层的抽象，与逻辑路由器和逻辑交换机而不是 flow 一起工作，实现了高层次的分布式交换机；这个轻量级不但体现在 OVN 本身的代码少（只有几个 C 语言文件，而且代码很少），模型简单（虽然简单但是很丰富，更懂得利用 OVS 本身的特性）而且它的流表设计（Pipeline）也容易理解。OVN 是一系列守护程序，它们将虚拟网络配置转换为 OpenFlow，并将其安装到 openvSwitch 中。
 
+对于Neutron来说，通过引入OVN，可以省去各种（L2, dhcp, l3, acl,qos）agent，简化系统复杂性，缩短网络路径，提高网络性能。
 
 
 
