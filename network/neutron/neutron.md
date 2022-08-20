@@ -174,8 +174,7 @@ OVN 提供的是一个轻量级控制器，提供了比 openvSwitch 更高层的
 
 对于Neutron来说，通过引入OVN，可以省去各种（L2, dhcp, l3, acl,qos）agent，简化系统复杂性，缩短网络路径，提高网络性能。
 
-![](/assets/network-neutron-ovs-overview.png)
-上图需要重新画一下
+# ![](/assets/network-neutron-ovs-overview.png) **上图需要重新画一下**
 
 
 
