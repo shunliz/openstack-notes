@@ -1,6 +1,10 @@
 # Neutron
 
-### 传统OVS实现![](/assets/network-neutron-ovs-overview.png)计算节点网络实现模型
+### 传统OVS实现
+
+---
+
+![](/assets/network-neutron-ovs-overview.png)计算节点网络实现模型
 
 ### ![](/assets/network-ovs-computenetwork.png)
 
@@ -160,4 +164,12 @@ ovs-vsctl add-port br-vxlan tun0 -- set Interface tun0 type=vxlan options:remote
 ```
 
 ![](/assets/network-neutroncontrollermodel3.png)如果考虑到需要实现的是在「云平台上的多租户多平面网络」的话，那么事情就会变得相当复杂。一个有生命力的灵活的云平台，需要支持的网络类型实在是太多了，Neutron 至今仍在为之付出努力。在这样的条件下就急需设计出一个「上层抽象统一，下层异构兼容」的软件架构，而这种架构设计就是我们常说的 —— 分层架构设计。设计方案总是依赖于底层支撑选型，Neutron 网络实现模型的分层架构得益于 Open vSwitch（OpenFlow 交换机）的 Flow Table 定义功能。
+
+## OVN实现
+
+---
+
+
+
+
 
