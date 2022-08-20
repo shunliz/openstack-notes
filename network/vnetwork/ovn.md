@@ -55,18 +55,16 @@ OVN tunnel 封装时使用了三种数据：
 
 OVN tunnel 里面所携带的 logical input port identifier 和 logical output port identifier 可以提高流表的查找效率，OVS 流表可以通过这两个值来处理报文，不需要解析报文的字段。 OVN 里面的 tunnel 类型是由 HV 上面的 ovn-controller 来设置的，并不是由 CMS 指定的，并且 OVN 里面的 tunnel ID 又由 OVN 自己分配的，所以用 neutron 创建 network 时指定 tunnel 类型和 tunnel ID（比如 vnid）是无用的，OVN 不做处理。
 
-
-
 ## OVN中的信息流
 
-2.1、配置数据
+### 配置数据
 
 OVN中的配置数据从北向南流动。
 
 CMS使用其OVN/CMS插件，通过北向数据库来将逻辑网络配置传递给ovn-northd。  
 另外一边，ovn-northd将配置编译成一个较低级别的形式，并通过南向数据库将其传递给所有chassis。
 
-2.2、状态信息
+### 状态信息
 
 OVN中的状态信息从南向北流动。
 
@@ -79,12 +77,12 @@ OVN目前只提供几种形式的状态信息。
 * 2、其次：OVN向CMS提供其配置实现的反馈，即CMS提供的配置是否已经生效。  
   该特性需要CMS参与序列号协议（sequence number protocol），其工作方式如下：
 
-  * 1. 当CMS更新北向数据库中的配置时，作为同一事务的一部分，它将增加`NB_Global`表中的`nb_cfg`列的值。（只有当CMS想知道配置何时实现时，这才是必要的。）
-  * 1. 当ovn-northd基于北向数据库的给定快照（snapshot）更新南向数据库时，作为同一事务的一部分，它将`nb_cfg`从北向数据库的`NB_Global`复制到南向数据库的`SB_Global`表中。（这样一来，监视两个数据库的观察者就可以确定南向数据库何时赶上北向数据库。）
-  * 1. 在ovn northd从southerbound数据库服务器收到其更改已提交的确认之后，它将`NB_Global`表中的`sb_cfg`更新为被已被推到下面的`nb_cfg`版本。（这样一来，CMS或另一个观察者可以确定南向数据库何时被挂起（caught up），而不用与南向数据库连接）。
-  * 1. 每个chassis上的ovn-controller控制器进程接收更新后的南向数据库和更新后的`nb_cfg`。该过程也会更新chassis的Open vSwitch实例上安装的物理流（physical flows）。当它从Open vSwitch收到物理流已更新的确认信息时，就会在南向数据库中更新自己的Chassis记录中的nb\_cfg。
-  * 1. ovn-northd 监视所有南向数据库中Chassis记录的nb\_cfg列。它跟踪所有记录中的最小值，并将其复制到北向
-       `NB_Global`表的`hv_cfg`列中。（这样一来，CMS或另一个观察者就可以确定什么时候所有hypervisor都赶上了北向配置。）
+  * 当CMS更新北向数据库中的配置时，作为同一事务的一部分，它将增加`NB_Global`表中的`nb_cfg`列的值。（只有当CMS想知道配置何时实现时，这才是必要的。）
+  * 当ovn-northd基于北向数据库的给定快照（snapshot）更新南向数据库时，作为同一事务的一部分，它将`nb_cfg`从北向数据库的`NB_Global`复制到南向数据库的`SB_Global`表中。（这样一来，监视两个数据库的观察者就可以确定南向数据库何时赶上北向数据库。）
+  * 在ovn northd从southerbound数据库服务器收到其更改已提交的确认之后，它将`NB_Global`表中的`sb_cfg`更新为被已被推到下面的`nb_cfg`版本。（这样一来，CMS或另一个观察者可以确定南向数据库何时被挂起（caught up），而不用与南向数据库连接）。
+  * 每个chassis上的ovn-controller控制器进程接收更新后的南向数据库和更新后的`nb_cfg`。该过程也会更新chassis的Open vSwitch实例上安装的物理流（physical flows）。当它从Open vSwitch收到物理流已更新的确认信息时，就会在南向数据库中更新自己的Chassis记录中的nb\_cfg。
+  * ovn-northd 监视所有南向数据库中Chassis记录的nb\_cfg列。它跟踪所有记录中的最小值，并将其复制到北向
+    `NB_Global`表的`hv_cfg`列中。（这样一来，CMS或另一个观察者就可以确定什么时候所有hypervisor都赶上了北向配置。）
 
 ### VTEP 网关 {#OVN架构--高正伟-VTEP网关}
 
