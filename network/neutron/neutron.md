@@ -66,8 +66,6 @@ tunnel_id_ranges = 1:1000
 
 ![](/assets/network-vlannetwork2tenantnetworktrans.png)
 
-
-
 * **入报文**：在 br-ethX 的 F 口进行内外 VID 转换
 * **出报文**：在 br-int 的 E 口进行内外 VID 转换
 
@@ -92,8 +90,6 @@ tunnel_id_ranges = 1:1000
 
 **所以 VLAN 类型网络也要进行内外 VID 转换是为了防止混合 VLAN 和 VxLAN 类型租户网络的场景中出现内外 VID 冲突的情况**！
 
-
-
 ### 网络节点网络实现模型
 
 网络节点所承载的最核心的功能就是解决虚拟机与外部网络（e.g. Internet）通信的问题，围绕这个问题我们设想一下在传统网络中是怎么实现的？
@@ -103,6 +99,7 @@ tunnel_id_ranges = 1:1000
 1. 所有计算节点内的虚拟机，要访问 Internet，必须先经过网络节点，网络节点作为第一层网关。
 
 2. 网络节点会通过连接 DC 物理网络中的一个设备（e.g. 交换机，或者是路由器）到达 DC 的网关 。 这个设备称为第二层网关。当然，网络节点也可以直接对接 DC 网关（如果 DC 网关可控的话），这时候，就不需要第二层网关了。
+
 3. DC 网关再连接到 Internet上。
 
 可见，网络节点要处理的事情就是第一层网关处理的事情，西接所有计算节点的流量，东接物理网络（第二层）网关设备。为此，网络节点所需要的元素就是一个 L3 Router。需要注意的是，这里所提到的 L3 Router 并不是一个 vRouter（SDN 中的虚拟路由器），而是网络节点本身（一个可作为路由器的 Linux 服务器）。借助于 Linux 服务器本身的路由转发功能，网络节点得以成为了上文提到的：访问外部网络所需要通过的**第一层网关**。
@@ -118,8 +115,7 @@ tunnel_id_ranges = 1:1000
 
 网络节点出了提供 L3 Router 服务，同时也为每个有必要（用户手动开启）的租户网络提供 DHCP 服务。为了实现多租户网络资源隔离，应用了 Linux 提供的 Network Namesapce 技术。每创建一个 L3 Router 资源对象，就会添加一个与之对应的 qrouter-XXX namesapce；每为一个租户网络开启 DHCP 服务，就会添加一个与之对应的 qdhcp-XXX namesapce。
 
-![](/assets/network-neutronnetworkmodel2.png)  
-
+![](/assets/network-neutronnetworkmodel2.png)
 
 上图可见，DHCP 服务实际是由 dnsmasq 服务进程提供的，在 qdhcp-XXX namesapce 中会添加一个 DHCP 的端口（Tap 设备），这个 DHCP 端口连接到 br-int 上，具有与对应的租户网络相同的 Local VLAN tag（和租户网络 VID），以此实现为租户网络提供 DHCP 服务。
 
@@ -146,7 +142,22 @@ tunnel_id_ranges = 1:1000
 
 ### 控制节点的网络实现模型
 
+![](/assets/network-neutroncontorllernodemodel.png)控制节点的网络实现模型就相对好理解很多了，因为控制节点不负责数据平面的问题，所以也没有实现具体的网络功能。我们需要关心的只是 neutron-server 这个服务进程。Neutron 没有显式（名为）的 neutron-api 服务进程，而是由 neutron-server 提供 Web Server 的服务。北向接收 REST API 请求，南向通过 RPC 协议转发各节点上的 Neutron Agent 服务进程，这就是 Neutron 在控制节点上的网络实现模型。
 
+至此，我们介绍完了 Neutron 在分别计算、网络、控制节点上的网络实现模型，我们不妨回味一下这之间最重要的的设计思想 —— 分层。![](/assets/network-neutroncontrollermodel2.png)让我们先抛开 OpenStack 和 Neutron，单纯的想象如何应用虚拟交换机实现跨主机间的虚拟机通信以及虚拟机访问外网的需求？答案其实很简单，如果应用 OvS，就会简单到只需要在每个节点上创建一个 Bridge（e.g. br-int）设备即可，无需 br-ex、br-ethX/br-tun、Linux Bridge 等等一大堆东西。e.g.
 
+```
+# Host1
+ovs-vsctl add-br br-vxlan
+# Host2
+ovs-vsctl add-br br-vxlan
 
+# Host1 上添加连接到 Host2 的 Tunnel Port
+ovs-vsctl add-port br-vxlan tun0 -- set Interface tun0 type=vxlan options:remote_ip=<host2_ip>
+
+# Host2 上添加连接到 Host1 的 Tunnel Port
+ovs-vsctl add-port br-vxlan tun0 -- set Interface tun0 type=vxlan options:remote_ip=<host1_ip>
+```
+
+![](/assets/network-neutroncontrollermodel3.png)如果考虑到需要实现的是在「云平台上的多租户多平面网络」的话，那么事情就会变得相当复杂。一个有生命力的灵活的云平台，需要支持的网络类型实在是太多了，Neutron 至今仍在为之付出努力。在这样的条件下就急需设计出一个「上层抽象统一，下层异构兼容」的软件架构，而这种架构设计就是我们常说的 —— 分层架构设计。设计方案总是依赖于底层支撑选型，Neutron 网络实现模型的分层架构得益于 Open vSwitch（OpenFlow 交换机）的 Flow Table 定义功能。
 
