@@ -10,7 +10,8 @@
 
 * Southbound DB 保存的数据和 Northbound DB 语义完全不一样，主要包含 3 类数据，一是物理网络数据，比如 HV（hypervisor）的 IP 地址，HV 的 tunnel 封装格式；二是逻辑网络数据，比如报文如何在逻辑网络里面转发；三是物理网络和逻辑网络的绑定关系，比如逻辑端口关联到哪个 HV 上面。
 
-* ovn-controller 是 OVN 里面的 agent，类似于 neutron 里面的 ovs-agent，运行在每个 HV 上面，北向，ovn-controller 会把物理网络的信息写到 Southbound DB，南向，把 Southbound DB 保存的数据转化成 Openflow flow 配到本地的 OVS table 里面，来实现报文的转发。 
+* ovn-controller 是 OVN 里面的 agent，类似于 neutron 里面的 ovs-agent，运行在每个 HV 上面，北向，ovn-controller 会把物理网络的信息写到 Southbound DB，南向，把 Southbound DB 保存的数据转化成 Openflow flow 配到本地的 OVS table 里面，来实现报文的转发。
+
 * ovs-vswitchd 和 ovsdb-server 是 OVS 的两个进程。
 
 ## OVN Northbound DB {#OVN架构--高正伟-OVNNorthboundDB}
@@ -29,8 +30,8 @@ Southbound DB 处在 OVN 架构的中心，它是 OVN 中非常重要的一部�
 
 * Chassis：每一行表示一个 HV 或者 VTEP 网关，由 ovn-controller/ovn-controller-vtep 填写，包含 chassis 的名字和 chassis 支持的封装的配置（指向表 Encap），如果 chassis 是 VTEP 网关，VTEP 网关上和 OVN 关联的逻辑交换机也保存在这张表里。
 * Encap：保存着 tunnel 的类型和 tunnel endpoint IP 地址。
-* Logical\_Flow：每一行表示一个逻辑的流表，这张表是 ovn-northd 根据 Nourthbound DB 里面二三层拓扑信息和 ACL 信息转换而来的，ovn-controller 把这个表里面的流表转换成 OVS 流表，配到 HV 上的 OVS table。流表主要包含匹配的规则，匹配的方向，优先级，table ID 和执行的动作。
-* Multicast\_Group：每一行代表一个组播组，组播报文和广播报文的转发由这张表决定，它保存了组播组所属的 datapath，组播组包含的端口，还有代表 logical egress port 的 tunnel\_key。
+* Logical\_Flow：每一行表示一个逻辑的流表，这张表是 ovn-northd 根据 Nourthbound DB 里面二三层拓扑信息和 ACL 信息转换而来的，ovn-controller 把这个表里面的流表转换成 OVS 流表，配到 HV 上的 OVS table。流表主要包含匹配的规则，匹配的方向，优先级，table ID 和执行的动作。  
+* Multicast\_Group：每一行代表一个组 bZ播组，组播报文和广播报文的转发由这张表决定，它保存了组播组所属的 datapath，组播组包含的端口，还有代表 logical egress port 的 tunnel\_key。
 * Datapath\_Binding：每一行代表一个 datapath 和物理网络的绑定关系，每个 logical switch 和 logical router 对应一行。它主要保存了 OVN 给 datapath 分配的代表 logical datapath identifier 的 tunnel\_key。
 * Port\_Binding：每一行包含的内容主要有 logical port 的 MAC 和 IP 地址，端口类型，端口属于哪个 datapath binding，代表 logical input/output port identifier 的 tunnel\_key, 以及端口处在哪个 chassis。端口所处的 chassis 由 ovn-controller/ovn-controller 设置，其余的值由 ovn-northd 设置。
 
@@ -54,11 +55,11 @@ OVN tunnel 封装时使用了三种数据：
 
 OVN tunnel 里面所携带的 logical input port identifier 和 logical output port identifier 可以提高流表的查找效率，OVS 流表可以通过这两个值来处理报文，不需要解析报文的字段。 OVN 里面的 tunnel 类型是由 HV 上面的 ovn-controller 来设置的，并不是由 CMS 指定的，并且 OVN 里面的 tunnel ID 又由 OVN 自己分配的，所以用 neutron 创建 network 时指定 tunnel 类型和 tunnel ID（比如 vnid）是无用的，OVN 不做处理。
 
+### VTEP 网关 {#OVN架构--高正伟-VTEP网关}
 
-
-### VTEP 网关  {#OVN架构--高正伟-VTEP网关}
-
-      Neutron 子项目networking-l2gw 支持L2Gateway，仅支持连接物理网络的 VLAN 到逻辑网络的 VXLAN.
+```
+  Neutron 子项目networking-l2gw 支持L2Gateway，仅支持连接物理网络的 VLAN 到逻辑网络的 VXLAN.
+```
 
 ![](/assets/adfasfsafasdfsadfewqr2311414324.png)
 
