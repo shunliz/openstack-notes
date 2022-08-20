@@ -96,18 +96,63 @@ OVN里的逻辑网络概念包含:
   （Logical router）：IP路由器的逻辑版本。逻辑交换机及路由器都可以接入复杂的拓扑里。
 * **逻辑数据通路**
   （Logical datapath）：逻辑版本的OpenFlow交换机。逻辑交换机及路由器都以`逻辑数据通路`形式实现。
-* **逻辑端口**
+* **逻辑端口**  
   （Logical port）：代表了逻辑交换机和逻辑路由器之间的连接点。一些常见类型的逻辑端口有：
+
   * 逻辑端口（Logical port）:代表VIF。
-  * 本地网络端口（Localnet port）：代表逻辑交换机与物理网络之间的连接点。
+  * 本地网络端口（Localnet port）：代表逻辑交换机与物理网络之间的连接点。  
     他们实现为OVS补丁端口（OVS patch port），架设在集成网桥和单独的Open vSwitch网桥之间，从而作为底层网络连接的端口。
 
-  * 逻辑补丁端口（Logical patch port）：代表了逻辑交换机和逻辑路由器之间的连接点，
+  * 逻辑补丁端口（Logical patch port）：代表了逻辑交换机和逻辑路由器之间的连接点，  
     有时候还可作为对等逻辑路由器（peer logical router）连接点。每个这样的连接点都有一对逻辑补丁端口，每侧一个。
+
   * 本地端口端口（Localport port）：代表了逻辑路由器和VIF之间的本地连接点。
     这些端口存在于每个机箱中（未绑定到任何特定的机箱），来自它们的流量永远不会通过隧道（tunnel）。
     本地端口一般来说只生成目标指向本地目的地的通信，通常是对其接收到请求的响应。其中一个用例便是：`OpenStack Neutron`如何使用Localport端口为每个hyperviso上的VM提供元数据（metadata）服务。
     元数据代理进程连接到每个主机（host）上的此端口，同一个网络中的所有VM都将通过相同的IP/MAC地址来访问它，
+
+## VIF的生命周期
+
+单独呈现表（Table）和其模式的话会很难理解。这里有一个例子。
+
+虚拟机监控程序（hypervisor）上的VIF是一个虚拟网络接口，他们要么连接到VM上要么连接到容器上（容器直接在该hypervisor上运行）。这与在VM中运行的容器的接口不同:
+
+本例中的步骤通常涉及到OVN和OVN Northbound database模式的详细信息。想了解这些数据库的完整信息，请分别参阅`ovn-sb`和`ovn-nb`。
+
+* 1、当CMS管理员使用CMS用户界面或API创建新的VIF，并将其添加到交换机（由OVN作为逻辑交换机实现）时，VIF的生命周期开始。CMS更新自身配置，主要包括：将VIF唯一的持久标识符`vif-id`和以太网地址mac相关联。
+
+* 2、CMS插件通过向`Logical_Switch_Port`表添加一行来更新OVN北向数据库以囊括新的VIF信息。新行之中，名称是`vif-id`，mac是mac，交换机指向OVN逻辑交换机的Logical\_Switch记录，其他列则被适当地初始化。
+
+* 3、ovn-northd收到OVN北向数据库的更新。相应的，它做出响应，在南向数据库的`Logical_Flow`表的添加新行，以映射新的端口。比如：添加一个流来识别发往给新端口的MAC地址的数据包，并且更新传递广播和多播数据包的流以囊括新的端口。它还在“绑定”表中创建一条记录，并填充用于识别chassis的列之外的所有列。
+
+* 4、每个hypervisor上的`ovn-controller`都会接收上一步ovn-northd在Logical\_Flow表所做的更新。但如果持有VIF的虚拟机关机，ovn-controller就无能为力了。例如，它不能发送数据包或从VIF接收数据包，因为VIF实际上并不存在了。
+
+* 5、最终，用户启动拥有该VIF的VM。在VM启动的hypervisor上，hypervisor与Open vSwitch（IntegrationGuide.rst中所描述的）之间的集成，是通过将VIF添加到OVN集成网桥上实现的，此外还需要在`external_ids：iface-id`中存储`vif-id`，以指示该接口是新VIF的实例。
+
+* 6、在启动VM的hypervisor上，ovn-controller在新的接口中注意到`external_ids：iface-id`。作为响应，在OVN南向数据库中，它将更新绑定表的chassis列中的相应行，这些行链接逻辑端口`external_ids：iface-id`到hypervisor。之后，ovn-controller更新本地虚拟机hypervisor的OpenFlow表，以便正确处理进出VIF的数据包。
+
+* 7、一些CMS系统，包括OpenStack，只有在网络准备就绪的情况下才能完全启动虚拟机。  
+  为了支持这个功能，ovn-northd一旦发现Binding表中的chassis列的某行更新了，则通过更新OVN北向数据库的`Logical_Switch_Port`表中的up列来向上标识这个变化，以表明VIF现在已经启动。如果使用此功能，CMS则可通过允许VM执行来继续进行后面的反应。
+
+* 8、在VIF所在的每个hypervisor上，ovn-controller会觉察到绑定表中完全填充的行。这为ovn-controller提供了逻辑端口的物理位置，因此每个实例都会更新其交换机的OpenFlow流表（基于OVN数据Logical\_Flow表中的逻辑数据路径流），以便通过隧道来正确处理进出VIF的数据包。
+
+* 9、最终，用户关闭持有该VIF的VM。在VM关闭的hypervisor上，VIF将从OVN集成网桥中删除。
+
+* 10、在VM关闭的hypervisor上，ovn-controller发现到VIF已被删除。作为响应，它将删除逻辑端口绑定表中的Chassis列的内容。
+
+* 11、在每个hypervisor上，ovn-controller都会发现绑定表行中空的Chassis列。  
+  这意味着ovn-controller不再知道逻辑端口的物理位置，因此每个实例都会更新其OpenFlow表以反映这一点。
+
+* 12、最终，当VIF（或其整个VM）不再被任何人需要时，管理员使用CMS用户界面或API删除VIF。CMS更新自己的配置。
+
+* 13、CMS插件通过删除Logical\_Switch\_Port表中的相关行来从OVN北向数据库中删除VIF。
+
+* 14、ovn-northd收到OVN北向数据库的更新，然后相应地更新OVN南向数据库，  
+  方法是：从OVN南向数据库的Logical\_Flow表和绑定表中删除或更新与已销毁的VIF相关的行。
+
+* 15、在每个hypervisor上，ovn-controller接收在上一步中的Logical\_Flow表的更新内容，并更新OpenFlow表。
+
+  不过可能没有太多要做，因为VIF已经变得无法访问，它在上一步中就从绑定表中删除了。
 
 ### VTEP 网关 {#OVN架构--高正伟-VTEP网关}
 
