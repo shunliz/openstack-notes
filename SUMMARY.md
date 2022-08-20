@@ -6,6 +6,7 @@
   * [Libvirt+Qemu+KVM](compute/lqk/lqk.md)
   * [Nova](compute/nova/nova.md)
     * [虚拟机初始配置（key,password,script）](compute/nova/nova/xu-ni-ji-chu-shi-pei-zhi-ff08-key-password-script.md)
+    * [热迁移](compute/nova/nova/re-qian-yi.md)
   * [Baremetal](compute/baremetal/baremetal.md)
   * [容器](compute/container/container.md)
 * [第二部 网络](network.md)
