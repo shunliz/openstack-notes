@@ -30,7 +30,7 @@ ovs-ofctl：用来控制OVS作为OpenFlow交换机工作时候的流表内容。
 
 ovs-vswitchd守护进程是OVS的核心部件，它和datapath内核模块一起实现OVS基于流的数据交换。作为核心组件，它使用openflow协议与上层OpenFlow控制器通信，使用OVSDB协议与ovsdb-server通信，使用netlink和datapath内核模块通信。ovs-vswitchd在启动时会读取ovsdb-server中配置信息，然后配置内核中的datapaths和所有OVS switches，当ovsdb中的配置信息改变时\(例如使用ovs-vsctl工具\)，ovs-vswitchd也会自动更新其配置以保持与数据库同步。
 
- ovs-vswitchd需要加载datapath内核模块才能正常运行。它会自动配置datapath flows，因此我们不必再使用ovs-dpctl去手动操作datapath，但ovs-dpctl仍可用于调试场合。
+ovs-vswitchd需要加载datapath内核模块才能正常运行。它会自动配置datapath flows，因此我们不必再使用ovs-dpctl去手动操作datapath，但ovs-dpctl仍可用于调试场合。
 
 在OVS中，ovs-vswitchd从OpenFlow控制器获取流表规则，然后把从datapath中收到的数据包在流表中进行匹配，找到匹配的flows并把所需应用的actions返回给datapath，同时作为处理的一部分，ovs-vswitchd会在datapath中设置一条datapath flows用于后续相同类型的数据包可以直接在内核中执行动作，此datapath flows相当于OpenFlow flows的缓存。对于datapath来说，其并不知道用户空间OpenFlow的存在，datapath内核模块信息如下：
 
@@ -38,11 +38,11 @@ ovs-vswitchd守护进程是OVS的核心部件，它和datapath内核模块一起
 
 ovsdb-server是OVS轻量级的数据库服务，用于整个OVS的配置信息，包括接口/交换内容/VLAN等，OVS主进程ovs-vswitchd根据数据库中的配置信息工作，下面是ovsdb-server进程详细信息。
 
- /etc/openvswitch/conf.db是数据库文件存放位置，文件形式存储保证了服务器重启不会影响其配置信息，ovsdb-server需要文件才能启动，可以使用ovsdb-tool create命令创建并初始化此数据库文件。
+/etc/openvswitch/conf.db是数据库文件存放位置，文件形式存储保证了服务器重启不会影响其配置信息，ovsdb-server需要文件才能启动，可以使用ovsdb-tool create命令创建并初始化此数据库文件。
 
 --remote=punix:/var/run/openvswitch/db.sock 实现了一个Unix sockets连接，OVS主进程ovs-vswitchd或其它命令工具\(ovsdb-client\)通过此socket连接管理ovsdb。
 
- /var/log/openvswitch/ovsdb-server.log是日志记录。
+/var/log/openvswitch/ovsdb-server.log是日志记录。
 
 2.2.3 OpenFlow
 
@@ -122,19 +122,23 @@ Slow Path：内核态并没有被分配太多内存，所以内核态能够保�
 
 2.4.1 ovs-vsctl
 
-ovs-vsctl是一个管理或配置ovs-vswitchd的高级命令行工具，高级是说其操作对用户友好，封装了对数据库的操作细节。它是管理OVS最常用的命令，除了配置flows之外，其它大部分操作比如Bridge/Port/Interface/Controller/Database/Vlan等都可以完成。
+ovs-vsctl是一个管理或配置ovs-vswitchd的高级命令行工具，高级是说其操作对用户友好，封装了对数据库的操作细节。它是管理OVS最常用的命令，除了配置flows之外，其它大部分操作比如Bridge/Port/Interface/Controller/Database/Vlan等都可以完成。![](/assets/network-virtualnetwork-ovs5.png)
 
- 2.4.2 ovsdb-tool
+2.4.2 ovsdb-tool
 
- ovsdb-tool是一个专门管理OVS数据库文件的工具，不常用，它不直接与ovsdb-server进程通信。
+ovsdb-tool是一个专门管理OVS数据库文件的工具，不常用，它不直接与ovsdb-server进程通信。![](/assets/network-virtualnetwork-ovsdbtool.png)
 
- 2.4.3 ovsdb-client
+2.4.3 ovsdb-client
 
 ovsdb-client是ovsdb-server进程的命令行工具，主要是从正在运行的ovsdb-server中查询信息，操作的是数据库相关。
 
- 2.4.4 ovs-ofctl
+![](/assets/network-virtualnetwork-ovsdblicnet.png)
+
+2.4.4 ovs-ofctl
 
 ovs-ofctl是专门管理配置OpenFlow交换机的命令行工具，我们可以用它手动配置OVS中的OpenFlow flows，注意其不能操作datapath flows和”hidden” flows。
 
 ovs-vsctl是一个综合的配置管理工具，ovsdb-client倾向于从数据库中查询某些信息，而ovsdb-tool是维护数据库文件工具。
+
+![](/assets/network-virtualnetwork-ovsofctl.png)
 
