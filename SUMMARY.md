@@ -11,6 +11,7 @@
   * [容器](compute/container/container.md)
 * [第二部 网络](network.md)
   * [物理网络](network/physicalnet/physicalnet.md)
+    * [5G](network/physicalnet/physicalnet/5g.md)
   * [虚拟网络](network/vnetwork/vnetwork.md)
     * [Linux网络](network/vnetwork/linuxwang-luo.md)
     * [OVN](network/vnetwork/ovn.md)
