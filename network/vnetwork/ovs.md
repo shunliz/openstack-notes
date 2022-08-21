@@ -24,6 +24,8 @@ ovs-ofctl：用来控制OVS作为OpenFlow交换机工作时候的流表内容。
 
 ![](/assets/network-virtualnetwork-ovs2.png)
 
+![](/assets/network-virtualnetwork-ovs6.png)
+
 ## 2.2 OVS组件详述
 
 ### 2.2.1 ovs-vswitchd
