@@ -505,33 +505,33 @@ CMS可以配置选项：将所有连接到相应逻辑交换机（带有`localne
 
 **table 0主要工作如下：**
 
-l  完成物理到逻辑的翻译，将逻辑信息，比如上面提到的信息记录到寄存器中。
+l  完成物理到逻辑的翻译，将逻辑信息，比如上面提到的信息记录到寄存器中。
 
-l  VM中的容器的报文用VLAN进行区分
+l  VM中的容器的报文用VLAN进行区分
 
-l  别的chassis过来的报文，根据入端口和tunnel\_id进行区分，然后获取出端口，这个在封装的时候已经有了
+l  别的chassis过来的报文，根据入端口和tunnel\_id进行区分，然后获取出端口，这个在封装的时候已经有了
 
 **table 16-31主要是将逻辑流表ingress pipeline 0-15的操作部分转换为openflow流表，主要工作如下：**
 
-l  每个逻辑流表会映射一个或者多个openflow流表，通常报文只是匹配其中一条流表。
+l  每个逻辑流表会映射一个或者多个openflow流表，通常报文只是匹配其中一条流表。
 
-l  ovn-controller使用逻辑流表的UUID的前32位作为openflow流表的cookie值。查看逻辑流表的UUID使用ovn-sbctl list Logical\_Flow，对应上面cookie的逻辑流表的UUID的信息在这里。
+l  ovn-controller使用逻辑流表的UUID的前32位作为openflow流表的cookie值。查看逻辑流表的UUID使用ovn-sbctl list Logical\_Flow，对应上面cookie的逻辑流表的UUID的信息在这里。
 
-l  一些逻辑流表可以映射到ovs的”conjunctive match”扩展名\(参见这里\)，这时候因为一条openflow流表对应了多条逻辑流表，所以cookie为0。这里的”conjunctive match”表示一个集合的匹配，比如tcp\_src ∈ {80, 443, 8080} and tcp\_dst ∈ {80, 443, 8080}。
+l  一些逻辑流表可以映射到ovs的”conjunctive match”扩展名\(参见这里\)，这时候因为一条openflow流表对应了多条逻辑流表，所以cookie为0。这里的”conjunctive match”表示一个集合的匹配，比如tcp\_src ∈ {80, 443, 8080} and tcp\_dst ∈ {80, 443, 8080}。
 
-l  一些逻辑流表可能不会转换成openflow流表，如果交换机上虚拟接口没有添加到ovs中，添加命令ovs-vsctl set Interface veth2\_b external\_ids:iface-id=ls2-vm4，那么相应的openflow流表将不会生成。
+l  一些逻辑流表可能不会转换成openflow流表，如果交换机上虚拟接口没有添加到ovs中，添加命令ovs-vsctl set Interface veth2\_b external\_ids:iface-id=ls2-vm4，那么相应的openflow流表将不会生成。
 
-l  最后就是有一些逻辑流表和openflow流表很明显的对应操作关系，我们列一下
+l  最后就是有一些逻辑流表和openflow流表很明显的对应操作关系，我们列一下
 
-l  next对应resubmit
+l  next对应resubmit
 
-l  field = constant对应set\_field
+l  field = constant对应set\_field
 
-l  output，将报文resubmit到表32，如果逻辑流表有多个output操作，那么每个都要resubmit到表32。
+l  output，将报文resubmit到表32，如果逻辑流表有多个output操作，那么每个都要resubmit到表32。
 
-l  get\_arp\(P, A\)和get\_nd\(P, A\)，通过讲参数存储在openflow字段中\(上面例子中存储在NXM\_NX\_REG0，流表cookie=0x5dbc664\)，然后resubmit到表66，然后ovn-controller从MAC\_Binding表生成流填充，如果表66中有匹配项，其action将绑定的MAC存储在目的MAC地址字段中
+l  get\_arp\(P, A\)和get\_nd\(P, A\)，通过讲参数存储在openflow字段中\(上面例子中存储在NXM\_NX\_REG0，流表cookie=0x5dbc664\)，然后resubmit到表66，然后ovn-controller从MAC\_Binding表生成流填充，如果表66中有匹配项，其action将绑定的MAC存储在目的MAC地址字段中
 
-l  put\_arp\(P, A, E\)和put\_nd\(P, A, E\)讲参数存储到openflow的字段中\(字段太多，查看上面流表cookie=0x92af5d1c\)，然后更新MAC\_Binding表中。
+l  put\_arp\(P, A, E\)和put\_nd\(P, A, E\)讲参数存储到openflow的字段中\(字段太多，查看上面流表cookie=0x92af5d1c\)，然后更新MAC\_Binding表中。
 
 **table 32-47主要是将逻辑流表ingress pipeline的output action转换为openflow流表。以下详细介绍下：**
 
@@ -566,7 +566,7 @@ l  put\_arp\(P, A, E\)和put\_nd\(P, A, E\)讲参数存储到openflow的字段�
 
  cookie=0x0, table=0, priority=100,tun_id=0x2,in_port=7 actions=move:NXM_NX_TUN_ID[0..23]->OXM_OF_METADATA[0..23],load:0x3->NXM_NX_REG14[0..14],load:0x1->NXM_NX_REG10[1],resubmit(,16)
 
- 
+
 
  //一些我们不关注的流表主要是一些错误报文的丢弃操作，相关流表已经删除了
 
@@ -594,7 +594,7 @@ l  put\_arp\(P, A, E\)和put\_nd\(P, A, E\)讲参数存储到openflow的字段�
 
  cookie=0xbe725a2b, table=16, priority=50,reg14=0x2,metadata=0x1,dl_dst=52:54:00:c1:68:60 actions=resubmit(,17)
 
- 
+
 
  //arp代答的流表
 
@@ -620,7 +620,7 @@ l  put\_arp\(P, A, E\)和put\_nd\(P, A, E\)讲参数存储到openflow的字段�
 
  cookie=0x4b1c93d4, table=17, priority=0,metadata=0x2 actions=resubmit(,18)
 
- 
+
 
  //arp通过
 
@@ -640,7 +640,7 @@ l  put\_arp\(P, A, E\)和put\_nd\(P, A, E\)讲参数存储到openflow的字段�
 
  cookie=0x78c16fb8, table=18, priority=0,metadata=0x3 actions=resubmit(,19)
 
- 
+
 
  //继续
 
@@ -650,7 +650,7 @@ l  put\_arp\(P, A, E\)和put\_nd\(P, A, E\)讲参数存储到openflow的字段�
 
  cookie=0xa4a71b19, table=19, priority=0,metadata=0x1 actions=resubmit(,20)
 
- 
+
 
  //继续
 
@@ -660,7 +660,7 @@ l  put\_arp\(P, A, E\)和put\_nd\(P, A, E\)讲参数存储到openflow的字段�
 
  cookie=0xe187a6b4, table=20, priority=0,metadata=0x2 actions=resubmit(,21)
 
- 
+
 
  //conntrack记录
 
@@ -680,7 +680,7 @@ l  put\_arp\(P, A, E\)和put\_nd\(P, A, E\)讲参数存储到openflow的字段�
 
  cookie=0x80407476, table=21, priority=0,metadata=0x2 actions=resubmit(,22)
 
- 
+
 
  //获取MAC_Binding表里的数据，回复arp
 
@@ -692,7 +692,7 @@ l  put\_arp\(P, A, E\)和put\_nd\(P, A, E\)讲参数存储到openflow的字段�
 
  cookie=0xefaed143, table=22, priority=0,metadata=0x3 actions=resubmit(,23)
 
- 
+
 
  //继续
 
@@ -702,7 +702,7 @@ l  put\_arp\(P, A, E\)和put\_nd\(P, A, E\)讲参数存储到openflow的字段�
 
  cookie=0xacda159d, table=23, priority=0,metadata=0x2 actions=resubmit(,24)
 
- 
+
 
  //????发送arp？
 
@@ -716,7 +716,7 @@ l  put\_arp\(P, A, E\)和put\_nd\(P, A, E\)讲参数存储到openflow的字段�
 
  cookie=0xd44f4b41, table=24, priority=0,metadata=0x3 actions=resubmit(,25)
 
- 
+
 
  //conntrack lb
 
@@ -736,7 +736,7 @@ l  put\_arp\(P, A, E\)和put\_nd\(P, A, E\)讲参数存储到openflow的字段�
 
  cookie=0x315f30b3, table=25, priority=0,metadata=0x3 actions=resubmit(,26)
 
- 
+
 
  //继续
 
@@ -752,7 +752,7 @@ l  put\_arp\(P, A, E\)和put\_nd\(P, A, E\)讲参数存储到openflow的字段�
 
  cookie=0xba22fb48, table=28, priority=0,metadata=0x2 actions=resubmit(,29)
 
- 
+
 
  //泛洪
 
@@ -774,7 +774,7 @@ l  put\_arp\(P, A, E\)和put\_nd\(P, A, E\)讲参数存储到openflow的字段�
 
  cookie=0xb88437bc, table=29, priority=50,metadata=0x3,dl_dst=52:54:00:c1:68:60 actions=load:0x1->NXM_NX_REG15[],resubmit(,32)
 
- 
+
 
  //????没有flags为2的标志
 
@@ -796,7 +796,7 @@ l  put\_arp\(P, A, E\)和put\_nd\(P, A, E\)讲参数存储到openflow的字段�
 
  cookie=0x0, table=32, priority=0 actions=resubmit(,33)
 
- 
+
 
  //????到网络节点需要NAT的流量，可是我们没有相应的配置
 
@@ -818,13 +818,13 @@ l  put\_arp\(P, A, E\)和put\_nd\(P, A, E\)讲参数存储到openflow的字段�
 
  cookie=0x0, table=33, priority=100,reg15=0xffff,metadata=0x3 actions=load:0x1->NXM_NX_REG13[],load:0x2->NXM_NX_REG15[],resubmit(,34),load:0xffff->NXM_NX_REG15[]
 
- 
+
 
  //继续
 
  cookie=0x0, table=34, priority=0 actions=load:0->NXM_NX_REG0[],load:0->NXM_NX_REG1[],load:0->NXM_NX_REG2[],load:0->NXM_NX_REG3[],load:0->NXM_NX_REG4[],load:0->NXM_NX_REG5[],load:0->NXM_NX_REG6[],load:0->NXM_NX_REG7[],load:0->NXM_NX_REG8[],load:0->NXM_NX_REG9[],resubmit(,48)
 
- 
+
 
  //继续
 
@@ -834,7 +834,7 @@ l  put\_arp\(P, A, E\)和put\_nd\(P, A, E\)讲参数存储到openflow的字段�
 
  cookie=0x7e6e093d, table=48, priority=0,metadata=0x2 actions=resubmit(,49)
 
- 
+
 
  //继续
 
@@ -844,7 +844,7 @@ l  put\_arp\(P, A, E\)和put\_nd\(P, A, E\)讲参数存储到openflow的字段�
 
  cookie=0xa630e910, table=49, priority=0,metadata=0x3 actions=resubmit(,50)
 
- 
+
 
  //conntrack
 
@@ -864,7 +864,7 @@ l  put\_arp\(P, A, E\)和put\_nd\(P, A, E\)讲参数存储到openflow的字段�
 
  cookie=0x7cca0b71, table=50, priority=0,metadata=0x3 actions=resubmit(,51)
 
- 
+
 
  //需要输出到逻辑路由的流量
 
@@ -878,7 +878,7 @@ l  put\_arp\(P, A, E\)和put\_nd\(P, A, E\)讲参数存储到openflow的字段�
 
  cookie=0x7778d918, table=51, priority=0,metadata=0x3 actions=resubmit(,52)
 
- 
+
 
  //继续
 
@@ -890,7 +890,7 @@ l  put\_arp\(P, A, E\)和put\_nd\(P, A, E\)讲参数存储到openflow的字段�
 
  cookie=0x828e0c10, table=53, priority=0,metadata=0x2 actions=resubmit(,54)
 
- 
+
 
  //conntrack lb
 
@@ -914,7 +914,7 @@ l  put\_arp\(P, A, E\)和put\_nd\(P, A, E\)讲参数存储到openflow的字段�
 
  cookie=0x439f6726, table=55, priority=0,metadata=0x2 actions=resubmit(,56)
 
- 
+
 
  //多播流量
 
@@ -938,7 +938,7 @@ l  put\_arp\(P, A, E\)和put\_nd\(P, A, E\)讲参数存储到openflow的字段�
 
  cookie=0x69d25440, table=56, priority=50,reg15=0x1,metadata=0x2 actions=resubmit(,64)
 
- 
+
 
  //修改入端口，为重新循环做准备
 
@@ -956,7 +956,7 @@ l  put\_arp\(P, A, E\)和put\_nd\(P, A, E\)讲参数存储到openflow的字段�
 
  cookie=0x0, table=64, priority=0 actions=resubmit(,65)
 
- 
+
 
  //将报文重新resubmit到表16，表示过完一个逻辑网元，需要进入下一个逻辑网元了
 
@@ -968,7 +968,7 @@ l  put\_arp\(P, A, E\)和put\_nd\(P, A, E\)讲参数存储到openflow的字段�
 
  cookie=0x0, table=65, priority=100,reg15=0x1,metadata=0x3 actions=clone(ct_clear,load:0->NXM_NX_REG11[],load:0->NXM_NX_REG12[],load:0->NXM_NX_REG13[],load:0x3->NXM_NX_REG11[],load:0x4->NXM_NX_REG12[],load:0x1->OXM_OF_METADATA[],load:0x2->NXM_NX_REG14[],load:0->NXM_NX_REG10[],load:0->NXM_NX_REG15[],load:0->NXM_NX_REG0[],load:0->NXM_NX_REG1[],load:0->NXM_NX_REG2[],load:0->NXM_NX_REG3[],load:0->NXM_NX_REG4[],load:0->NXM_NX_REG5[],load:0->NXM_NX_REG6[],load:0->NXM_NX_REG7[],load:0->NXM_NX_REG8[],load:0->NXM_NX_REG9[],load:0->NXM_OF_IN_PORT[],resubmit(,16))
 
- 
+
 
  //到本地某个虚拟机的直接发送
 
@@ -976,7 +976,7 @@ l  put\_arp\(P, A, E\)和put\_nd\(P, A, E\)讲参数存储到openflow的字段�
 
  cookie=0x0, table=65, priority=100,reg15=0x2,metadata=0x3 actions=output:4
 
- 
+
 
  //通过MAC_Binding修改IP对应的MAC
 
@@ -992,6 +992,8 @@ l  put\_arp\(P, A, E\)和put\_nd\(P, A, E\)讲参数存储到openflow的字段�
 ```
 
 ### 流量追踪
+
+https://www.cnblogs.com/weiduoduo/p/11142747.html
 
 ping
 
