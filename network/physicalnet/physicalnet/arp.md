@@ -1,4 +1,4 @@
-#  ARP {#arp}
+# ARP {#arp}
 
 链路层通信根据`48bit`以太网地址（硬件地址）来确定目的接口，而地址解析协议负责`32bitIP`地址与`48bit`以太网地址之间的映射：
 
@@ -27,7 +27,7 @@
 
 ## ARP分组格式 {#arp分组格式}
 
-![](https://tonydeng.github.io/sdn-handbook/basic/images/arp-frame.png "ARP帧分组格式")
+![](/assets/network-basic-arp-packetfmt.png)
 
 其中：
 
@@ -50,7 +50,6 @@
 21:08:10.329626 00:16:3e:01:7b:17 
 >
  00:16:3e:01:79:43, ethertype ARP (0x0806), length 60: Ethernet (len 6), IPv4 (len 4), Reply 192.168.14.23 is-at 00:16:3e:01:7b:17, length 46
-
 ```
 
 ## ARP代理 {#arp代理}
