@@ -20,6 +20,7 @@
     * [5G](network/physicalnet/physicalnet/5g.md)
   * [虚拟网络](network/vnetwork/vnetwork.md)
     * [Linux网络](network/vnetwork/linuxwang-luo.md)
+      * [内核VRF](network/vnetwork/linuxwang-luo/nei-he-vrf.md)
     * [OVS](network/vnetwork/ovs.md)
     * [OVN](network/vnetwork/ovn.md)
       * [OVN和流表](network/vnetwork/ovn-flowtable.md)
