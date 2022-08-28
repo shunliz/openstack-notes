@@ -12,7 +12,7 @@
   * [Baremetal](compute/baremetal/baremetal.md)
   * [容器](compute/container/container.md)
 * [第二部 网络](network.md)
-  * [网络基础理论]（network/basic/basic.md）
+  * [网络基础理论](network/basic/basic.md)
   * [物理网络](network/physicalnet/physicalnet.md)
     * [TCP/IP网络模型](network/physicalnet/physicalnet/tcpipwang-luo-mo-xing.md)
     * [5G](network/physicalnet/physicalnet/5g.md)
