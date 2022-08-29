@@ -37,6 +37,7 @@
   * [Ceph](storage/ceph/ceph.md)
 * [第四部 其它](ops.md)
   * [安装部署](ops/install/install.md)
+    * [OpenStack Ansible](ops/install/install/openstack-ansible.md)
   * [监控](ops/monitor/monitor.md)
   * [运维](ops/ops/ops.md)
 
