@@ -1,3 +1,9 @@
+https://www.cnblogs.com/liujitao79/p/15251805.html Openstack Train高可用部署
+
+
+
+
+
 Openstack Ansible部署OVN raft cluster
 
 [https://satishdotpatel.github.io/openstack-ansible-inventory/](https://satishdotpatel.github.io/openstack-ansible-inventory/)

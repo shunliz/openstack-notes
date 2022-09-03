@@ -6,9 +6,8 @@ OpenStack 作为开源的云计算平台，正在被越来越多的公司所采�
 
 在线阅读：[Github](SUMMARY.md)。
 
-* pdf 版本 [下载]
-* epub 版本 [下载]
-
+* pdf 版本 \[下载\]
+* epub 版本 \[下载\]
 
 
 
