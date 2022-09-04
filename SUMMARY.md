@@ -17,7 +17,11 @@
     * [ARP](network/physicalnet/physicalnet/arp.md)
     * [Overlay网络](network/physicalnet/physicalnet/overlaywang-luo.md)
     * [交换](network/physicalnet/physicalnet/jiao-huan.md)
+      * STP
+      * [VLAN](network/physicalnet/physicalnet/jiao-huan/vlan.md)
     * [路由](network/physicalnet/physicalnet/lu-you.md)
+      * BGP
+      * OSPF
   * [物理网络](network/physicalnet/physicalnet.md)
     * [5G](network/physicalnet/physicalnet/5g.md)
   * [虚拟网络](network/vnetwork/vnetwork.md)
