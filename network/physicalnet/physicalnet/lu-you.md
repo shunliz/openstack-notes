@@ -5,16 +5,24 @@
 ![](/assets/network-phynetwork-basic-routeov.png)
 
 1. 搜索路由表的优先级
-   ```
 
    ```
+    主机地址
+    网络地址
+    默认路由
+   ```
+
 2. 路由表
 3. 如果找不到匹配的路由，则返回“主机不可达差错”或“网络不可达差错”
 
 一个典型的路由表如下：
 
 ```
-
+# route -n
+Kernel IP routing table
+Destination     Gateway         Genmask         Flags Metric Ref    Use Iface
+192.168.0.0      0.0.0.0         255.255.192.0   U     0      0        0 eth0
+0.0.0.0         192.168.0.1      0.0.0.0         UG    100    0        0 eth0
 ```
 
 Flags各项的含义：
