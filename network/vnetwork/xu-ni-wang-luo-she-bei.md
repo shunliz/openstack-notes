@@ -13,6 +13,8 @@ brctl addif br0 eth1
 brctl showmacs br0
 ```
 
+ 
+
 ---
 
 ## veth {#h2-veth}
@@ -153,11 +155,11 @@ PING 192.168.2.1 (192.168.2.1) from 192.168.2.11 veth0: 56(84) bytes of data.
 rtt min/avg/max/mdev = 0.032/0.046/0.055/0.009 ms
 ```
 
-> 注意：对于非debian系统，这里有可能ping不通，主要是因为内核中的一些ARP相关配置导致veth1不返回ARP应答包，如ubuntu上就会出现这种情况，解决办法如下：
->  root@ubuntu:~\# echo 1 &gt; /proc/sys/net/ipv4/conf/veth1/accept\_local
-> root@ubuntu:~\# echo 1 &gt; /proc/sys/net/ipv4/conf/veth0/accept\_local
-> root@ubuntu:~\# echo 0 &gt; /proc/sys/net/ipv4/conf/all/rp\_filter
-> root@ubuntu:~\# echo 0 &gt; /proc/sys/net/ipv4/conf/veth0/rp\_filter
+> 注意：对于非debian系统，这里有可能ping不通，主要是因为内核中的一些ARP相关配置导致veth1不返回ARP应答包，如ubuntu上就会出现这种情况，解决办法如下：  
+>  root@ubuntu:~\# echo 1 &gt; /proc/sys/net/ipv4/conf/veth1/accept\_local  
+> root@ubuntu:~\# echo 1 &gt; /proc/sys/net/ipv4/conf/veth0/accept\_local  
+> root@ubuntu:~\# echo 0 &gt; /proc/sys/net/ipv4/conf/all/rp\_filter  
+> root@ubuntu:~\# echo 0 &gt; /proc/sys/net/ipv4/conf/veth0/rp\_filter  
 > root@ubuntu:~\# echo 0 &gt; /proc/sys/net/ipv4/conf/veth1/rp\_filter
 
 再来看看抓包情况，我们在veth0和veth1上都看到了ICMP echo的请求包，但为什么没有应答包呢？上面不是显示ping进程已经成功收到了应答包吗？
