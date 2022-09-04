@@ -39,6 +39,10 @@ dev@debian:~$ sudo ip link set br0 up
 
 > 这里假设eth0是我们的物理网卡，IP地址是192.168.3.21，网关是192.168.3.1
 
+
+
+
+
 ## 将bridge和veth设备相连 {#item-3}
 
 创建一对veth设备，并配置上IP
@@ -319,7 +323,6 @@ PING baidu.com (111.13.101.208) 56(84) bytes of data.
 --- baidu.com ping statistics ---
 1 packets transmitted, 1 received, 0% packet loss, time 0ms
 rtt min/avg/max/mdev = 30.690/30.690/30.690/0.000 ms
-
 ```
 
 经过上面一系列的操作后，网络变成了这个样子：

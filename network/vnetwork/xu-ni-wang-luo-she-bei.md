@@ -1,23 +1,6 @@
 Linux提供了许多虚拟设备，这些虚拟设备有助于构建复杂的网络拓扑，满足各种网络需求。
 
-## 网桥（bridge） {#h2--bridge-}
-
-网桥是一个二层设备，工作在链路层，主要是根据MAC学习来转发数据到不同的port。
-
-```
-# 创建网桥
-brctl addbr br0
-# 添加设备到网桥
-brctl addif br0 eth1
-# 查询网桥mac表
-brctl showmacs br0
-```
-
- 
-
----
-
-## veth {#h2-veth}
+## veth {#h2--bridge-}
 
 veth pair是一对虚拟网络设备，一端发送的数据会由另外一端接受，常用于不同的网络命名空间。
 
