@@ -97,11 +97,11 @@ tun0是一个Tun/Tap虚拟设备，从上图中可以看出它和物理设备eth
 
 ## tun/tap设备有什么用？ {#item-3}
 
-从上面介绍过的流程可以看出来，tun/tap设备的用处是将协议栈中的部分数据包转发给用户空间的应用程序，给用户空间的程序一个处理数据包的机会。于是比较常用的数据压缩，加密等功能就可以在应用程序B里面做进去，tun/tap设备最常用的场景是VPN，包括tunnel以及应用层的IPSec等，比较有名的项目是[VTun](https://link.segmentfault.com/?enc=gjesZK%2BZXNxSddGWDz%2F0fQ%3D%3D.bIHua%2FbwlJGfcQGQcErZccX7HAnfOXAIAcn50Z4C4GM%3D)，有兴趣可以去了解一下。
+从上面介绍过的流程可以看出来，**tun/tap设备的用处是将协议栈中的部分数据包转发给用户空间的应用程序，给用户空间的程序一个处理数据包的机会。于是比较常用的数据压缩，加密等功能就可以在应用程序B里面做进去，tun/tap设备最常用的场景是VPN，包括tunnel以及应用层的IPSec**等，比较有名的项目是[VTun](https://link.segmentfault.com/?enc=gjesZK%2BZXNxSddGWDz%2F0fQ%3D%3D.bIHua%2FbwlJGfcQGQcErZccX7HAnfOXAIAcn50Z4C4GM%3D)，有兴趣可以去了解一下。
 
 ## tun和tap的区别 {#item-4}
 
-用户层程序通过tun设备只能读写IP数据包，而通过tap设备能读写链路层数据包，类似于普通socket和raw socket的差别一样，处理数据包的格式不一样。
+**用户层程序通过tun设备只能读写IP数据包，而通过tap设备能读写链路层数据包，类似于普通socket和raw socket的差别一样，处理数据包的格式不一样。**
 
 ## 示例 {#item-5}
 
@@ -221,7 +221,6 @@ PING 192.168.3.12 (192.168.3.12) 56(84) bytes of data.
 
 --- 192.168.3.12 ping statistics ---
 4 packets transmitted, 0 received, 100% packet loss, time 3023ms
-
 ```
 
 
