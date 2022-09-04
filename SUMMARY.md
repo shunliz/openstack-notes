@@ -22,10 +22,12 @@
     * [路由](network/physicalnet/physicalnet/lu-you.md)
       * BGP
       * OSPF
+    * [TCP](network/physicalnet/physicalnet/tcp.md)
   * [物理网络](network/physicalnet/physicalnet.md)
     * [5G](network/physicalnet/physicalnet/5g.md)
   * [虚拟网络](network/vnetwork/vnetwork.md)
     * [Linux网络](network/vnetwork/linuxwang-luo.md)
+      * [Linux网络配置](network/vnetwork/linuxwang-luo-pei-zhi.md)
       * [内核VRF](network/vnetwork/linuxwang-luo/nei-he-vrf.md)
     * [OVS](network/vnetwork/ovs.md)
     * [OVN](network/vnetwork/ovn.md)
