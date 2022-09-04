@@ -1,4 +1,4 @@
-# [地址转换](https://so.csdn.net/so/search?q=%E5%9C%B0%E5%9D%80%E8%BD%AC%E6%8D%A2&spm=1001.2101.3001.7020)
+# [地址转换](https://so.csdn.net/so/search?q=地址转换&spm=1001.2101.3001.7020)
 
 在Linux中的地址转换通常是Virtual Address（虚拟地址）通过MMU和页表转换得到Physical Address（物理地址）。
 
@@ -26,11 +26,11 @@ TLB是一种高速缓存，内存管理硬件使用它来改善虚拟地址到�
 
 table walk
 
-1. 从协处理器CP15的寄存器2\(TTB寄存器，translation table base register  **ARM架构**，**X86中是CR3**\)中取出保存在其中的第一级页表\(translation table\)的基地址。这个基地址指的是PA，也就是说页表是直接按照这个地址保存在物理内存中的。
+1. 从协处理器CP15的寄存器2\(TTB寄存器，translation table base register  **ARM架构**，**X86中是CR3**\)中取出保存在其中的第一级页表\(translation table\)的基地址。这个基地址指的是PA，也就是说页表是直接按照这个地址保存在物理内存中的。
 
 2. 以TTB中的内容为基地址，以VA\[31:20\]为索引值在一级页表中查找对应表项。这个页表项保存着第二级页表\(coarse page table\)的基地址，这同样是物理地址，也就是说第二级页表也是直接按这个地址存储在物理内存中的。
 
-3. 以VA\[19:12\]为索引值在第二级页表中查出表项，这个表项中就保存着物理页面的基地址，我们知道[虚拟内存](https://so.csdn.net/so/search?q=%E8%99%9A%E6%8B%9F%E5%86%85%E5%AD%98&spm=1001.2101.3001.7020)管理是以页为单位的，一个虚拟内存的页映射到一个物理内存的页框，从这里就可以得到印证，因为查表是以页为单位来查的。
+3. 以VA\[19:12\]为索引值在第二级页表中查出表项，这个表项中就保存着物理页面的基地址，我们知道[虚拟内存](https://so.csdn.net/so/search?q=虚拟内存&spm=1001.2101.3001.7020)管理是以页为单位的，一个虚拟内存的页映射到一个物理内存的页框，从这里就可以得到印证，因为查表是以页为单位来查的。
 
 4. 有了物理页面的基地址之后，加上VA\[11:0\]这个偏移量就可以取出相应地址上的数据了。
 
@@ -50,7 +50,7 @@ page table是每个进程独有的，是软件实现的，是存储在main memor
 
 与之相对的通常被RISC架构的处理器（比如Alpha）采用的software TLB miss handling，TLB miss后CPU就不再参与了，由操作系统通过软件的方式来查找page table。使用硬件的方式更快，而使用软件的方式灵活性更强。IA-64提供了一种混合模式，可以兼顾两者的优点。
 
-## [虚拟机](https://so.csdn.net/so/search?q=%E8%99%9A%E6%8B%9F%E6%9C%BA&spm=1001.2101.3001.7020)地址转换
+## [虚拟机](https://so.csdn.net/so/search?q=虚拟机&spm=1001.2101.3001.7020)地址转换
 
 如果这个操作系统是运行在虚拟机上的，那么这只是一个中间的物理地址（Intermediate Phyical Address - IPA），需要经过VMM/hypervisor的转换，才能得到最终的物理地址（Host Phyical Address -**HPA**）。从VMM的角度，guest VM中的虚拟地址就成了**GVA**\(Guest Virtual Address\)，IPA就成了**GPA**\(Guest Phyical Address\)。
 
@@ -78,7 +78,7 @@ VMM层的软件会将gPT本身使用的物理页面设为write protected的，�
 
 ## 硬件实现-EPT/NPT
 
-为此，各大CPU厂商相继推出了硬件辅助的内存[虚拟化技术](https://so.csdn.net/so/search?q=%E8%99%9A%E6%8B%9F%E5%8C%96%E6%8A%80%E6%9C%AF&spm=1001.2101.3001.7020)，比如Intel的EPT\(Extended Page Table\)和AMD的NPT\(Nested Page Table），它们都能够从硬件上同时支持GVA-&gt;GPA和GPA-&gt;HPA的地址转换的技术。
+为此，各大CPU厂商相继推出了硬件辅助的内存[虚拟化技术](https://so.csdn.net/so/search?q=虚拟化技术&spm=1001.2101.3001.7020)，比如Intel的EPT\(Extended Page Table\)和AMD的NPT\(Nested Page Table），它们都能够从硬件上同时支持GVA-&gt;GPA和GPA-&gt;HPA的地址转换的技术。
 
 GVA-&gt;GPA的转换依然是通过查找gPT页表完成的，而GPA-&gt;HPA的转换则通过查找nPT页表来实现，每个guest VM有一个由VMM维护的nPT。其实，EPT/NPT就是一种扩展的MMU（以下称EPT/NPT MMU），它可以交叉地查找gPT和nPT两个页表：
 
@@ -122,5 +122,17 @@ GVA-&gt;GPA的转换依然是通过查找gPT页表完成的，而GPA-&gt;HPA的�
 
 ## 总结
 
-不管是影子页表还是EPT/NPT的优化都能看得出，[虚拟化](https://so.csdn.net/so/search?q=%E8%99%9A%E6%8B%9F%E5%8C%96&spm=1001.2101.3001.7020)中的地址转换所依托的还是虚拟内存中的地址转换方式。相比于影子页表硬件层面的EPT/NPT技术显然更胜一筹，速度更快，开销更少，由于虚拟化本身的属性，它所依托的还是真实的物理机，所以要理解这一部分还是需要先了解OS内存管理中的地址转换是如何进行的。
+不管是影子页表还是EPT/NPT的优化都能看得出，[虚拟化](https://so.csdn.net/so/search?q=虚拟化&spm=1001.2101.3001.7020)中的地址转换所依托的还是虚拟内存中的地址转换方式。相比于影子页表硬件层面的EPT/NPT技术显然更胜一筹，速度更快，开销更少，由于虚拟化本身的属性，它所依托的还是真实的物理机，所以要理解这一部分还是需要先了解OS内存管理中的地址转换是如何进行的。
+
+
+
+## 参考资料
+
+https://zhuanlan.zhihu.com/p/69828213
+
+https://zhuanlan.zhihu.com/p/66971714
+
+https://www.vmware.com/pdf/Perf\_ESX\_Intel-EPT-eval.pdf
+
+http://developer.amd.com/wordpress/media/2012/10/NPT-WP-1%201-final-TM.pdf
 
