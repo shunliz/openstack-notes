@@ -4,6 +4,7 @@
 * [概述](introduction.md)
 * [第一部 计算](compute.md)
   * [Libvirt+Qemu+KVM](compute/lqk/lqk.md)
+    * [vCPU&pCPU](compute/lqk/lqk/vcpuandpcpu.md)
   * [Nova](compute/nova/nova.md)
     * [虚拟机初始配置（key,password,script）](compute/nova/nova/xu-ni-ji-chu-shi-pei-zhi-ff08-key-password-script.md)
     * [热迁移](compute/nova/nova/re-qian-yi.md)
