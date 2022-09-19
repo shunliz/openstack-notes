@@ -1,7 +1,5 @@
 **OSPF+ECMP多活负载均衡方案**[https://cloud.tencent.com/developer/article/2030638](https://cloud.tencent.com/developer/article/2030638)
 
-
-
 ## lvs {#cr16wb}
 
 Linux Virtual Server \(lvs\) 是Linux内核自带的负载均衡器，也是目前性能最好的软件负载均衡器之一。lvs包括ipvs内核模块和ipvsadm用户空间命令行工具两部分。
@@ -161,7 +159,7 @@ Nginx也是Linux最常用的负载均衡软件之一，常用作反向代理和H
 
 [Maglev](https://research.google.com/pubs/pub44824.html)是Google自研的负载均衡方案，在2008年就已经开始用于生产环境。Maglev安装后不需要预热5秒内就能处理每秒100万次请求。谷歌的性能基准测试中，Maglev实例运行在一个8核CPU下，网络吞吐率上限为12M PPS（数据包每秒）。如果Maglev使用Linux内核网络堆栈则速度会慢下来，吞吐率小于4M PPS。
 
-![](https://static.sitestack.cn/projects/sdn-handbook/linux/images/maglev.png "负载均衡 - 图5")
+![](/assets/network-vnetwork-linuxnet-lvsnetmaglve.png)
 
 * 路由器ECMP \(Equal Cost Multipath\) 转发包到Maglev（而不是传统的主从结构\)
 * Kernel Bypass, CPU绑定，共享内存
@@ -186,7 +184,7 @@ Vortex参考了Maglev，大致的架构和实现跟Maglev类似：
 * [http://www.haproxy.org/](http://www.haproxy.org/)
 * [揭秘100G＋线速云负载均衡的设计与实现：从Maglev到Vortex](https://mp.weixin.qq.com/s?src=3&timestamp=1495372816&ver=1&signature=ifj0PRCsXKHVPiVcl-dNxhSlKKKcX6hwO1rz-hbipIrL2weMxHv0bSysMyY-yB-AXJrUZix9kjQCpvsRJnxF1grXi*O6nZZjaUFFEdA6ROfgicdAvfEFDM4-i42kY*58X1UmOW8WUoQqc6b8iEuUVw==)
 * [你真的掌握lvs工作原理吗](https://mp.weixin.qq.com/s?__biz=MzA3OTgyMDcwNg%3D%3D&idx=1&mid=2650625837&sn=2b86df07eabba8ff2035583913a0ef41)
-* [lvs 负载均衡fullnat 模式clientip 怎样传递给 realserver](http://wangxuemin.github.io/2015/07/26/lvs%20%E8%B4%9F%E8%BD%BD%E5%9D%87%E8%A1%A1fullnat%20%E6%A8%A1%E5%BC%8Fclientip%20%E6%80%8E%E6%A0%B7%E4%BC%A0%E9%80%92%E7%BB%99%20realserver/)
+* [lvs 负载均衡fullnat 模式clientip 怎样传递给 realserver](http://wangxuemin.github.io/2015/07/26/lvs 负载均衡fullnat 模式clientip 怎样传递给 realserver/)
 
 
 
