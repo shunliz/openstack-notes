@@ -14,7 +14,9 @@
   * [Baremetal](compute/baremetal/baremetal.md)
   * [容器](compute/container/container.md)
     * Docker
-    * K8S
+    * [K8S](compute/container/container/k8s.md)
+      * K8S基础
+      * [kube-ovn](compute/container/container/kube-ovn.md)
     * K8S开发
 * [第二部 网络](network.md)
   * [网络基础理论](network/basic/basic.md)
