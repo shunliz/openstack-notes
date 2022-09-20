@@ -20,7 +20,7 @@
       * [virtual-kubelet](compute/container/container/virtual-kubelet.md)
       * [kubervirt](compute/container/container/kubervirt.md)
       * [Cluster-API](compute/container/container/cluster-api.md)
-      * Kubesphere
+      * [Kubesphere](compute/container/container/kubesphere.md)
     * K8S开发
 * [第二部 网络](network.md)
   * [网络基础理论](network/basic/basic.md)
