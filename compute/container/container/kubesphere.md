@@ -1,2 +1,4 @@
 一个开源的全技术栈（监控，日志，Devops）集成的K8s集成方案
 
+![](/assets/compute-container-k8s-kubesphere1.png)
+
