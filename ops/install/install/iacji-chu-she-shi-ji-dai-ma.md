@@ -262,3 +262,9 @@ resource "xx_cloud_vm_instance" "instances" {
 
 4️ 能保证基础设施的快速更新和回滚，基于同一套基础设施模板，若环境被修改，则可以快速进行回滚和恢复，如果需要对所有环境进行更新升级，则只需要更新基础设施模板并创建新环境，将旧环境进行替换。
 
+
+
+![](/assets/other-deploy-iac4.png)
+
+![](/assets/other-deploy-iac5.png)
+
