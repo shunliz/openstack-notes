@@ -52,5 +52,52 @@ Packer 是一个优秀的开源镜像打包工具。Packer 的 builder 支持主
 * provision：多个平台的镜像build完成后，可以同时执行同一个provision
 * 构建：构建完成后，会创建两个虚拟机镜像， 一个挂载aws的账户下，另一个挂在vmware的平台上
 
+## 7 实例
+
+    {
+         "variables": {
+           "access_key": "{{env `ALICLOUD_ACCESS_KEY`}}",
+           "secret_key": "{{env `ALICLOUD_SECRET_KEY`}}"
+         },
+         "builders": [{
+           "type":"alicloud-ecs",
+           "access_key":"{{user `access_key`}}",
+           "secret_key":"{{user `secret_key`}}",
+           "region":"cn-beijing",
+           "image_name":"packer_basic",
+           "source_image":"centos_7_02_64_20G_alibase_20170818.vhd",
+           "ssh_username":"root",
+           "instance_type":"ecs.n1.tiny",
+           "internet_charge_type":"PayByTraffic",
+           "io_optimized":"true"
+         }],
+         "provisioners": [{
+           "type": "shell",
+           "inline": [
+             "sleep 30",
+             "yum install redis.x86_64 -y"
+           ]
+         }]
+       }
+
+```
+指定Packer模板文件生成自定义镜像的操作步骤如下：
+
+运行命令export ALICLOUD_ACCESS_KEY=<您的AccessKeyID>导入您的AccessKeyID。
+运行命令export ALICLOUD_SECRET_KEY=<您的AccessKeySecret>导入您的AccessKeySecret。
+运行命令packer build alicloud.json创建自定义镜像。
+```
+
+| 参数 | 描述 |
+| :--- | :--- |
+| access\_key | 您的AccessKeyID。更多详情，请参见[创建AccessKey](https://help.aliyun.com/document_detail/53045.html#concept-53045-zh)。 **说明** 由于AccessKey权限过大，为防止错误操作，建议您创建RAM用户，并使用RAM子账号创建AccessKey。具体步骤，请参见[创建 RAM 用户](https://help.aliyun.com/document_detail/28637.html#concept-gpm-ccf-xdb)和[创建AccessKey](https://help.aliyun.com/document_detail/53045.html#concept-53045-zh)。 |
+| secret\_key | 您的AccessKeySecret。更多详情，请参见[创建AccessKey](https://help.aliyun.com/document_detail/53045.html#concept-53045-zh)。 |
+| region | 创建自定义镜像时使用临时资源的地域。 |
+| image\_name | 自定义镜像的名称。 |
+| source\_image | 基础镜像的名称，可以从阿里云公共镜像列表获得。 |
+| instance\_type | 创建自定义镜像时生成的临时实例的类型。 |
+| internet\_charge\_type | 创建自定义镜像时临时实例的公网带宽付费类型。 |
+| provisioners | 创建自定义镜像时使用的Packer配置器类型。详情请参见[Packer配置器](https://www.packer.io/docs/provisioners/index.html)。 |
+
 
 
