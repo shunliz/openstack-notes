@@ -36,7 +36,7 @@ Apply-应用：在批准后，Terraform 会按照正确的顺序执行建议的�
 
 _        实际这种场景下，需要使用terrform import将非terraform创建的资源进行导入。_
 
-_        但是麻烦的是，每次只能导入一个资源。且terraform目前只接受这种方式来导入资源，并不能自动识别并生成相关配置。    
+_        但是麻烦的是，每次只能导入一个资源。且terraform目前只接受这种方式来导入资源，并不能自动识别并生成相关配置。      
 _
 
 # ⭐关键概念
@@ -158,7 +158,107 @@ terraform fmt： 格式化模板文件。将编写的tf文件进行就地格式�
 
 ⑤、将返回的结果写回state
 
+# 实例（Terraform 调用Ansible）
 
+```
+provider "aws" {
+  region  = "us-west-2"
+}
+ 
+resource "tls_private_key" "key" {
+  algorithm = "RSA"
+}
+ 
+resource "local_file" "private_key" {
+  filename          = "${path.module}/ansible-key.pem"
+  sensitive_content = tls_private_key.key.private_key_pem
+  file_permission   = "0400"
+}
+ 
+resource "aws_key_pair" "key_pair" {
+  key_name   = "ansible-key"
+  public_key = tls_private_key.key.public_key_openssh
+}
+ 
+data "aws_vpc" "default" {
+  default = true
+}
+ 
+resource "aws_security_group" "allow_ssh" {
+  vpc_id = data.aws_vpc.default.id
+ 
+  ingress {
+    from_port   = 22
+    to_port     = 22
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+ 
+  ingress {
+    from_port   = 80
+    to_port     = 80
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+ 
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+}
+ 
+data "aws_ami" "ubuntu" {
+  most_recent = true
+ 
+  filter {
+    name   = "name"
+    values = ["ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-*"]
+  }
+ 
+  owners = ["099720109477"]
+}
+ 
+resource "aws_instance" "ansible_server" {
+  ami                    = data.aws_ami.ubuntu.id
+  instance_type          = "t3.micro"
+  vpc_security_group_ids = [aws_security_group.allow_ssh.id]
+  key_name               = aws_key_pair.key_pair.key_name
+ 
+  tags = {
+    Name = "Ansible Server"
+  }
+ 
+  provisioner "remote-exec" {
+    inline = [
+      "sudo apt update -y",
+      "sudo apt install -y software-properties-common",
+      "sudo apt-add-repository --yes --update ppa:ansible/ansible",
+      "sudo apt install -y ansible"
+    ]
+ 
+    connection {
+      type        = "ssh"
+      user        = "ubuntu"
+      host        = self.public_ip
+      private_key = tls_private_key.key.private_key_pem
+    }
+  }
+ 
+  provisioner "local-exec" {
+    command = "ansible-playbook -u ubuntu --key-file ansible-key.pem -T 300 -i '${self.public_ip},', app.yml" 
+  }
+}
+ 
+output "public_ip" {
+ value = aws_instance.ansible_server.public_ip
+}
+ 
+output "ansible_command" {
+    value = "ansible-playbook -u ubuntu --key-file ansible-key.pem -T 300 -i '${aws_instance.ansible_server.public_ip},', app.yml"
+}
+```
 
 
 
