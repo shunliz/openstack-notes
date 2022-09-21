@@ -64,7 +64,7 @@
     * [OpenStack Ansible](ops/install/install/openstack-ansible.md)
     * [packer](ops/install/install/packer.md)
     * [terraform](ops/install/install/terraform.md)
-    * Ansible
+    * [Ansible](ops/install/install/ansible.md)
     * [IAC基础设施即代码](ops/install/install/iacji-chu-she-shi-ji-dai-ma.md)
   * [监控](ops/monitor/monitor.md)
   * [运维](ops/ops/ops.md)
