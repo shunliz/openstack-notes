@@ -99,5 +99,9 @@ Packer 是一个优秀的开源镜像打包工具。Packer 的 builder 支持主
 | internet\_charge\_type | 创建自定义镜像时临时实例的公网带宽付费类型。 |
 | provisioners | 创建自定义镜像时使用的Packer配置器类型。详情请参见[Packer配置器](https://www.packer.io/docs/provisioners/index.html)。 |
 
+![](/assets/other-deploy-packer1.png)
+
+
+
 
 

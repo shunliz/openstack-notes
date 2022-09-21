@@ -16,11 +16,9 @@
 
 Terraform和Ansible在初识时应该如何定位他们？它们的定位都是自动化的工具，应该如何选择？
 
-```
-    其实Terraform和Ansible是有功能重叠的。Terraform配置文件中的resource块，提供provisioner配置，连接到远程主机并进行类似ansible可执行的环境准备的操作。
+其实Terraform和Ansible是有功能重叠的。Terraform配置文件中的resource块，提供provisioner配置，连接到远程主机并进行类似ansible可执行的环境准备的操作。
 
-    但是可以明确的是，Terraform目前更合适你的基础设施创建和管理，如创建你的云主机、负载均衡器等等；Ansible而是更适合你的云主机创建后，自动化地去初始化你的机器配置、安装组件、部署服务等。
-```
+但是可以明确的是，Terraform目前更合适你的基础设施创建和管理，如创建你的云主机、负载均衡器等等；Ansible而是更适合你的云主机创建后，自动化地去初始化你的机器配置、安装组件、部署服务等。
 
 # Terraform如何工作？
 
@@ -38,7 +36,7 @@ Apply-应用：在批准后，Terraform 会按照正确的顺序执行建议的�
 
 _        实际这种场景下，需要使用terrform import将非terraform创建的资源进行导入。_
 
-_        但是麻烦的是，每次只能导入一个资源。且terraform目前只接受这种方式来导入资源，并不能自动识别并生成相关配置。  
+_        但是麻烦的是，每次只能导入一个资源。且terraform目前只接受这种方式来导入资源，并不能自动识别并生成相关配置。    
 _
 
 # ⭐关键概念
@@ -124,8 +122,6 @@ terraform plan： 资源预览
 
 用于对模板定义的资源进行预览。如预览当前模板中定义的资源是否符合预期，如果存在state文件则展示diff结果，即变更的内容。
 
-
-
 terraform apply：新建、变更资源
 
 terraform show：资源展示，展示当前state中所管理的资源以及所有属性
@@ -161,6 +157,8 @@ terraform fmt： 格式化模板文件。将编写的tf文件进行就地格式�
 ④、provider调用云API管理云资源
 
 ⑤、将返回的结果写回state
+
+
 
 
 
