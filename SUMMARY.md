@@ -21,6 +21,7 @@
       * [kubervirt](compute/container/container/kubervirt.md)
       * [Cluster-API](compute/container/container/cluster-api.md)
       * [Kubesphere](compute/container/container/kubesphere.md)
+      * [helm&tiller](compute/container/container/helmandtiller.md)
     * K8S开发
 * [第二部 网络](network.md)
   * [网络基础理论](network/basic/basic.md)
