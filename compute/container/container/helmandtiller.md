@@ -18,9 +18,40 @@ Helm作为K8s的包管理软件，每次安装Charts 到K8s集群时，都会创
 
 ![](/assets/compute-container-helmtiller1.png)
 
-
-
 Helm客户端使用REST+JSON的方式与K8s中的apiserver进行交互，进而管理deployment、service等资源，并且客户端本身并不需要数据库，它会把相关的信息储存在K8s集群内的Secrets中。
+
+
+
+假设我们的Chart名称叫做myChart，我们可以使用命令：
+
+```
+$ Helm create myChart
+```
+
+创建一个初始模板工程，那么在名为myChart的目录下包含了以下目录和文件：
+
+其中关键的目录和文件作用如下：
+
+★ templates/ 目录包含了模板文件。Helm会通过模板渲染引擎渲染所有该目录下的文件来生成Chart，之后将收集到的模板渲染结果发送给K8s。
+
+★ values.yaml 文件对于模板也非常重要。这个文件包含了对于一个Chart的默认值 。这些值可以在用户执行Helm install 或 Helm upgrade时指定新的值来进行覆盖。
+
+★ Chart.yaml 文件包含对于该Chart元数据描述。这些描述信息可以在模板中被引用。
+
+★ \_helper.tpl 包含了一些可以在Chart中进行复用的模板定义。
+
+★ 其他诸如deployment.yaml、service.yaml、ingress.yaml文件，就是我们用于生成K8s配置文件的模板，Helm默认会按照如下的顺序将生成资源配置发送给K8s:
+
+
+
+```
+Namespace -> NetworkPolicy -> ResourceQuota -> LimitRange -> PodSecurityPolicy --> PodDisruptionBudget -> 
+ServiceAccount -> Secret -> SecretList -> ConfigMap -> StorageClass -> PersistentVolume -> PersistentVolumeClaim ->
+ CustomResourceDefinition -> ClusterRole -> ClusterRoleList -> ClusterRoleBinding -> ClusterRoleBindingList -> 
+ Role -> RoleList -> RoleBinding -> RoleBindingList -> Service -> DaemonSet -> Pod -> ReplicationController -> 
+ ReplicaSet -> Deployment -> HorizontalPodAutoscaler -> StatefulSet -> Job -> CronJob -> Ingress -> 
+ APIService
+```
 
 
 
