@@ -65,7 +65,7 @@
 * [第三部 存储](storage.md)
   * [物理存储](storage/phystorage/phystorage.md)
     * 存储协议
-      * SCSI
+      * [SCSI](storage/phystorage/phystorage/scsi.md)
       * [iSCSI](storage/phystorage/phystorage/iscsi.md)
       * FC
       * SAS
