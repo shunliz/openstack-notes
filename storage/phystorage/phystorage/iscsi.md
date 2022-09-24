@@ -6,6 +6,8 @@ iSCSI target是位于互联网上服务器上的存储资源。
 
 **被访问的设备称为Target，而访问Target 称为Initiator。**![](/assets/storage-hardware-proto-iscsi1.png)说白了，就是把存储资源接入网络，在网络上用SCSI协议传输数据，通过一定的机制，使得Target接入网络后能被Initiator发现，Initiator通过网络直接连Target读写数据。
 
+![](/assets/storage-hardware-iscsi2.png)
+
 ## ISER和iSCSI Target的关系
 
 iSCSI target是位于互联网上服务器上的存储资源。
@@ -13,8 +15,6 @@ iSCSI target是位于互联网上服务器上的存储资源。
 原来 客户端和target 传输数据的时候走的是IP/TCP协议栈，就是iSCSI。
 
 现在换成走RDMA协议栈，可以在用RDMA 网络传输的SCSI，就是ISER。
-
-
 
 ## iSCSI实战
 
