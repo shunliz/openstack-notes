@@ -8,6 +8,9 @@
     * GPU
     * DPU
     * FPGA
+  * [体系结构](compute/lqk/ti-xi-jie-gou.md)
+    * SMP
+    * MIMD
   * [Libvirt+Qemu+KVM](compute/lqk/lqk.md)
     * [vCPU&pCPU](compute/lqk/lqk/vcpuandpcpu.md)
     * [内存虚拟化](compute/lqk/lqk/nei-cun-xu-ni-hua.md)
