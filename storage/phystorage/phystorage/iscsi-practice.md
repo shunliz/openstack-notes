@@ -1,4 +1,4 @@
-# iSCSI实战
+iSCSI实战
 
 ## **所需软件与软件结构**
 
@@ -240,39 +240,83 @@ discovery.sendtargets.auth.password = vbirdpasswd
 
 因为我们的 initiator 可能会连接多部的 target 设备，因此，我们得先要瞧瞧目前系统上面侦测到的 target 有几部， 然后再找到我们要的那部 target 来进行登入的作业。不过，如果你想要将所有侦测到的 target 全部都登入的话， 那么整个步骤可以再简化：
 
-[![](https://common.cnblogs.com/images/copycode.gif "复制代码")](javascript:void%280%29;)
-
 ```
+范例：根据前一个步骤侦测到的资料，启动全部的 target 
+[root@clientlinux ~]# /etc/init.d/iscsi restart 
+正在停止 iscsi： [ 确定 ] 
+正在激活 iscsi： [ 确定 ] 
+# 将系统里面全部的 target 通通以 /var/lib/iscs/nodes/ 内的设定登入 
+# 上面的特殊字体比较需要注意啦！你只要做到这里即可，底下的瞧瞧就好。 范例：显示出目前系统上面所有的 target 数据： 
+[root@clientlinux ~]# iscsiadm -m node
+192.168.100.254:3260,1 iqn.2014-10.net.vbnl:vdisk
+选项与参数： 
+-m node：找出目前本机上面所有侦测到的 target 信息，可能并未登入喔 
 
+范例：仅登入某部 target ，不要重新启动 iscsi 服务 
+[root@clientlinux ~]# iscsiadm -m node -T target名称 --login 
+选项与参数： 
+-T target名称：仅使用后面接的那部 target ，target 名称可用上个指令查到！ 
+--login ：就是登入啊！
+
+[root@clientlinux ~]# iscsiadm -m node -T iqn.iqn.2014-10.net.vbnl:vdisk \ 
+> --login 
+# 这次进行会出现错误，是因为我们已经登入了，不可重复登入喔！
 ```
-
-[![](https://common.cnblogs.com/images/copycode.gif "复制代码")](javascript:void%280%29;)
 
 接下来呢？呵呵！很棒的是，我们要来开始处理这个 iSCSI 的磁盘了喔！怎么处理？瞧一瞧！
 
-[![](https://common.cnblogs.com/images/copycode.gif "复制代码")](javascript:void%280%29;)
-
 ```
+[root@clientlinux ~]# fdisk -l 
+Disk /dev/sda: 8589 MB, 8589934592 bytes <==这是原有的那颗磁盘，略过不看
+ ....(中间省略).... 
+Disk /dev/sdc: 2147 MB, 2147483648 bytes 
+67 heads, 62 sectors/track, 1009 cylinders 
+Units = cylinders of 4154 * 512 = 2126848 bytes 
+Sector size (logical/physical): 512 bytes / 512 bytes 
 
+Disk /dev/sdb: 2154 MB, 2154991104 bytes 
+67 heads, 62 sectors/track, 1013 cylinders 
+Units = cylinders of 4154 * 512 = 2126848 bytes 
+Sector size (logical/physical): 512 bytes / 512 bytes 
+
+Disk /dev/sdd: 524 MB, 524288000 bytes 
+17 heads, 59 sectors/track, 1020 cylinders 
+Units = cylinders of 1003 * 512 = 513536 bytes 
+Sector size (logical/physical): 512 bytes / 512 bytes
 ```
-
-[![](https://common.cnblogs.com/images/copycode.gif "复制代码")](javascript:void%280%29;)
 
 你会发现主机上面多出了三个新的磁盘，容量与刚刚在 192.168.100.254 那部 iSCSI target 上面分享的 LUN 一样大。 那这三颗磁盘可以怎么用？你想怎么用就怎么用啊！只是，唯一要注意的，就是 iSCSI target 每次都要比 iSCSI initiator 这部主机还要早开机，否则我们的 initiator 恐怕就会出问题。
 
 **更新/删除/新增 target 数据的方法**
 
-[![](https://common.cnblogs.com/images/copycode.gif "复制代码")](javascript:void%280%29;)
+```
+[root@clientlinux ~]# iscsiadm -m node -T targetname --logout [root@clientlinux ~]# iscsiadm -m node -o [delete|new|update] -T targetname 
+选项与参数： --logout ：就是注销 target，但是并没有删除 /var/lib/iscsi/nodes/ 内的数据
+-o delete：删除后面接的那部 target 链接信息 (/var/lib/iscsi/nodes/*) 
+-o update：更新相关的信息
+-o new ：增加一个新的 target 信息。 
 
+范例：关闭来自鸟哥的 iSCSI target 的数据，并且移除链接 
+[root@clientlinux ~]# iscsiadm -m node <==还是先秀出相关的 target iqn 名称 
+192.168.100.254:3260,1 iqn.2014-10.net.vbnl:vdisk 
+[root@clientlinux ~]# iscsiadm -m node -T iqn.2014-10.net.vbnl:vdisk \ 
+> --logout 
+Logging out of session [sid: 1, target: 
+iqn.2011-08.vbird.centos:vbirddisk, portal: 192.168.100.254,3260] 
+Logout of [sid: 1, target: iqn.2014-10.net.vbnl:vdisk, portal: 192.168.100.254,3260] successful. 
+# 这个时候的 target 连结还是存在的，虽然注销你还是看的到！ 
+
+[root@clientlinux ~]# iscsiadm -m node -o delete \ 
+> -T iqn.iqn.2014-10.net.vbnl:vdisk
+[root@clientlinux ~]# iscsiadm -m node 
+iscsiadm: no records found! <==嘿嘿！不存在这个 target 了～ 
+[root@clientlinux ~]# /etc/init.d/iscsi restart 
+# 你会发现唔！怎么 target 的信息不见了！这样瞭了乎
 ```
 
 ```
 
 ```
-
-```
-
-[![](https://common.cnblogs.com/images/copycode.gif "复制代码")](javascript:void%280%29;)
 
 如果一切都没有问题，现在，请回到 discovery 的过程，重新再将 iSCSI target 侦测一次，再重新启动 initiator 来取得那三个磁盘吧！我们要来测试与利用该磁盘啰！
 
