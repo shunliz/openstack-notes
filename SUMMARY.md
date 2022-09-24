@@ -4,7 +4,7 @@
 * [概述](introduction.md)
 * [第一部 计算](compute.md)
   * [计算硬件](compute/lqk/ji-suan-ying-jian.md)
-    * CPU
+    * [CPU](compute/lqk/ji-suan-ying-jian/cpu.md)
     * GPU
     * DPU
     * FPGA
@@ -73,5 +73,6 @@
     * [Ansible](ops/install/install/ansible.md)
     * [IAC基础设施即代码](ops/install/install/iacji-chu-she-shi-ji-dai-ma.md)
   * [监控](ops/monitor/monitor.md)
+    * [云合规监控](ops/monitor/monitor/yun-he-gui-jian-kong.md)
   * [运维](ops/ops/ops.md)
 
