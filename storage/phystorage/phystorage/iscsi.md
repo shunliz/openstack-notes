@@ -16,7 +16,9 @@ iSCSI target是位于互联网上服务器上的存储资源。
 
 
 
+## iSCSI实战
 
+[详细实战案例](storage/phystorage/phystorage/iscsi-practice.md)
 
 1. 安装软件包
 
@@ -45,7 +47,7 @@ iscsiadm -m node -T iqn.20080-03.com.30:storage.iscsitest -l
 ```
 chkconfig iscsi on
 
-chkconfig iscsid on 
+chkconfig iscsid on
 ```
 
 2.4 断开（logout）
