@@ -1,4 +1,4 @@
-iSCSI实战
+# iSCSI实战
 
 ## **所需软件与软件结构**
 
@@ -313,7 +313,6 @@ iscsiadm: no records found! <==嘿嘿！不存在这个 target 了～
 [root@clientlinux ~]# /etc/init.d/iscsi restart 
 # 你会发现唔！怎么 target 的信息不见了！这样瞭了乎
 ```
-
 
 如果一切都没有问题，现在，请回到 discovery 的过程，重新再将 iSCSI target 侦测一次，再重新启动 initiator 来取得那三个磁盘吧！我们要来测试与利用该磁盘啰！
 
