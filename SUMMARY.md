@@ -5,9 +5,9 @@
 * [第一部 计算](compute.md)
   * [计算硬件](compute/lqk/ji-suan-ying-jian.md)
     * [CPU](compute/lqk/ji-suan-ying-jian/cpu.md)
-    * GPU
-    * DPU
-    * FPGA
+    * [GPU](compute/lqk/ji-suan-ying-jian/gpu.md)
+    * [DPU](compute/lqk/ji-suan-ying-jian/dpu.md)
+    * [FPGA](compute/lqk/ji-suan-ying-jian/fpga.md)
   * [体系结构](compute/lqk/ti-xi-jie-gou.md)
     * SMP
     * MIMD
@@ -64,6 +64,13 @@
     * [OpenStack Neutron之层次化端口绑定](network/vnetwork/openstack-neutronzhi-ceng-ci-hua-duan-kou-bang-ding.md)
 * [第三部 存储](storage.md)
   * [物理存储](storage/phystorage/phystorage.md)
+    * 存储协议
+      * iSCSI
+      * FC
+      * SAS
+      * [NVMe-oF](storage/phystorage/phystorage/nvme-of.md)
+  * 虚拟存储
+    * virtio-blk
   * [分布式存储](storage/distributed/distributed.md)
   * [Cinder](storage/cinder/cinder.md)
     * [Cinder卷的加密](storage/cinder/cinder/cinderjuan-de-jia-mi.md)
