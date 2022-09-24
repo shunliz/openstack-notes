@@ -3,7 +3,11 @@
 * [前言](README.md)
 * [概述](introduction.md)
 * [第一部 计算](compute.md)
-  * 计算硬件
+  * [计算硬件](compute/lqk/ji-suan-ying-jian.md)
+    * CPU
+    * GPU
+    * DPU
+    * FPGA
   * [Libvirt+Qemu+KVM](compute/lqk/lqk.md)
     * [vCPU&pCPU](compute/lqk/lqk/vcpuandpcpu.md)
     * [内存虚拟化](compute/lqk/lqk/nei-cun-xu-ni-hua.md)
