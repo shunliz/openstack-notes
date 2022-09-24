@@ -25,9 +25,9 @@ _客户端等工具软件。_
 
 从上面的分析来看，iSCSI 就是透过一个网络接口，将既有的磁盘给分享出去就是了。那么有哪些类型的磁盘可以分享呢？ 这包括：
 
-*  使用 dd 指令所建立的大型档案可供仿真为磁盘 \(无须预先格式化\)；
-*  使用单一分割槽 \(partition\) 分享为磁盘；
-*  使用单一完整的磁盘 \(无须预先分割\)；
+* 使用 dd 指令所建立的大型档案可供仿真为磁盘 \(无须预先格式化\)；
+* 使用单一分割槽 \(partition\) 分享为磁盘；
+* 使用单一完整的磁盘 \(无须预先分割\)；
 * 使用磁盘阵列分享 \(其实与单一磁盘相同方式\)；
 * 使用软件磁盘阵列 \(software raid\) 分享成单一磁盘；
 * 使用 LVM 的 LV 装置分享为磁盘。
@@ -71,8 +71,6 @@ iqn.2014-010.net.vlnb:vdisk
 ```
 
 另外，就如同一般外接式储存装置 \(target 名称\) 可以具有多个磁盘一样，我们的 target 也能够拥有数个磁盘装置的。 每个在同一个 target 上头的磁盘我们可以将它定义为逻辑单位编号 \(Logical Unit Number, LUN\)。我们的 iSCSI initiator 就是跟 target 协调后才取得 LUN 的存取权就是了。在这个简单案例中，最终的结果，我们会有一个 target ，在这个 target 当中可以使用三个 LUN 的磁盘。
-
-
 
 **设定 tgt 的配置文件 /etc/tgt/targets.conf**
 
@@ -188,10 +186,10 @@ iptables -A INPUT -p tcp -s 192.168.100.0/24 --dport 3260 -j ACCEPT
 在前一小节就谈过了，要设定 iSCSI initiator 必须要安装 iscsi-initiator-utils 才行。安装的方法请使用 yum 去处理，这里不再多讲话。那么这个软件的结构是如何呢？
 
 * /etc/iscsi/iscsid.conf：主要的配置文件，用来连结到 iSCSI target 的设定；
-*  /sbin/iscsid：启动 iSCSI initiator 的主要服务程序；
-*  /sbin/iscsiadm：用来管理 iSCSI initiator 的主要设定程序；
-*  /etc/init.d/iscsid：让本机模拟成为 iSCSI initiater 的主要服务；
-*  /etc/init.d/iscsi：在本机成为 iSCSI initiator 之后，启动此脚本，让我们可以登入 iSCSI target。所以 iscsid 先启动后，才能启动这个服务。为了防呆，所以 /etc/init.d/iscsi 已经写了一个启动指令， 启动 iscsi 前尚未启动 iscsid ，则会先呼叫 iscsid 才继续处理 iscsi 喔
+* /sbin/iscsid：启动 iSCSI initiator 的主要服务程序；
+* /sbin/iscsiadm：用来管理 iSCSI initiator 的主要设定程序；
+* /etc/init.d/iscsid：让本机模拟成为 iSCSI initiater 的主要服务；
+* /etc/init.d/iscsi：在本机成为 iSCSI initiator 之后，启动此脚本，让我们可以登入 iSCSI target。所以 iscsid 先启动后，才能启动这个服务。为了防呆，所以 /etc/init.d/iscsi 已经写了一个启动指令， 启动 iscsi 前尚未启动 iscsid ，则会先呼叫 iscsid 才继续处理 iscsi 喔
   _！_
 
 老实说，因为 /etc/init.d/iscsi 脚本已经包含了启动 /etc/init.d/iscsid 的步骤在里面，所以，理论上， 你只要启动 iscsi 就好啦！此外，那个 iscsid.conf 里面大概只要设定好登入 target 时的帐密即可， 其他的 target 搜寻、设定、取得的方法都直接使用 iscsiadm 这个指令来完成。由于 iscsiadm 侦测到的结果会直接写入 /var/lib/iscsi/nodes/ 当中，因此只要启动 /etc/init.d/iscsi 就能够在下次开机时，自动的连结到正确的 target 啰。 那么就让我们来处理处理整个过程吧
@@ -213,10 +211,12 @@ discovery.sendtargets.auth.password = vbirdpasswd
 [root@clientlinux ~]# chkconfig iscsid on 
 [root@clientlinux ~]# chkconfig iscsi on
 ```
+
 由于我们尚未与 target 联机，所以 iscsi 并无法让我们顺利启动的！因此上面只要 chkconfig 即可，不需要启动他。 要开始来侦测 target 与写入系统信息啰。全部使用 iscsiadm 这个指令就可以完成所有动作了。
 
-侦测 192.168.100.254 这部 target 的相关数据
+侦测 192.168.100.254 这部 target 的相关数据  
 虽然我们已经知道 target 的名字，不过，这里假设还不知道啦！因为有可能哪一天你的公司有钱了， 会去买实体的 iSCSI 数组嘛！所以这里还是讲完整的侦测过程好了！你可以这样使用：
+
 ```
 [root@clientlinux ~]# iscsiadm -m discovery -t sendtargets -p IP:port
 选项与参数： 
@@ -243,63 +243,7 @@ discovery.sendtargets.auth.password = vbirdpasswd
 [![](https://common.cnblogs.com/images/copycode.gif "复制代码")](javascript:void%280%29;)
 
 ```
-范例：根据前一个步骤侦测到的资料，启动全部的 target 
-[root@clientlinux 
-~]# /etc/init.d/
-iscsi restart 
-正在停止 iscsi： [ 确定 ] 
-正在激活 iscsi： [ 确定 ] 
-# 将系统里面全部的 target 通通以 
-/
-var
-/lib/iscs
-odes/
- 内的设定登入 
-# 上面的特殊字体比较需要注意啦！你只要做到这里即可，底下的瞧瞧就好。 范例：显示出目前系统上面所有的 target 数据： 
-[root@clientlinux 
-~]# iscsiadm -
-m node
 
-192.168
-.
-100.254
-:
-3260
-,
-1
- iqn.
-2014
--
-10
-.net.vbnl:vdisk
-选项与参数： 
-
--
-m node：找出目前本机上面所有侦测到的 target 信息，可能并未登入喔 
-
-范例：仅登入某部 target ，不要重新启动 iscsi 服务 
-[root@clientlinux 
-~]# iscsiadm -m node -T target名称 --
-login 
-选项与参数： 
-
--
-T target名称：仅使用后面接的那部 target ，target 名称可用上个指令查到！ 
-
---
-login ：就是登入啊！
-
-[root@clientlinux 
-~]# iscsiadm -m node -T iqn.iqn.
-2014
--
-10
-.net.vbnl:vdisk \ 
-
->
- --
-login 
-# 这次进行会出现错误，是因为我们已经登入了，不可重复登入喔！
 ```
 
 [![](https://common.cnblogs.com/images/copycode.gif "复制代码")](javascript:void%280%29;)
@@ -309,101 +253,7 @@ login
 [![](https://common.cnblogs.com/images/copycode.gif "复制代码")](javascript:void%280%29;)
 
 ```
-[root@clientlinux ~]# fdisk -
-l 
-Disk 
-/dev/sda: 
-8589
- MB, 
-8589934592
- bytes 
-<
-==
-这是原有的那颗磁盘，略过不看
- ....(中间省略).... 
-Disk 
-/dev/sdc: 
-2147
- MB, 
-2147483648
- bytes 
 
-67
- heads, 
-62
- sectors/track, 
-1009
- cylinders 
-Units 
-= cylinders of 
-4154
- * 
-512
- = 
-2126848
- bytes 
-Sector size (logical
-/physical): 
-512
- bytes / 
-512
- bytes 
-
-Disk 
-/dev/sdb: 
-2154
- MB, 
-2154991104
- bytes 
-
-67
- heads, 
-62
- sectors/track, 
-1013
- cylinders 
-Units 
-= cylinders of 
-4154
- * 
-512
- = 
-2126848
- bytes 
-Sector size (logical
-/physical): 
-512
- bytes / 
-512
- bytes 
-
-Disk 
-/dev/sdd: 
-524
- MB, 
-524288000
- bytes 
-
-17
- heads, 
-59
- sectors/track, 
-1020
- cylinders 
-Units 
-= cylinders of 
-1003
- * 
-512
- = 
-513536
- bytes 
-Sector size (logical
-/physical): 
-512
- bytes / 
-512
- bytes
 ```
 
 [![](https://common.cnblogs.com/images/copycode.gif "复制代码")](javascript:void%280%29;)
@@ -412,96 +262,17 @@ Sector size (logical
 
 **更新/删除/新增 target 数据的方法**
 
-
-
 [![](https://common.cnblogs.com/images/copycode.gif "复制代码")](javascript:void%280%29;)
 
 ```
-[root@clientlinux ~]# iscsiadm -m node -T targetname --logout [root@clientlinux ~]# iscsiadm -m node -o [delete|
-new
-|update] -
-T targetname 
-选项与参数： 
---logout ：就是注销 target，但是并没有删除 /
-var
-/lib/iscsi
-odes/
- 内的数据
 
--o delete：删除后面接的那部 target 链接信息 (/
-var
-/lib/iscsi
-odes
-/*
-) 
--o update：更新相关的信息
-
-
--o new ：增加一个新的 target 信息。 
-
-
-
-
-范例：关闭来自鸟哥的 iSCSI target 的数据，并且移除链接 
-
-
-[root@clientlinux ~]# iscsiadm -m node 
-<
-==还是先秀出相关的 target iqn 名称 
-
-
-192.168.100.254:3260,1 iqn.2014-10.net.vbnl:vdisk 
-
-
-[root@clientlinux ~]# iscsiadm -m node -T iqn.2014-10.net.vbnl:vdisk \ 
-
-
->
- --logout 
-
-
-Logging out of session [sid: 1, target: 
-
-
-iqn.2011-08.vbird.centos:vbirddisk, portal: 192.168.100.254,3260] 
-
-
-Logout of [sid: 1, target: iqn.2014-10.net.vbnl:vdisk, portal: 192.168.100.254,3260] successful. 
-
-
-# 这个时候的 target 连结还是存在的，虽然注销你还是看的到！ 
-
-
-
-
-[root@clientlinux ~]# iscsiadm -m node -o delete \ 
-
-
->
- -T 
-iqn.iqn.2014-10.net.vbnl:vdisk
 ```
 
 ```
-[root@clientlinux ~]# iscsiadm -m node 
-
-
-iscsiadm: no records found! 
-<
-==嘿嘿！不存在这个 target 了～ 
-
-
-[root@clientlinux ~]# /etc/init.d/iscsi restart 
-
-
-# 你会发现唔！怎么 target 的信息不见了！这样瞭了乎
-
 
 ```
 
 [![](https://common.cnblogs.com/images/copycode.gif "复制代码")](javascript:void%280%29;)
 
 如果一切都没有问题，现在，请回到 discovery 的过程，重新再将 iSCSI target 侦测一次，再重新启动 initiator 来取得那三个磁盘吧！我们要来测试与利用该磁盘啰！
-
-
 
