@@ -69,6 +69,7 @@
       * FC
       * SAS
       * [NVMe-oF](storage/phystorage/phystorage/nvme-of.md)
+      * RDMA
   * 虚拟存储
     * virtio-blk
   * [分布式存储](storage/distributed/distributed.md)
