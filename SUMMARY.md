@@ -23,13 +23,25 @@
   * [容器](compute/container/container.md)
     * Docker
     * [K8S](compute/container/container/k8s.md)
-      * K8S基础
+      * [K8S基础](compute/container/container/k8sji-chu.md)
       * [kube-ovn](compute/container/container/kube-ovn.md)
       * [virtual-kubelet](compute/container/container/virtual-kubelet.md)
       * [kubervirt](compute/container/container/kubervirt.md)
       * [Cluster-API](compute/container/container/cluster-api.md)
       * [Kubesphere](compute/container/container/kubesphere.md)
       * [helm&tiller](compute/container/container/helmandtiller.md)
+      * cilium
+      * gpu
+      * istio
+      * linkerd
+      * inaccel
+      * knative
+      * kubeflow
+      * multus
+      * openebs
+      * openfaas
+      * minikube
+      * microk8s
     * K8S开发
 * [第二部 网络](network.md)
   * [网络基础理论](network/basic/basic.md)
