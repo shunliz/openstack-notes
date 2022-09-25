@@ -41,7 +41,7 @@
       * openebs
       * openfaas
       * minikube
-      * microk8s
+      * [microk8s](compute/container/container/microk8s.md)
     * K8S开发
 * [第二部 网络](network.md)
   * [网络基础理论](network/basic/basic.md)
