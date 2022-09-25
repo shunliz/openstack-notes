@@ -52,7 +52,7 @@
       * STP
       * [VLAN](network/physicalnet/physicalnet/jiao-huan/vlan.md)
     * [路由](network/physicalnet/physicalnet/lu-you.md)
-      * BGP
+      * [BGP](network/physicalnet/physicalnet/lu-you/bgp.md)
       * [OSPF](network/physicalnet/physicalnet/lu-you/ospf.md)
     * [TCP](network/physicalnet/physicalnet/tcp.md)
   * [物理网络](network/physicalnet/physicalnet.md)
