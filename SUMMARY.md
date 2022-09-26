@@ -69,7 +69,7 @@
       * [eBPF](network/vnetwork/ebpf.md)
         * [bcc](network/vnetwork/ebpf/bcc.md)
         * [故障排查](network/vnetwork/ebpf/gu-zhang-pai-cha.md)
-      * XDP
+      * [XDP](network/vnetwork/xdp.md)
     * [OVS](network/vnetwork/ovs.md)
     * [OVN](network/vnetwork/ovn.md)
       * [OVN和流表](network/vnetwork/ovn-flowtable.md)
