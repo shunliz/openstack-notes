@@ -97,6 +97,7 @@
 * [第四部 其它](ops.md)
   * [安装部署](ops/install/install.md)
     * [OpenStack Ansible](ops/install/install/openstack-ansible.md)
+    * [Kolla Ansible](ops/install/install/kolla-ansible.md)
     * [packer](ops/install/install/packer.md)
     * [terraform](ops/install/install/terraform.md)
     * [Ansible](ops/install/install/ansible.md)
