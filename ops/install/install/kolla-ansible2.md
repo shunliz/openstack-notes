@@ -295,9 +295,242 @@ for dev in /dev/sd{b..k}; do ceph-deploy osd create --data "$dev" wuhan31-ceph03
 
 创建openstack 所需的pools:
 
-计算方法： https://ceph.com/pgcalc/
+计算方法： [https://ceph.com/pgcalc/](https://ceph.com/pgcalc/)
 
 根据大小设置不同的pg数. 由于目前只有3\*10个osd. 故初步定pg数量如下: 后期按需扩大
+
+```
+images 32
+volumes 256
+vms 64
+backups 128
+```
+
+在任意具备ceph admin权限的节点执行创建:
+
+```
+ceph osd pool create images 32
+ceph osd pool create volumes 256
+ceph osd pool create vms 64
+ceph osd pool create backups 128
+```
+
+4，创建ceph客户端
+
+在部署节点操作
+
+创建客户端, 并赋予权限，以下信息写入脚本执行,或者直接执行
+
+```
+# 定义客户端
+clients="client.cinder client.nova client.glance client.cinder-backup"
+# 创建客户端.
+for client in $clients; do
+  ceph auth get-or-create "$client"
+done
+
+
+
+# 配置权限
+ceph auth caps client.cinder mon 'allow r' osd 'allow class-read object_prefix rbd_children, allow rwx pool=volumes, allow rwx pool=cinder-ssd, allow rwx pool=vms, allow rwx pool=images'
+ceph auth caps client.nova mon 'allow r' osd 'allow class-read object_prefix rbd_children, allow rwx pool=volumes, allow rwx pool=cinder-ssd, allow rwx pool=vms, allow rwx pool=images'
+ceph auth caps client.glance mon 'allow r' osd 'allow class-read object_prefix rbd_children, allow rwx pool=images'
+ceph auth caps client.cinder-backup mon 'allow r' osd 'allow class-read object_prefix rbd_children, allow rwx pool=backups'
+# 导出
+for client in $clients; do
+  ceph auth export "$client" -o /etc/ceph/ceph."$client".keyring
+done
+```
+
+定义创建客户端：
+
+```
+ceph auth get-or-create client.cinder
+ceph auth get-or-create client.nova
+ceph auth get-or-create client.glance
+ceph auth get-or-create client.cinder-backup
+```
+
+配置权限
+
+```
+ceph auth caps client.cinder mon 'allow r' osd 'allow class-read object_prefix rbd_children, allow rwx pool=volumes, allow rwx pool=cinder-ssd, allow rwx pool=vms, allow rwx pool=images'
+ceph auth caps client.nova mon 'allow r' osd 'allow class-read object_prefix rbd_children, allow rwx pool=volumes, allow rwx pool=cinder-ssd, allow rwx pool=vms, allow rwx pool=images'
+ceph auth caps client.glance mon 'allow r' osd 'allow class-read object_prefix rbd_children, allow rwx pool=images'
+ceph auth caps client.cinder-backup mon 'allow r' osd 'allow class-read object_prefix rbd_children, allow rwx pool=backups'
+```
+
+导出keyting
+
+```
+ceph auth export client.cinder -o /etc/ceph/ceph.client.cinder.keyring
+ceph auth export client.nova -o /etc/ceph/ceph.client.nova.keyring
+ceph auth export client.glance -o /etc/ceph/ceph.client.glance.keyring
+ceph auth export client.cinder-backup -o /etc/ceph/ceph.client.cinder-backup.keyring
+```
+
+5，配置ceph插件dashboard
+
+在部署节点操作
+
+```
+ceph mgr module enable dashboard
+ceph config set mgr mgr/dashboard/ssl false
+ceph config set mgr mgr/dashboard/server_address ::
+ceph config set mgr mgr/dashboard/server_port 7000
+ceph dashboard set-login-credentials 用户名 密码
+```
+
+## 三，kolla部署openstack
+
+以下部署节点操作
+
+1，编写配置
+
+复制模板
+
+复制kolla-ansible的模板, 这里是使用pip安装的:
+
+必选: 复制配置模板
+
+cp -ar /usr/share/kolla-ansible/etc\_examples/\* /etc/
+
+2，生成密码
+
+请务必完成 “复制模板” 的环节. 否则无法生成密码
+
+执行如下命令即可
+
+kolla-genpwd
+
+globals.yml
+
+编辑修改/etc/kolla/globals.yml
+
+```
+# 这里是openstack的版本信息. 这里选择rocky版本,source即源码安装, 因为这种方式的软件包最全. 如果为binary且为CentOS系统, 那么只有红帽提供的包, 有些不全.
+kolla_install_type: "source"
+openstack_release: "rocky"
+ 
+# 如果有多个控制节点, 则启用高可用, 注意, vip(虚拟IP)必须为目前未用到的IP. 且和节点IP位于同一网段.
+enable_haproxy: "yes"
+kolla_internal_vip_address: "100.100.31.254"
+ 
+# 这些fqdn需要在内网DNS和hosts文件同时做好解析.
+kolla_internal_fqdn: "xiaoxuantest.***.org"
+kolla_external_fqdn: "xiaoxuantest.***.org"
+ 
+# 这里就是自定义配置的路径. 只在部署节点上.
+node_custom_config: "/etc/kolla/config"
+ 
+# 虚拟化类型, 如果是在虚拟机里做实验, 这里的类型需要改为qemu. 慢点就慢点.
+# kvm类型需要CPU,主板和BIOS支持, 且BIOS启用了硬件虚拟化. 如果在计算节点无法安装kvm内核模块, 请根据dmesg报错排查.
+nova_compute_virt_type: "kvm"
+ 
+# 网络接口. 注意external必须为独立接口, 不然会导致节点断网.
+neutron_external_interface: "eth1"
+network_interface: "bond0"
+api_interface: "bond0"
+storage_interface: "bond0"
+cluster_interface: "bond0"
+tunnel_interface: "bond0"
+# dns_interface: "eth"  # dns功能未集成, 后期自行研究吧.
+ 
+# 网络虚拟化技术. 我们这里不使用openvswitch, 直接使用linuxbridge
+neutron_plugin_agent: "linuxbridge"
+enable_openvswitch: "no"
+# 网络高可用, 就是创建多个agent: dhcp和l3(路由)
+enable_neutron_agent_ha: "yes"
+# 网络封装, 目前都是vlan, flat留着备用, 用于直接使用物理网卡.
+neutron_type_drivers: "flat,vlan"
+# 租户网络的隔离方式, 这里是vlan, 但是kolla不支持, 所以我们需要自己在node_custom_config这项对应的目录里加自定义配置.
+neutron_tenant_network_types: "vlan"
+ 
+# 网络插件
+enable_neutron_lbaas: "yes"
+enable_neutron_***aas: "yes"
+enable_neutron_fwaas: "yes"
+ 
+# elk集中日志管理
+enable_central_logging: "yes"
+# 启用debug模式, 日志很详细. 按需临时开启.
+#openstack_logging_debug: "True"
+ 
+# 忘了这里的用途... 可以关了试试, 如果其他组件有依赖会自动开的.
+enable_kafka: "yes"
+enable_fluentd: "yes"
+ 
+# 这里是我们使用了外部的ceph, 不让kolla部署, 因为kolla部署时部分osd可能会出问题, 导致osd id顺序错位, 看着不方便. 而且后期从主机管理存储集群也别捏.
+enable_ceph: "no"
+glance_backend_ceph: "yes"
+cinder_backend_ceph: "yes"
+nova_backend_ceph: "yes"
+gnocchi_backend_storage: "ceph"
+enable_manila_backend_cephfs_native: "yes"
+ 
+# 启用的功能.
+#enable_ceilometer: "yes"
+enable_cinder: "yes"
+#enable_designate: "yes"
+enable_destroy_images: "yes"
+#enable_gnocchi: "yes"
+enable_grafana: "yes"
+enable_heat: "yes"
+enable_horizon: "yes"
+#enable_ironic: "yes"
+#enable_ironic_ipxe: "yes"
+#enable_ironic_neutron_agent: "yes"
+#enable_kuryr: "yes"
+#enable_magnum: "yes"
+# enable_neutron_dvr
+# enable_ovs_dpdk
+#enable_nova_serialconsole_proxy: "yes"
+#enable_octavia: "yes"
+enable_redis: "yes"
+#enable_trove: "yes"
+ 
+# 其他配置
+glance_backend_file: "no"
+#designate_ns_record: "nova."
+#ironic_dnsmasq_dhcp_range: "11.0.0.10,11.0.0.111"
+openstack_region_name: "xiaoxuantest"
+```
+
+3，编写inventory文件
+
+创建个目录, 用于编写inventory文件:
+
+```
+mkdir kolla-ansible
+cp /usr/share/kolla-ansible/ansible/inventory/multinode kolla-ansible/inventory-xiaoxuantest
+```
+
+编辑后的inventory文件关键内容, 其他地方不变:
+
+关键内容
+
+```
+[control]
+wuhan31-ceph01
+wuhan31-ceph02
+wuhan31-ceph03
+ 
+[network]
+wuhan31-ceph01
+wuhan31-ceph02
+wuhan31-ceph03
+ 
+[external-compute]
+wuhan31-ceph01
+wuhan31-ceph02
+wuhan31-ceph03
+ 
+[monitoring:children]
+control
+ 
+[storage:children]
+control
+```
 
 
 
