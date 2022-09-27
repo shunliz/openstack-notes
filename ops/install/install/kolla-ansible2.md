@@ -170,17 +170,17 @@ yum install ansible python2-setuptools python-cryptography python-openstackclien
 
 pip install kolla-ansible
 
-\_\*\*注意：
+注意：
 
-\_\*\*如果出现\`requests 2.20.0 has requirement idna&lt;2.8,&gt;=2.5, but you'll have idna 2.4 which is incompatible.\`错误，则强制更新requets库
+如果出现\`requests 2.20.0 has requirement idna&lt;2.8,&gt;=2.5, but you'll have idna 2.4 which is incompatible.\`错误，则强制更新requets库
 
-\_\*\*pip install --ignore-installed requests
+pip install --ignore-installed requests
 
-\_\*\*同样，出现Cannot uninstall 'PyYAML'. It is a distutils installed project and thus we cannot accurately determine which files belong to it which would lead to only a partial uninstall.错误，强制更新
+同样，出现Cannot uninstall 'PyYAML'. It is a distutils installed project and thus we cannot accurately determine which files belong to it which would lead to only a partial uninstall.错误，强制更新
 
-\_\*\*sudo pip install --ignore-installed PyYAML
+sudo pip install --ignore-installed PyYAML
 
-\_\*\*注：步骤1-7,9所有节点操作，步骤8在部署节点操作（这里用wuhan32-ceph01）
+注：步骤1-7,9所有节点操作，步骤8在部署节点操作（这里用wuhan32-ceph01）
 
 ## 二，部署ceph集群
 
@@ -732,7 +732,8 @@ kolla-ansible -i kolla-ansible/inventory-xiaoxuantest deploy
 
 kolla-ansible -i kolla-ansible/inventory-xiaoxuantest reconfigure -t neutron
 
-kolla-ansible -i kolla-ansible/inventory-xiaoxuantest deploy -t neutron.
+kolla-ansible -i kolla-ansible/inventory-xiaoxuantest deploy -t neutron  
+.
 
 完成部署
 
@@ -754,9 +755,7 @@ grep admin /etc/kolla/passwords.yml
 
 如果没有内部源部署时间比较长，国外的资源下载很慢。
 
-官方的故障排查指南: https://docs.openstack.org/kolla-ansible/latest/user/troubleshooting.html
-
-
+官方的故障排查指南: [https://docs.openstack.org/kolla-ansible/latest/user/troubleshooting.html](https://docs.openstack.org/kolla-ansible/latest/user/troubleshooting.html)
 
 部署成果后运行的容器如下：
 
@@ -806,7 +805,7 @@ a3ed7e8fe8ff        kolla/centos-source-elasticsearch:rocky               "dumb-
 6f6189a4dfda        kolla/centos-source-cron:rocky                        "dumb-init --single-…"   8 weeks ago         Up 8 weeks                              cron
 039f08ec1bbf        kolla/centos-source-kolla-toolbox:rocky               "dumb-init --single-…"   8 weeks ago         Up 8 weeks                              kolla_toolbox
 f839d23859cc        kolla/centos-source-fluentd:rocky                     "dumb-init --single-…"   8 weeks ago         Up 8 weeks                              fluentd
-[root@wuhan31-ceph01 ~]# 
+[root@wuhan31-ceph01 ~]#
 ```
 
 四，常见故障
@@ -821,63 +820,53 @@ kolla-ansible -i kolla-ansible/inventory-xiaoxuantest mariadb\_recovery
 
 执行完后确认各节点3306为监听状
 
-
-
 遇到的问题：
 
 ironic : Checking ironic-agent files exist for Ironic Inspector
 
 ```
-TASK [ironic : Checking ironic-agent files exist for Ironic Inspector] ********************
+TASK [ironic : Checking ironic-agent files exist for Ironic Inspector] ********************
 failed: [localhost -> localhost] (item=ironic-agent.kernel) => {"changed": false, "failed_when_result": true, "item": "ironic-agent.kernel", "stat": {"exists": false}}
-failed: [localhost -> localhost] (item=ironic-agent.initramfs) => {"changed": false, "failed_when_result": true, "item": "ironic-agent.initramfs", "stat": {"exists": false}} 
+failed: [localhost -> localhost] (item=ironic-agent.initramfs) => {"changed": false, "failed_when_result": true, "item": "ironic-agent.initramfs", "stat": {"exists": false}}
 ```
 
 临时关闭enable\_ironic开头的配置解决.
 
-
-
 neutron : Checking if ‘MountFlags’ for docker service is set to ‘shared’
 
 ```
-TASK [neutron : Checking if 'MountFlags' for docker service is set to 'shared'] ***********
+TASK [neutron : Checking if 'MountFlags' for docker service is set to 'shared'] ***********
 fatal: [localhost]: FAILED! => {"changed": false, "cmd": ["systemctl", "show", "docker"], "delta": "0:00:00.010391", "end": "2018-12-24 20:44:46.791156", "failed_when_result": true, "rc": 0, "start": "2018-12-24 20:44:46.780765",...
 ```
 
 见章节 环境准备–docker–
 
-
-
 ceilometer : Checking gnocchi backend for ceilometer
 
 ```
-TASK [ceilometer : Checking gnocchi backend for ceilometer] *******************************
+TASK [ceilometer : Checking gnocchi backend for ceilometer] *******************************
 fatal: [localhost -> localhost]: FAILED! => {"changed": false, "msg": "gnocchi is required but not enabled"}
 ```
-
-
 
 启用 gnocchi
 
 octavia : Checking certificate files exist for octavia
 
 ```
-TASK [octavia : Checking certificate files exist for octavia] *****************************
+TASK [octavia : Checking certificate files exist for octavia] *****************************
 failed: [localhost -> localhost] (item=cakey.pem) => {"changed": false, "failed_when_result": true, "item": "cakey.pem", "stat": {"exists": false}}
 failed: [localhost -> localhost] (item=ca_01.pem) => {"changed": false, "failed_when_result": true, "item": "ca_01.pem", "stat": {"exists": false}}
 failed: [localhost -> localhost] (item=client.pem) => {"changed": false, "failed_when_result": true, "item": "client.pem", "stat": {"exists": false}}
 ```
 
-运行 kolla-ansible certificates 依旧没有生成, 查了下, 官方还没修复:  https://bugs.launchpad.net/kolla-ansible/+bug/1668377
+运行 kolla-ansible certificates 依旧没有生成, 查了下, 官方还没修复:  [https://bugs.launchpad.net/kolla-ansible/+bug/1668377](https://bugs.launchpad.net/kolla-ansible/+bug/1668377)
 
 先禁用 octavia . 后期排查了人工生成.
-
-
 
 common : Restart fluentd container
 
 ```
-RUNNING HANDLER [common : Restart fluentd container] **************************************
+RUNNING HANDLER [common : Restart fluentd container] **************************************
 fatal: [localhost]: FAILED! => {"changed": false, "msg": "Unknown error message: Get https://192.168.55.201:4000/v1/_ping: dial tcp 100.100.31.201:4000: getsockopt: connection refused"}
 ```
 
