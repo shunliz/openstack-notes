@@ -411,22 +411,22 @@ globals.yml
 # 这里是openstack的版本信息. 这里选择rocky版本,source即源码安装, 因为这种方式的软件包最全. 如果为binary且为CentOS系统, 那么只有红帽提供的包, 有些不全.
 kolla_install_type: "source"
 openstack_release: "rocky"
- 
+
 # 如果有多个控制节点, 则启用高可用, 注意, vip(虚拟IP)必须为目前未用到的IP. 且和节点IP位于同一网段.
 enable_haproxy: "yes"
 kolla_internal_vip_address: "100.100.31.254"
- 
+
 # 这些fqdn需要在内网DNS和hosts文件同时做好解析.
 kolla_internal_fqdn: "xiaoxuantest.***.org"
 kolla_external_fqdn: "xiaoxuantest.***.org"
- 
+
 # 这里就是自定义配置的路径. 只在部署节点上.
 node_custom_config: "/etc/kolla/config"
- 
+
 # 虚拟化类型, 如果是在虚拟机里做实验, 这里的类型需要改为qemu. 慢点就慢点.
 # kvm类型需要CPU,主板和BIOS支持, 且BIOS启用了硬件虚拟化. 如果在计算节点无法安装kvm内核模块, 请根据dmesg报错排查.
 nova_compute_virt_type: "kvm"
- 
+
 # 网络接口. 注意external必须为独立接口, 不然会导致节点断网.
 neutron_external_interface: "eth1"
 network_interface: "bond0"
@@ -435,7 +435,7 @@ storage_interface: "bond0"
 cluster_interface: "bond0"
 tunnel_interface: "bond0"
 # dns_interface: "eth"  # dns功能未集成, 后期自行研究吧.
- 
+
 # 网络虚拟化技术. 我们这里不使用openvswitch, 直接使用linuxbridge
 neutron_plugin_agent: "linuxbridge"
 enable_openvswitch: "no"
@@ -445,21 +445,21 @@ enable_neutron_agent_ha: "yes"
 neutron_type_drivers: "flat,vlan"
 # 租户网络的隔离方式, 这里是vlan, 但是kolla不支持, 所以我们需要自己在node_custom_config这项对应的目录里加自定义配置.
 neutron_tenant_network_types: "vlan"
- 
+
 # 网络插件
 enable_neutron_lbaas: "yes"
 enable_neutron_***aas: "yes"
 enable_neutron_fwaas: "yes"
- 
+
 # elk集中日志管理
 enable_central_logging: "yes"
 # 启用debug模式, 日志很详细. 按需临时开启.
 #openstack_logging_debug: "True"
- 
+
 # 忘了这里的用途... 可以关了试试, 如果其他组件有依赖会自动开的.
 enable_kafka: "yes"
 enable_fluentd: "yes"
- 
+
 # 这里是我们使用了外部的ceph, 不让kolla部署, 因为kolla部署时部分osd可能会出问题, 导致osd id顺序错位, 看着不方便. 而且后期从主机管理存储集群也别捏.
 enable_ceph: "no"
 glance_backend_ceph: "yes"
@@ -467,7 +467,7 @@ cinder_backend_ceph: "yes"
 nova_backend_ceph: "yes"
 gnocchi_backend_storage: "ceph"
 enable_manila_backend_cephfs_native: "yes"
- 
+
 # 启用的功能.
 #enable_ceilometer: "yes"
 enable_cinder: "yes"
@@ -488,7 +488,7 @@ enable_horizon: "yes"
 #enable_octavia: "yes"
 enable_redis: "yes"
 #enable_trove: "yes"
- 
+
 # 其他配置
 glance_backend_file: "no"
 #designate_ns_record: "nova."
@@ -514,22 +514,175 @@ cp /usr/share/kolla-ansible/ansible/inventory/multinode kolla-ansible/inventory-
 wuhan31-ceph01
 wuhan31-ceph02
 wuhan31-ceph03
- 
+
 [network]
 wuhan31-ceph01
 wuhan31-ceph02
 wuhan31-ceph03
- 
+
 [external-compute]
 wuhan31-ceph01
 wuhan31-ceph02
 wuhan31-ceph03
- 
+
 [monitoring:children]
 control
- 
+
 [storage:children]
 control
+```
+
+4，ceph集成
+
+网络
+
+因为我们使用了vlan, 所以需要手动配置:
+
+```
+mkdir /etc/kolla/config/neutron
+cat > /etc/kolla/config/neutron/ml2_conf.ini <<EOF
+[ml2_type_vlan]
+network_vlan_ranges = physnet0:1031:1060,physnet1
+ 
+[linux_bridge]
+physical_interface_mappings = physnet0:eth0,physnet1:eth1
+EOF
+```
+
+Dashboard
+
+创建虚拟机界面禁止默认创建新卷.
+
+```
+mkdir /etc/kolla/config/horizon/
+cat > /etc/kolla/config/horizon/custom_local_settings <<EOF
+LAUNCH_INSTANCE_DEFAULTS = {
+  'create_volume': False,
+}
+EOF
+```
+
+直接贴上/etc/kolla/config/ 目录所有的文件
+
+```
+[root@wuhan32-ceph01 config]# ls -lR
+.:
+total 4
+lrwxrwxrwx. 1 kolla kolla  19 Mar 11 17:06 ceph.conf -> /etc/ceph/ceph.conf
+drwxr-xr-x. 4 kolla kolla 117 Mar 28 14:43 cinder
+-rw-r--r--. 1 root  root   39 Mar 28 14:39 cinder.conf
+drwxr-xr-x. 2 kolla kolla  80 Mar 11 17:18 glance
+drwxr-xr-x. 2 root  root   35 Mar 19 11:21 horizon
+drwxr-xr-x. 2 root  root   26 Mar 14 15:49 neutron
+drwxr-xr-x. 2 kolla kolla 141 Mar 11 17:18 nova
+ 
+./cinder:
+total 8
+lrwxrwxrwx. 1 kolla kolla  19 Mar 11 17:10 ceph.conf -> /etc/ceph/ceph.conf
+drwxr-xr-x. 2 kolla kolla  81 Mar 11 17:18 cinder-backup
+-rwxr-xr-x. 1 kolla kolla 274 Feb 26 16:47 cinder-backup.conf
+drwxr-xr-x. 2 kolla kolla  40 Mar 11 17:18 cinder-volume
+-rwxr-xr-x. 1 kolla kolla 534 Mar 28 14:38 cinder-volume.conf
+ 
+./cinder/cinder-backup:
+total 0
+lrwxrwxrwx. 1 kolla kolla 43 Mar 11 17:18 ceph.client.cinder-backup.keyring -> /etc/ceph/ceph.client.cinder-backup.keyring
+lrwxrwxrwx. 1 kolla kolla 36 Mar 11 17:18 ceph.client.cinder.keyring -> /etc/ceph/ceph.client.cinder.keyring
+ 
+./cinder/cinder-volume:
+total 0
+lrwxrwxrwx. 1 kolla kolla 36 Mar 11 17:18 ceph.client.cinder.keyring -> /etc/ceph/ceph.client.cinder.keyring
+ 
+./glance:
+total 4
+lrwxrwxrwx. 1 kolla kolla  36 Mar 11 17:18 ceph.client.glance.keyring -> /etc/ceph/ceph.client.glance.keyring
+lrwxrwxrwx. 1 kolla kolla  19 Mar 11 17:07 ceph.conf -> /etc/ceph/ceph.conf
+-rwxr-xr-x. 1 kolla kolla 138 Feb 27 11:55 glance-api.conf
+ 
+./horizon:
+total 4
+-rw-r--r--. 1 root root 59 Mar 19 11:21 custom_local_settings
+ 
+./neutron:
+total 4
+-rw-r--r--. 1 root root 141 Mar 14 15:49 ml2_conf.ini
+ 
+./nova:
+total 8
+lrwxrwxrwx. 1 kolla kolla  36 Mar 11 17:18 ceph.client.cinder.keyring -> /etc/ceph/ceph.client.cinder.keyring
+lrwxrwxrwx. 1 kolla kolla  34 Mar 11 17:18 ceph.client.nova.keyring -> /etc/ceph/ceph.client.nova.keyring
+lrwxrwxrwx. 1 kolla kolla  19 Mar 11 17:07 ceph.conf -> /etc/ceph/ceph.conf
+-rwxr-xr-x. 1 kolla kolla 101 Feb 27 17:28 nova-compute.conf
+-rwxr-xr-x. 1 kolla kolla  39 Dec 24 16:52 nova-scheduler.conf
+```
+
+摘录config目录相关配置文件内容如下:
+
+```
+# find -type f -printf "=== FILE: %p ===\n" -exec cat {} \;
+=== FILE: ./cinder/cinder-backup.conf ===
+[DEFAULT]
+backup_ceph_conf=/etc/ceph/ceph.conf
+backup_ceph_user=cinder-backup
+backup_ceph_chunk_size = 134217728
+backup_ceph_pool=backups
+backup_driver = cinder.backup.drivers.ceph
+backup_ceph_stripe_unit = 0
+backup_ceph_stripe_count = 0
+restore_discard_excess_bytes = true
+=== FILE: ./cinder/cinder-volume.conf ===
+[DEFAULT]
+enabled_backends=cinder-sas,cinder-ssd
+ 
+[cinder-sas]
+rbd_ceph_conf=/etc/ceph/ceph.conf
+rbd_user=cinder
+backend_host=rbd:volumes
+rbd_pool=volumes
+volume_backend_name=cinder-sas
+volume_driver=cinder.volume.drivers.rbd.RBDDriver
+rbd_secret_uuid=5b3ec4eb-c276-4cf2-a042-8ec906d05f69
+ 
+[cinder-ssd]
+rbd_ceph_conf=/etc/ceph/ceph.conf
+rbd_user=cinder
+backend_host=rbd:volumes
+rbd_pool=cinder-ssd
+volume_backend_name=cinder-ssd
+volume_driver=cinder.volume.drivers.rbd.RBDDriver
+rbd_secret_uuid=5b3ec4eb-c276-4cf2-a042-8ec906d05f69
+=== FILE: ./glance/glance-api.conf ===
+[glance_store]
+default_store = rbd
+stores = rbd
+rbd_store_pool = images
+rbd_store_user = glance
+rbd_store_ceph_conf = /etc/ceph/ceph.conf
+=== FILE: ./nova/nova-compute.conf ===
+[libvirt]
+images_rbd_pool=vms
+images_type=rbd
+images_rbd_ceph_conf=/etc/ceph/ceph.conf
+rbd_user=nova
+=== FILE: ./nova/nova-scheduler.conf ===
+[DEFAULT]
+scheduler_max_attempts = 100
+=== FILE: ./neutron/ml2_conf.ini ===
+[ml2_type_vlan]
+network_vlan_ranges = physnet0:1000:1030,physnet1
+ 
+[linux_bridge]
+physical_interface_mappings = physnet0:eth0,physnet1:eth1
+ 
+=== FILE: ./horizon/custom_local_settings ===
+ 
+LAUNCH_INSTANCE_DEFAULTS = {
+  'create_volume': False,
+}
+ 
+=== FILE: ./cinder.conf ===
+[DEFAULT]
+default_volume_type=standard
 ```
 
 
