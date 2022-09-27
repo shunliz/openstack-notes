@@ -98,6 +98,7 @@
   * [安装部署](ops/install/install.md)
     * [OpenStack Ansible](ops/install/install/openstack-ansible.md)
     * [Kolla Ansible](ops/install/install/kolla-ansible.md)
+    * [Kolla Ansible2](ops/install/install/kolla-ansible2.md)
     * [packer](ops/install/install/packer.md)
     * [terraform](ops/install/install/terraform.md)
     * [Ansible](ops/install/install/ansible.md)
