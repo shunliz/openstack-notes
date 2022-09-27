@@ -543,7 +543,7 @@ mkdir /etc/kolla/config/neutron
 cat > /etc/kolla/config/neutron/ml2_conf.ini <<EOF
 [ml2_type_vlan]
 network_vlan_ranges = physnet0:1031:1060,physnet1
- 
+
 [linux_bridge]
 physical_interface_mappings = physnet0:eth0,physnet1:eth1
 EOF
@@ -575,7 +575,7 @@ drwxr-xr-x. 2 kolla kolla  80 Mar 11 17:18 glance
 drwxr-xr-x. 2 root  root   35 Mar 19 11:21 horizon
 drwxr-xr-x. 2 root  root   26 Mar 14 15:49 neutron
 drwxr-xr-x. 2 kolla kolla 141 Mar 11 17:18 nova
- 
+
 ./cinder:
 total 8
 lrwxrwxrwx. 1 kolla kolla  19 Mar 11 17:10 ceph.conf -> /etc/ceph/ceph.conf
@@ -583,30 +583,30 @@ drwxr-xr-x. 2 kolla kolla  81 Mar 11 17:18 cinder-backup
 -rwxr-xr-x. 1 kolla kolla 274 Feb 26 16:47 cinder-backup.conf
 drwxr-xr-x. 2 kolla kolla  40 Mar 11 17:18 cinder-volume
 -rwxr-xr-x. 1 kolla kolla 534 Mar 28 14:38 cinder-volume.conf
- 
+
 ./cinder/cinder-backup:
 total 0
 lrwxrwxrwx. 1 kolla kolla 43 Mar 11 17:18 ceph.client.cinder-backup.keyring -> /etc/ceph/ceph.client.cinder-backup.keyring
 lrwxrwxrwx. 1 kolla kolla 36 Mar 11 17:18 ceph.client.cinder.keyring -> /etc/ceph/ceph.client.cinder.keyring
- 
+
 ./cinder/cinder-volume:
 total 0
 lrwxrwxrwx. 1 kolla kolla 36 Mar 11 17:18 ceph.client.cinder.keyring -> /etc/ceph/ceph.client.cinder.keyring
- 
+
 ./glance:
 total 4
 lrwxrwxrwx. 1 kolla kolla  36 Mar 11 17:18 ceph.client.glance.keyring -> /etc/ceph/ceph.client.glance.keyring
 lrwxrwxrwx. 1 kolla kolla  19 Mar 11 17:07 ceph.conf -> /etc/ceph/ceph.conf
 -rwxr-xr-x. 1 kolla kolla 138 Feb 27 11:55 glance-api.conf
- 
+
 ./horizon:
 total 4
 -rw-r--r--. 1 root root 59 Mar 19 11:21 custom_local_settings
- 
+
 ./neutron:
 total 4
 -rw-r--r--. 1 root root 141 Mar 14 15:49 ml2_conf.ini
- 
+
 ./nova:
 total 8
 lrwxrwxrwx. 1 kolla kolla  36 Mar 11 17:18 ceph.client.cinder.keyring -> /etc/ceph/ceph.client.cinder.keyring
@@ -633,7 +633,7 @@ restore_discard_excess_bytes = true
 === FILE: ./cinder/cinder-volume.conf ===
 [DEFAULT]
 enabled_backends=cinder-sas,cinder-ssd
- 
+
 [cinder-sas]
 rbd_ceph_conf=/etc/ceph/ceph.conf
 rbd_user=cinder
@@ -642,7 +642,7 @@ rbd_pool=volumes
 volume_backend_name=cinder-sas
 volume_driver=cinder.volume.drivers.rbd.RBDDriver
 rbd_secret_uuid=5b3ec4eb-c276-4cf2-a042-8ec906d05f69
- 
+
 [cinder-ssd]
 rbd_ceph_conf=/etc/ceph/ceph.conf
 rbd_user=cinder
@@ -670,20 +670,216 @@ scheduler_max_attempts = 100
 === FILE: ./neutron/ml2_conf.ini ===
 [ml2_type_vlan]
 network_vlan_ranges = physnet0:1000:1030,physnet1
- 
+
 [linux_bridge]
 physical_interface_mappings = physnet0:eth0,physnet1:eth1
- 
+
 === FILE: ./horizon/custom_local_settings ===
- 
+
 LAUNCH_INSTANCE_DEFAULTS = {
   'create_volume': False,
 }
- 
+
 === FILE: ./cinder.conf ===
 [DEFAULT]
 default_volume_type=standard
 ```
 
+\*注意，./cinder/cinder-volume.conf里的rbd\_secret\_uuid=填写下面的这个值
 
+```
+[root@wuhan31-ceph01 ~]# grep cinder_rbd_secret_uuid /etc/kolla/passwords.yml 
+cinder_rbd_secret_uuid: 1ae2156b-7c33-4fbb-a26a-c770fadc54b6
+```
+
+创建的连接如下
+
+```
+ceph.conf:
+ln -s /etc/ceph/ceph.conf /etc/kolla/config/nova/
+ln -s /etc/ceph/ceph.conf /etc/kolla/config/glance/
+ln -s /etc/ceph/ceph.conf /etc/kolla/config/cinder/
+
+keyring:
+
+ln -s /etc/ceph/ceph.client.cinder-backup.keyring /etc/kolla/config/cinder/cinder-backup/
+ln -s /etc/ceph/ceph.client.cinder.keyring /etc/kolla/config/cinder/cinder-backup/
+ln -s /etc/ceph/ceph.client.cinder.keyring /etc/kolla/config/cinder/cinder-volume/
+ln -s /etc/ceph/ceph.client.glance.keyring /etc/kolla/config/glance/
+ln -s /etc/ceph/ceph.client.cinder.keyring /etc/kolla/config/nova/
+ln -s /etc/ceph/ceph.client.nova.keyring /etc/kolla/config/nova/
+```
+
+5，部署openstack
+
+预配节点环境
+
+bootstrap也会安装不少东西, 后期可以考虑提前安装这些.
+
+kolla-ansible -i kolla-ansible/inventory-xiaoxuantest bootstrap-servers
+
+预检查
+
+kolla-ansible -i kolla-ansible/inventory-xiaoxuantest prechecks
+
+正式部署
+
+kolla-ansible -i kolla-ansible/inventory-xiaoxuantest deploy
+
+调整配置及重新部署
+
+如果需要调整配置. 那么编辑globals.yml后, 然后运行reconfigure. 使用 -t 参数可以只对变动的模块进行调整.
+
+kolla-ansible -i kolla-ansible/inventory-xiaoxuantest reconfigure -t neutron
+
+kolla-ansible -i kolla-ansible/inventory-xiaoxuantest deploy -t neutron.
+
+完成部署
+
+这步主要是生成admin-openrc.sh.
+
+kolla-ansible post-deploy
+
+. /etc/kolla/admin-openrc.sh
+
+初始demo
+
+执行后会自动下载cirros镜像, 创建网络, 并创建一批测试虚拟机.
+
+/usr/share/kolla-ansible/init-runonce
+
+查询登录密码：
+
+grep admin /etc/kolla/passwords.yml
+
+如果没有内部源部署时间比较长，国外的资源下载很慢。
+
+官方的故障排查指南: https://docs.openstack.org/kolla-ansible/latest/user/troubleshooting.html
+
+
+
+部署成果后运行的容器如下：
+
+```
+[root@wuhan31-ceph01 ~]# docker ps -a
+CONTAINER ID        IMAGE                                                 COMMAND                  CREATED             STATUS              PORTS               NAMES
+d141ac504ec6        kolla/centos-source-grafana:rocky                     "dumb-init --single-…"   8 weeks ago         Up 8 weeks                              grafana
+41e12c24ba7f        kolla/centos-source-horizon:rocky                     "dumb-init --single-…"   8 weeks ago         Up 8 weeks                              horizon
+6989a4aeb33a        kolla/centos-source-heat-engine:rocky                 "dumb-init --single-…"   8 weeks ago         Up 8 weeks                              heat_engine
+35665589b4a4        kolla/centos-source-heat-api-cfn:rocky                "dumb-init --single-…"   8 weeks ago         Up 8 weeks                              heat_api_cfn
+f18c98468796        kolla/centos-source-heat-api:rocky                    "dumb-init --single-…"   8 weeks ago         Up 8 weeks                              heat_api
+bc77f4d3c957        kolla/centos-source-neutron-metadata-agent:rocky      "dumb-init --single-…"   8 weeks ago         Up 8 weeks                              neutron_metadata_agent
+7334b93c6564        kolla/centos-source-neutron-lbaas-agent:rocky         "dumb-init --single-…"   8 weeks ago         Up 8 weeks                              neutron_lbaas_agent
+0dd7a55245c4        kolla/centos-source-neutron-l3-agent:rocky            "dumb-init --single-…"   8 weeks ago         Up 8 weeks                              neutron_l3_agent
+beec0f19ec7f        kolla/centos-source-neutron-dhcp-agent:rocky          "dumb-init --single-…"   8 weeks ago         Up 8 weeks                              neutron_dhcp_agent
+af6841ebc21e        kolla/centos-source-neutron-linuxbridge-agent:rocky   "dumb-init --single-…"   8 weeks ago         Up 8 weeks                              neutron_linuxbridge_agent
+49dc0457445d        kolla/centos-source-neutron-server:rocky              "dumb-init --single-…"   8 weeks ago         Up 8 weeks                              neutron_server
+677c0be4ab6b        kolla/centos-source-nova-compute:rocky                "dumb-init --single-…"   8 weeks ago         Up 8 weeks                              nova_compute
+402b1e673777        kolla/centos-source-nova-novncproxy:rocky             "dumb-init --single-…"   8 weeks ago         Up 8 weeks                              nova_novncproxy
+e35729b76996        kolla/centos-source-nova-consoleauth:rocky            "dumb-init --single-…"   8 weeks ago         Up 8 weeks                              nova_consoleauth
+8b193f562e47        kolla/centos-source-nova-conductor:rocky              "dumb-init --single-…"   8 weeks ago         Up 8 weeks                              nova_conductor
+885581445be0        kolla/centos-source-nova-scheduler:rocky              "dumb-init --single-…"   8 weeks ago         Up 8 weeks                              nova_scheduler
+171128b7bcb7        kolla/centos-source-nova-api:rocky                    "dumb-init --single-…"   8 weeks ago         Up 8 weeks                              nova_api
+8d7f3de2ad63        kolla/centos-source-nova-placement-api:rocky          "dumb-init --single-…"   8 weeks ago         Up 8 weeks                              placement_api
+ab763320f268        kolla/centos-source-nova-libvirt:rocky                "dumb-init --single-…"   8 weeks ago         Up 8 weeks                              nova_libvirt
+bbd4c3e2c961        kolla/centos-source-nova-ssh:rocky                    "dumb-init --single-…"   8 weeks ago         Up 8 weeks                              nova_ssh
+80e7098f0bfb        kolla/centos-source-cinder-backup:rocky               "dumb-init --single-…"   8 weeks ago         Up 8 weeks                              cinder_backup
+20e2ff43d0e1        kolla/centos-source-cinder-volume:rocky               "dumb-init --single-…"   8 weeks ago         Up 8 weeks                              cinder_volume
+6caba29f7ce2        kolla/centos-source-cinder-scheduler:rocky            "dumb-init --single-…"   8 weeks ago         Up 8 weeks                              cinder_scheduler
+3111622e4e83        kolla/centos-source-cinder-api:rocky                  "dumb-init --single-…"   8 weeks ago         Up 8 weeks                              cinder_api
+2c011cfae829        kolla/centos-source-glance-api:rocky                  "dumb-init --single-…"   8 weeks ago         Up 8 weeks                              glance_api
+be84e405afdd        kolla/centos-source-kafka:rocky                       "dumb-init --single-…"   8 weeks ago         Up 8 weeks                              kafka
+09aef04ad59e        kolla/centos-source-keystone-fernet:rocky             "dumb-init --single-…"   8 weeks ago         Up 8 weeks                              keystone_fernet
+2ba9e19844fd        kolla/centos-source-keystone-ssh:rocky                "dumb-init --single-…"   8 weeks ago         Up 8 weeks                              keystone_ssh
+8eebe226b065        kolla/centos-source-keystone:rocky                    "dumb-init --single-…"   8 weeks ago         Up 8 weeks                              keystone
+662d85c00a64        kolla/centos-source-rabbitmq:rocky                    "dumb-init --single-…"   8 weeks ago         Up 8 weeks                              rabbitmq
+7d373ef0fdee        kolla/centos-source-mariadb:rocky                     "dumb-init kolla_sta…"   8 weeks ago         Up 8 weeks                              mariadb
+ab9f5d612925        kolla/centos-source-memcached:rocky                   "dumb-init --single-…"   8 weeks ago         Up 8 weeks                              memcached
+a728298938f7        kolla/centos-source-kibana:rocky                      "dumb-init --single-…"   8 weeks ago         Up 8 weeks                              kibana
+7d22d71cc31b        kolla/centos-source-keepalived:rocky                  "dumb-init --single-…"   8 weeks ago         Up 8 weeks                              keepalived
+dae774ca7e33        kolla/centos-source-haproxy:rocky                     "dumb-init --single-…"   8 weeks ago         Up 8 weeks                              haproxy
+14b340bb8139        kolla/centos-source-redis-sentinel:rocky              "dumb-init --single-…"   8 weeks ago         Up 8 weeks                              redis_sentinel
+3023e95f465f        kolla/centos-source-redis:rocky                       "dumb-init --single-…"   8 weeks ago         Up 8 weeks                              redis
+a3ed7e8fe8ff        kolla/centos-source-elasticsearch:rocky               "dumb-init --single-…"   8 weeks ago         Up 8 weeks                              elasticsearch
+06b28cd0f7c7        kolla/centos-source-zookeeper:rocky                   "dumb-init --single-…"   8 weeks ago         Up 8 weeks                              zookeeper
+630219f5fb29        kolla/centos-source-chrony:rocky                      "dumb-init --single-…"   8 weeks ago         Up 8 weeks                              chrony
+6f6189a4dfda        kolla/centos-source-cron:rocky                        "dumb-init --single-…"   8 weeks ago         Up 8 weeks                              cron
+039f08ec1bbf        kolla/centos-source-kolla-toolbox:rocky               "dumb-init --single-…"   8 weeks ago         Up 8 weeks                              kolla_toolbox
+f839d23859cc        kolla/centos-source-fluentd:rocky                     "dumb-init --single-…"   8 weeks ago         Up 8 weeks                              fluentd
+[root@wuhan31-ceph01 ~]# 
+```
+
+四，常见故障
+
+mariadb，这种情况是所有节点关机后遇到的。
+
+vip 3306监听状态，节点3306非监听状态，容器反复重启中
+
+可能原因是节点同时断开后，mariadb服务不可用，需要恢复服务
+
+kolla-ansible -i kolla-ansible/inventory-xiaoxuantest mariadb\_recovery
+
+执行完后确认各节点3306为监听状
+
+
+
+遇到的问题：
+
+ironic : Checking ironic-agent files exist for Ironic Inspector
+
+```
+TASK [ironic : Checking ironic-agent files exist for Ironic Inspector] ********************
+failed: [localhost -> localhost] (item=ironic-agent.kernel) => {"changed": false, "failed_when_result": true, "item": "ironic-agent.kernel", "stat": {"exists": false}}
+failed: [localhost -> localhost] (item=ironic-agent.initramfs) => {"changed": false, "failed_when_result": true, "item": "ironic-agent.initramfs", "stat": {"exists": false}} 
+```
+
+临时关闭enable\_ironic开头的配置解决.
+
+
+
+neutron : Checking if ‘MountFlags’ for docker service is set to ‘shared’
+
+```
+TASK [neutron : Checking if 'MountFlags' for docker service is set to 'shared'] ***********
+fatal: [localhost]: FAILED! => {"changed": false, "cmd": ["systemctl", "show", "docker"], "delta": "0:00:00.010391", "end": "2018-12-24 20:44:46.791156", "failed_when_result": true, "rc": 0, "start": "2018-12-24 20:44:46.780765",...
+```
+
+见章节 环境准备–docker–
+
+
+
+ceilometer : Checking gnocchi backend for ceilometer
+
+```
+TASK [ceilometer : Checking gnocchi backend for ceilometer] *******************************
+fatal: [localhost -> localhost]: FAILED! => {"changed": false, "msg": "gnocchi is required but not enabled"}
+```
+
+
+
+启用 gnocchi
+
+octavia : Checking certificate files exist for octavia
+
+```
+TASK [octavia : Checking certificate files exist for octavia] *****************************
+failed: [localhost -> localhost] (item=cakey.pem) => {"changed": false, "failed_when_result": true, "item": "cakey.pem", "stat": {"exists": false}}
+failed: [localhost -> localhost] (item=ca_01.pem) => {"changed": false, "failed_when_result": true, "item": "ca_01.pem", "stat": {"exists": false}}
+failed: [localhost -> localhost] (item=client.pem) => {"changed": false, "failed_when_result": true, "item": "client.pem", "stat": {"exists": false}}
+```
+
+运行 kolla-ansible certificates 依旧没有生成, 查了下, 官方还没修复:  https://bugs.launchpad.net/kolla-ansible/+bug/1668377
+
+先禁用 octavia . 后期排查了人工生成.
+
+
+
+common : Restart fluentd container
+
+```
+RUNNING HANDLER [common : Restart fluentd container] **************************************
+fatal: [localhost]: FAILED! => {"changed": false, "msg": "Unknown error message: Get https://192.168.55.201:4000/v1/_ping: dial tcp 100.100.31.201:4000: getsockopt: connection refused"}
+```
+
+看了下, 确实没启动4000端口. 根据官方文档\[参1\]部署了registry.
 
