@@ -41,13 +41,23 @@ VRRP的详细工作过程如下：
 
 ⭐ Master设备周期性向备份组内所有Backup设备发送VRRP通告报文，通告其配置信息（优先级等）和工作状况。
 
-⭐ 如果Master设备出现故障，VRRP备份组中的Backup设备将根据优先级重新选举新的Master。 @
+⭐ 如果Master设备出现故障，VRRP备份组中的Backup设备将根据优先级重新选举新的Master。 
 
 VRRP备份组状态切换时，Master设备由一台设备切换为另外一台设备，新的Master设备会立即发送携带虚拟路由器的虚拟MAC地址和虚拟IP地址信息的免费ARP报文，刷新与它连接的设备或者主机的MAC表项，从而把用户流量引到新的Master设备上来，整个过程对用户完全透明。
 
 ⭐ 原Master设备故障恢复时，若该设备为IP地址拥有者（优先级为255），将直接切换至Master状态。若该设备优先级小于255，将首先切换至Backup状态，且其优先级恢复为故障前配置的优先级。
 
 ⭐ Backup设备的优先级高于Master设备时，由Backup设备的工作方式（抢占方式和非抢占方式）决定是否重新选举Master。
+
+# Keepalived简介
+
+Keepalived 是一种高性能的服务器高可用或热备解决方案， 可以用来防止服务器单节点故障的发生，通过配合 Nginx 可实现 web 前端服务的高可用。是专为 LVS 和 HA（高可用性）设计的一款健康检查工具，使用成熟的 VRRP 协议。在Keepalived中有一个LVS进程专门用来对接LVS，如果他发现LVS真实服务器节点有损坏的话，会帮忙将损坏的节点剔除，可以说Keepalived诞生之初衷就是为了帮LVS做到高可用。
+
+## Keepalived特点
+
+支持故障自动切换（ Failover ）
+
+支持节点健康状态检查（ Health Checking ）
 
 ## keepalived配置解释
 
