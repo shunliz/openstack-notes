@@ -93,7 +93,7 @@ DEVICE=em1
 ONBOOT=yes
 MASTER=bond0
 SLAVE=yes
- 
+
 [root@localhost network-scripts]# cat ifcfg-em2
 TYPE=Ethernet
 BOOTPROTO=none
@@ -127,6 +127,66 @@ EOF
 curl http://mirrors.***.org/repo/docker.repo > /etc/yum.repos.d/docker.repo
 yum install docker-ce
 ```
+
+配置私有仓库
+
+```
+mkdir /etc/docker
+cat > /etc/docker/daemon.json <<EOF
+{
+"registry-mirrors": ["http://mirrors.***.org:5000"]
+}
+EOF
+```
+
+启动服务
+
+```
+systemctl enable docker
+systemctl start docker
+```
+
+7，安装所需软件
+
+所有的节点需要安装:
+
+yum install ceph python-pip -y
+
+调试辅助工具，为了方便调试, 建议安装补全脚本.
+
+yum install bash-completion-extras libvirt-bash-completion net-tools bind-utils sysstat iftop nload tcpdump htop -y
+
+8，安装kolla-ansible
+
+安装pip.
+
+yum install python-pip -y
+
+安装kolla-ansible所需的依赖软件:
+
+yum install ansible python2-setuptools python-cryptography python-openstackclient -y
+
+使用pip安装kolla-ansible:
+
+pip install kolla-ansible
+
+_**注意：**_
+
+_**如果出现\`requests 2.20.0 has requirement idna&lt;2.8,&gt;=2.5, but you'll have idna 2.4 which is incompatible.\`错误，则强制更新requets库**_
+
+_**pip install --ignore-installed requests**_
+
+_**同样，出现Cannot uninstall 'PyYAML'. It is a distutils installed project and thus we cannot accurately determine which files belong to it which would lead to only a partial uninstall.错误，强制更新**_
+
+_**sudo pip install --ignore-installed PyYAML**_
+
+_**注：步骤1-7,9所有节点操作，步骤8在部署节点操作（这里用wuhan32-ceph01）**_
+
+## 二，部署ceph集群
+
+1，配置ceph用户远程登录
+
+所有ceph节点操作。\(以下公钥根据自己机器实际情况填下，这一步的目的是能让ceph用户通过key登录系统\)
 
 
 
