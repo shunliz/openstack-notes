@@ -103,11 +103,7 @@ safe_to_bootstrap: 0
 130507 14:14:02  InnoDB: Waiting for the background threads to start  
 130507 14:14:03  InnoDB: Waiting for the background threads to start  
 130507 14:14:04  InnoDB: Waiting for the background threads to start  
-130507 14:14:05  InnoDB: Waiting for the background threads to start  
-130507 14:14:06  InnoDB: Waiting for the background threads to start  
-130507 14:14:07  InnoDB: Waiting for the background threads to start  
-130507 14:14:08  InnoDB: Waiting for the background threads to start  
-130507 14:14:09  InnoDB: Waiting for the background threads to start
+130507 14:14:05  InnoDB: Waiting for the background threads to start
 
 需要在galera.cfg中添加这一下：  
 如果在设置 innodb\_force\_recovery &gt;2 的同时innodb\_purge\_thread = 0  
