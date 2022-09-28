@@ -32,11 +32,7 @@ safe_to_bootstrap:0
 
 4.其他节点:systemctl start mariadb
 
-
-
 问题二：
-
-
 
 ```
 [root@controller1 haproxy]# galera_new_cluster
@@ -52,7 +48,7 @@ See "systemctl status mariadb.service" and "journalctl -xe" for details.
 2018-03-21 12:16:18 140168333977920 [ERROR] WSREP: It may not be safe to bootstrap the cluster from this node. It was not the last one to leave the cluster and may not contain all the updates. To force cluster bootstrap with this node, edit the grastate.dat file manually and set safe_to_bootstrap to 1 .
 2018-03-21 12:16:18 140168333977920 [ERROR] WSREP: wsrep::connect(gcomm://controller1,controller2,controller3) failed: 7
 2018-03-21 12:16:18 140168333977920 [ERROR] Aborting
- 
+
 #解决办法
 [root@controller1 haproxy]# cat /var/lib/mysql/grastate.dat
 # GALERA saved state
@@ -60,16 +56,12 @@ version: 2.1
 uuid:    d6aea58b-2cbe-11e8-9c9d-b72d8fdd0931
 seqno:   -1
 safe_to_bootstrap: 0 
- 
+
 把safe_to_bootstrap: 0   #修改成safe_to_bootstrap: 1
- 
+
 #再启动集群
 [root@controller1 haproxy]# galera_new_cluster #其他节点启动服务：systemctl start mariadb
 ```
-
-
-
-
 
 二、mysql galera 集群常见问题处理
 
@@ -82,7 +74,7 @@ safe_to_bootstrap: 0
 
 ![](https://img-blog.csdn.net/20160918135303863?watermark/2/text/aHR0cDovL2Jsb2cuY3Nkbi5uZXQv/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70/gravity/Center)
 
- 我们需要保证图中的第一项为synced，以及第二项必须为三个mysql的ip
+我们需要保证图中的第一项为synced，以及第二项必须为三个mysql的ip
 
 4、保证3的结果是想要的说明集群已经恢复了，此时需要将master机器上面的/usr/libexec/mysqld --wsrep-new-cluster --wsrep-cluster-address='gcomm://'这个进程kill掉，然后再执行systemctl start mysqld即可
 
@@ -100,62 +92,58 @@ safe_to_bootstrap: 0
 
 解决方法：  
 1、/usr/libexec/mysqld start --innodb\_force\_recovery=6  
- 1. \(SRV\_FORCE\_IGNORE\_CORRUPT\):忽略检查到的corrupt页。  
-  2. \(SRV\_FORCE\_NO\_BACKGROUND\):阻止主线程的运行，如主线程需要执行full purge操作，会导致crash。  
-  3. \(SRV\_FORCE\_NO\_TRX\_UNDO\):不执行事务回滚操作。  
-  4. \(SRV\_FORCE\_NO\_IBUF\_MERGE\):不执行插入缓冲的合并操作。  
-  5. \(SRV\_FORCE\_NO\_UNDO\_LOG\_SCAN\):不查看重做日志，InnoDB存储引擎会将未提交的事务视为已提交。  
-  6. \(SRV\_FORCE\_NO\_LOG\_REDO\):不执行前滚的操作。  
+ 1. \(SRV\_FORCE\_IGNORE\_CORRUPT\):忽略检查到的corrupt页。  
+  2. \(SRV\_FORCE\_NO\_BACKGROUND\):阻止主线程的运行，如主线程需要执行full purge操作，会导致crash。  
+  3. \(SRV\_FORCE\_NO\_TRX\_UNDO\):不执行事务回滚操作。  
+  4. \(SRV\_FORCE\_NO\_IBUF\_MERGE\):不执行插入缓冲的合并操作。  
+  5. \(SRV\_FORCE\_NO\_UNDO\_LOG\_SCAN\):不查看重做日志，InnoDB存储引擎会将未提交的事务视为已提交。  
+  6. \(SRV\_FORCE\_NO\_LOG\_REDO\):不执行前滚的操作。  
 如果配置后出现以下情况：  
-130507 14:14:01  InnoDB: Waiting for the background threads to start  
-130507 14:14:02  InnoDB: Waiting for the background threads to start  
-130507 14:14:03  InnoDB: Waiting for the background threads to start  
-130507 14:14:04  InnoDB: Waiting for the background threads to start  
-130507 14:14:05  InnoDB: Waiting for the background threads to start  
-130507 14:14:06  InnoDB: Waiting for the background threads to start  
-130507 14:14:07  InnoDB: Waiting for the background threads to start  
-130507 14:14:08  InnoDB: Waiting for the background threads to start  
-130507 14:14:09  InnoDB: Waiting for the background threads to start  
-  
-  
+130507 14:14:01  InnoDB: Waiting for the background threads to start  
+130507 14:14:02  InnoDB: Waiting for the background threads to start  
+130507 14:14:03  InnoDB: Waiting for the background threads to start  
+130507 14:14:04  InnoDB: Waiting for the background threads to start  
+130507 14:14:05  InnoDB: Waiting for the background threads to start  
+130507 14:14:06  InnoDB: Waiting for the background threads to start  
+130507 14:14:07  InnoDB: Waiting for the background threads to start  
+130507 14:14:08  InnoDB: Waiting for the background threads to start  
+130507 14:14:09  InnoDB: Waiting for the background threads to start
+
 需要在galera.cfg中添加这一下：  
 如果在设置 innodb\_force\_recovery &gt;2 的同时innodb\_purge\_thread = 0  
 2、mysqld --tc-heuristic-recover=ROLLBACK  
 3、删除/var/lib/mysql/ib\_logfile\*  
 4、当某个mysql节点挂了，并且存在三个mysql所在host有不同的网段，当mysql想重新加入需要一个sst的过程，sst时会需要知道集群中某个节点的ip因此需要制定参数--wsrep-sst-receive-address否则可能出现同步的ip不在三台机器所共有的网段  
 解决参考：  
-http://blog.itpub.net/22664653/viewspace-1441389/  
-  
-  
+[http://blog.itpub.net/22664653/viewspace-1441389/](http://blog.itpub.net/22664653/viewspace-1441389/)
+
 三、一个mysql节点若down了一段时间。重新启动的时候需要一些时间去同步数据，服务的启动超时时间不够，导致服务无法启动，解决方法如下：  
 The correct way to adjust systemd settings so they don't get overwritten is to create a directory and file as such:  
 /etc/systemd/system/mariadb.service.d/timeout.conf  
-\[Service\]  
-  
-TimeoutStartSec=12min  
-  
-  
+\[Service\]
+
+TimeoutStartSec=12min
+
 或者直接修改/usr/lib/systemd/system/mariadb.service  
-\[Service\]  
-  
+\[Service\]
+
 TimeoutStartSec=12min  
 这里的时间最少要大于90s，默认是90s之后执行 systemctl daemon-reload再重启服务即可  
 四、日志中出现类似如下错误：  
 160428 13:54:49 \[ERROR\] Slave SQL: Error 'Table 'manage\_operations' already exists' on query. Default database: 'horizon'. Query: 'CREATE TABLE \`manage\_operations\` \(  
-    \`id\` integer AUTO\_INCREMENT NOT NULL PRIMARY KEY,  
-    \`name\` varchar\(50\) NOT NULL,  
-    \`type\` varchar\(20\) NOT NULL,  
-    \`operation\` varchar\(20\) NOT NULL,  
-    \`status\` varchar\(20\) NOT NULL,  
-    \`time\` date NOT NULL,  
-    \`operator\` varchar\(50\) NOT NULL  
+    \`id\` integer AUTO\_INCREMENT NOT NULL PRIMARY KEY,  
+    \`name\` varchar\(50\) NOT NULL,  
+    \`type\` varchar\(20\) NOT NULL,  
+    \`operation\` varchar\(20\) NOT NULL,  
+    \`status\` varchar\(20\) NOT NULL,  
+    \`time\` date NOT NULL,  
+    \`operator\` varchar\(50\) NOT NULL  
 \) default charset=utf8', Error\_code: 1050  
 160428 13:54:49 \[Warning\] WSREP: RBR event 1 Query apply warning: 1, 28585  
 160428 13:54:49 \[Warning\] WSREP: Ignoring error for TO isolated action: source: 752eecd1-0ce0-11e6-83fc-3e0502d0bdd2 version: 3 local: 0 state: APPLYING flags: 65 conn\_id: 24053 trx\_id: -1 seqnos \(l: 28668, g: 28585, s: 28584, d: 28584, ts: 80224119986850\)  
 导致进程异常关闭，  
-此时可以通过执行mysqladmin flush-tables来刷新表项，这个问题的原因是三个节点之间的表同步存在问题，刷新一下表即可  
-  
-  
+此时可以通过执行mysqladmin flush-tables来刷新表项，这个问题的原因是三个节点之间的表同步存在问题，刷新一下表即可
+
 五、日志出现以下错误：  
 160520 10:48:23 \[Note\] WSREP: COMMIT failed, MDL released: 367194  
 160520 10:48:23 \[Note\] WSREP: cert failure, thd: 358780 is\_AC: 0, retry: 0 - 1 SQL: commit  
@@ -171,20 +159,18 @@ TimeoutStartSec=12min
 
 8、日志出现以下错误：
 
-160820  3:13:41 \[ERROR\] Error in accept: Too many open files  
-160820  3:19:42 \[ERROR\] Error in accept: Too many open files  
-160827  3:16:24 \[ERROR\] Error in accept: Too many open files  
+160820  3:13:41 \[ERROR\] Error in accept: Too many open files  
+160820  3:19:42 \[ERROR\] Error in accept: Too many open files  
+160827  3:16:24 \[ERROR\] Error in accept: Too many open files  
 160831 17:20:52 \[ERROR\] Error in accept: Too many open files  
-160831 19:54:29 \[ERROR\] Error in accept: Too many open files  
-160831 20:21:53 \[ERROR\] Error in accept: Too many open files  
-160901 11:25:57 \[ERROR\] Error in accept: Too many open files
+160831 19:54:29 \[ERROR\] Error in accept: Too many open files
 
 解决方法
 
 vim /usr/lib/systemd/system/mariadb.service
 
- \[Service\]  
- LimitNOFILE=10000
+\[Service\]  
+ LimitNOFILE=10000
 
 默认的mysql的open\_file\_limits是1024将该项增大，并且修改vim /etc/my.cnf.d/server.cnf该文件的open\_files\_limit值
 
