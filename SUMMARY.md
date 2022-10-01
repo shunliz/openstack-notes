@@ -72,6 +72,8 @@
         * [故障排查](network/vnetwork/ebpf/gu-zhang-pai-cha.md)
       * [XDP](network/vnetwork/xdp.md)
     * [OVS](network/vnetwork/ovs.md)
+      * OVS原理
+      * [OVS编译](network/vnetwork/ovs/ovsbian-yi.md)
     * [OVN](network/vnetwork/ovn.md)
       * [OVN和流表](network/vnetwork/ovn-flowtable.md)
     * [容器网络](network/vnetwork/rong-qi-wang-luo.md)
