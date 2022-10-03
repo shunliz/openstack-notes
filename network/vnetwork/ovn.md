@@ -487,8 +487,6 @@ CMS可以配置选项：将所有连接到相应逻辑交换机（带有`localne
 
 * 3、源chassis通过localnet端口接收数据包并将其发送到集成网桥。数据包进入源localnet逻辑交换机的入口管道，然后离开管道，最后被送到源VM端口。
 
-
-
 ### VTEP网关的生命周期
 
 网关其实是一种chassis，用于在逻辑网络的OVN管理部分和物理VLAN之间转发流量，将基于隧道的逻辑网络扩展到物理网络。
@@ -644,9 +642,7 @@ OVN将类别为`0x0102`，类型为`0x80`的TLV中的逻辑入口端口和逻辑
 
 ### VTEP 网关 {#OVN架构--高正伟-VTEP网关}
 
-```
-  Neutron 子项目networking-l2gw 支持L2Gateway，仅支持连接物理网络的 VLAN 到逻辑网络的 VXLAN.
-```
+Neutron 子项目networking-l2gw 支持L2Gateway，仅支持连接物理网络的 VLAN 到逻辑网络的 VXLAN.
 
 ![](/assets/adfasfsafasdfsadfewqr2311414324.png)
 
