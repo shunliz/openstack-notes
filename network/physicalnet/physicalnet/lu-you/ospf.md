@@ -32,10 +32,32 @@ OSPF协议路由的计算过程可简单描述如下：
 
 一台路由器如果要运行OSPF协议，则必须存在RID（Router ID，路由器ID）。RID是一个32比特无符号整数，可以在一个自治系统中唯一的标识一台路由器。
 
-RID可以手工配置，也可以自动生成；如果没有通过命令指定RID，将按照如下顺序自动生成一个RID：
+RID可以手工配置，也可以自动生成；当然，在实际网络部署中，强烈建议手工配置OSPF的Router-ID，因为这关系到协议的稳定。
+
+​ 在路由器运行了OSPF并由系统自动选定Router-ID之后，如果该Router-ID对应的接口DOWN掉，或出现一个更大的IP，OSPF仍然保持原Router-ID（也就是说，Router-ID值是非抢占的，稳定第一），即使此时reset ospf process重启OSPF进程，Router-ID也不会发生改变；除非重新手工配置Router-ID（OSPF进程下手工敲router-id xxx），并且重启OSPF进程方可。如果该Router-ID对应的接口IP 地址消失，例如undo ip address，则reset ospf process后，RouterID也会发生改变。
+
+如果没有通过命令指定RID，将按照如下顺序自动生成一个RID：
 
 * 如果当前设备配置了Loopback接口，将选取所有Loopback接口上数值最大的IP地址作为RID；
 * 如果当前设备没有配置Loopback接口，将选取它所有已经配置IP地址且链路有效的接口上数值最大的IP地址作为RID。
+
+
+
+**COST**
+
+OSPF使用cost“开销”作为路由度量值。
+
+每一个激活OSPF的接口都有一个cost值。OSPF接口cost=100M /接口带宽，其中100M为OSPF的参考带宽（reference-bandwidth）。
+
+一条OSPF路由的cost由该路由从路由的起源一路到达本地的所有入接口cost值的总和。
+
+![](/assets/network-basic-route-ospf31.png)
+
+注意：
+
+​ 上图只是为了帮助大家理解路由cost的计算过程，我们都知道OSPF实际的路由计算是由LSA经过计算得来的，所以这里只是形象化的帮助大家理解而已：R1将路由更新出来，Cost=1，R2从Serial4/0/0口收到这条路由，最终这条路由在R2的路由表中的cost等于1加上serial4/0/0接口的cost 50也就是51，再将这条路由更新给R3，那么这条路由在R3上的cost=51+1也就是52。
+
+​ 由于默认的参考带宽是100M，这意味着更高带宽的传输介质（高于100M）在OSPF协议中将会计算出一个小于1的分数，这在OSPF协议中是不允许的（会被四舍五入为1）。而现今网络设备满地都是大于100M带宽的接口，这时候路由COST的计算其实就不精确了。所以可以使用bandwidth-reference 1000命令修改，但是这条命令要谨慎使用，一旦要配置，则建议全网OSPF路由器都配置。
 
 #### 4.OSPF的协议报文
 
@@ -269,8 +291,6 @@ OSPF有五种报文类型，它们有相同的报文头。如图9所示。
 `&说明：`
 
 `MD5验证数据添加在OSPF报文后面，不包含在Authenticaiton字段中。`
-
-
 
 #### 2.Hello报文（Hello Packet）
 
