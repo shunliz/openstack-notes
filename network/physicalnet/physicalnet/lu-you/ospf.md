@@ -34,16 +34,15 @@ OSPF协议路由的计算过程可简单描述如下：
 
 RID可以手工配置，也可以自动生成；当然，在实际网络部署中，强烈建议手工配置OSPF的Router-ID，因为这关系到协议的稳定。
 
-​ 在路由器运行了OSPF并由系统自动选定Router-ID之后，如果该Router-ID对应的接口DOWN掉，或出现一个更大的IP，OSPF仍然保持原Router-ID（也就是说，Router-ID值是非抢占的，稳定第一），即使此时reset ospf process重启OSPF进程，Router-ID也不会发生改变；除非重新手工配置Router-ID（OSPF进程下手工敲router-id xxx），并且重启OSPF进程方可。如果该Router-ID对应的接口IP 地址消失，例如undo ip address，则reset ospf process后，RouterID也会发生改变。
+​ 在路由器运行了OSPF并由系统自动选定Router-ID之后，如果该Router-ID对应的接口DOWN掉，或出现一个更大的IP，OSPF仍然保持原Router-ID（也就是说，Router-ID值是非抢占的，稳定第一），即使此时reset ospf process重启OSPF进程，Router-ID也不会发生改变；除非重新手工配置Router-ID（OSPF进程下手工敲router-id xxx），并且重启OSPF进程方可。  
+如果该Router-ID对应的接口IP 地址消失，例如undo ip address，则reset ospf process后，RouterID也会发生改变。
 
 如果没有通过命令指定RID，将按照如下顺序自动生成一个RID：
 
 * 如果当前设备配置了Loopback接口，将选取所有Loopback接口上数值最大的IP地址作为RID；
 * 如果当前设备没有配置Loopback接口，将选取它所有已经配置IP地址且链路有效的接口上数值最大的IP地址作为RID。
 
-
-
-**COST**
+#### 3.1 **COST**
 
 OSPF使用cost“开销”作为路由度量值。
 
@@ -68,6 +67,34 @@ OSPF有五种类型的协议报文：
 * LSR（Link State Request，链路状态请求）报文：向对方请求所需的LSA。两台路由器互相交换DD报文之后，得知对端的路由器有哪些LSA是本地的LSDB所缺少的，这时需要发送LSR报文向对方请求所需的LSA。内容包括所需要的LSA的摘要。
 * LSU（Link State Update，链路状态更新）报文：向对方发送其所需要的LSA。
 * LSAck（Link State Acknowledgment，链路状态确认）报文：用来对收到的LSA进行确认。内容是需要确认的LSA的Header（一个报文可对多个LSA进行确认）。
+
+#### 4.1 OSPF的三张表
+
+**邻居表（Peer table）：**
+
+OSPF是一种可靠的路由协议，要求在路由器之间传递链路状态通告之前，需先建立OSPF邻居关系，hello报文用于发现直连链路上的其他OSPF路由器，再经过一系列的OSPF消息交互最终建立起全毗邻的邻居关系，其中两者之间需要经历几个邻居关系状态，这也是一个重要的知识点。路由器在各个激活的OSPF的接口上维护的邻居都列在邻居表中，通过观察邻居表，能够进一步了解OSPF路由器之间的邻居状态。
+
+**链路状态数据库LSDB（Link-state database）：**
+
+OSPF用LSA（link state Advertisement 链路状态通告）来描述网络拓扑信息，然后OSPF路由器用链路状态数据库来存储网络的这些LSA。OSPF将自己产生的以及邻居通告的LSA搜集并存储在链路状态数据库LSDB中。掌握LSDB的查看以及对LSA的深入分析才能够深入理解OSPF。
+
+**OSPF路由表（Routing table）：**
+
+对链路状态数据库进行SPF（Dijkstra）计算，而得出的OSPF路由表。
+
+#### 5.0 OSPF邻接关系建立过程
+
+![](/assets/network-basic-route-ospf50.png)
+
+​ OSPF邻居关系的建立过程是我们在学习OSPF过程中的一个重点，而且非常具有研究价值，就OSPF的实际部署而言，掌握这里头的机制也是很有必要的，因为邻居关系的建立是OSPF工作的基本，如果连邻居关系都建立不起来，就别谈其他的了。在实际业务部署中，可能会碰到各种问题导致OSPF邻居关系无法正常建立，因此这个模块非常值得推敲。
+
+**1、启动配置完成后**，运行ospf协议的路由器，将组播收发hello包；若hello包中存在本地的RID，视为对端已经认识本地，故标志邻居关系建立,生成邻居表；
+
+**2、进行条件匹配**：匹配失败将停留于邻居关系，仅hello周期保活即可；
+
+**3、匹配成功者后**：将建立邻接（毗邻）关系；首先使用不携带数据库目录的DBD进行主从关系选举；之后主优先与从进行DBD目录交换；交换后再使用LSR/LSU/LSack来获取未知的LSA信息；直到邻接间数据库完全一致；生成LSDB表；-链路状态数据库（该网络所有LSA的集合）
+
+**4、当数据库的同步完成后**：本地将所有的LSA进行组合；生成有向图—&gt;最短路径树将最佳路径加载到本地的路由表中；网络收敛完成，hello包周期保活；之后的每30min邻接关系间周期比对下一数据库目录；（查漏补缺）
 
 #### 5.LSA的类型
 
