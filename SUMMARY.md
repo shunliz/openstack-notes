@@ -42,7 +42,7 @@
       * openfaas
       * [minikube](compute/container/container/minikube.md)
       * [microk8s](compute/container/container/microk8s.md)
-    * K8S开发
+    * [K8S开发](compute/container/container/k8skai-fa.md)
       * client-go
       * kubebuilder
 * [第二部 网络](network.md)
