@@ -21,7 +21,7 @@
     * [libguestfs-tools](compute/nova/nova/libguestfs-tools.md)
   * [Baremetal](compute/baremetal/baremetal.md)
   * [容器](compute/container/container.md)
-    * Docker
+    * [Docker](compute/container/container/docker.md)
     * [K8S](compute/container/container/k8s.md)
       * [K8S基础](compute/container/container/k8sji-chu.md)
       * [kube-ovn](compute/container/container/kube-ovn.md)
@@ -40,9 +40,11 @@
       * multus
       * openebs
       * openfaas
-      * minikube
+      * [minikube](compute/container/container/minikube.md)
       * [microk8s](compute/container/container/microk8s.md)
     * K8S开发
+      * client-go
+      * kubebuilder
 * [第二部 网络](network.md)
   * [网络基础理论](network/basic/basic.md)
     * [TCP/IP网络模型](network/physicalnet/physicalnet/tcpipwang-luo-mo-xing.md)
