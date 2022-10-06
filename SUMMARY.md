@@ -76,7 +76,7 @@
       * [XDP](network/vnetwork/xdp.md)
       * [TCP BBR](network/vnetwork/tcp-bbr.md)
     * [OVS](network/vnetwork/ovs.md)
-      * OVS原理
+      * [OVS原理](network/vnetwork/ovs/ovsyuan-li.md)
       * [OVS编译](network/vnetwork/ovs/ovsbian-yi.md)
     * [OVN](network/vnetwork/ovn.md)
       * [OVN和流表](network/vnetwork/ovn-flowtable.md)
