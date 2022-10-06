@@ -13,6 +13,7 @@
    ```
 
 2. 路由表
+
 3. 如果找不到匹配的路由，则返回“主机不可达差错”或“网络不可达差错”
 
 一个典型的路由表如下：
@@ -74,4 +75,12 @@ STP最大的问题是二层链路利用率不足，且收敛慢，不适合大�
 # MPLS {#lebqm}
 
 MPLS（Multi-Protocol Label Switching）利用标签进行数据转发，而不是向传统路由决策那样每次数据包进行解包，大大减少了路由决策的时间。当分组进入MPLS网络时，为其分配固定长度的短标记，并将标记与分组封装在一起，在整个转发过程中，交换节点仅根据标记进行转发。
+
+
+
+qugaga https://blog.csdn.net/weixin\_42348333/article/details/105314662
+
+docker qugaga https://www.freesion.com/article/4678245458/
+
+openwrt https://openwrt.org/
 
