@@ -36,7 +36,7 @@ ovs-vswitchd需要加载datapath内核模块才能正常运行。它会自动配
 
 在OVS中，ovs-vswitchd从OpenFlow控制器获取流表规则，然后把从datapath中收到的数据包在流表中进行匹配，找到匹配的flows并把所需应用的actions返回给datapath，同时作为处理的一部分，ovs-vswitchd会在datapath中设置一条datapath flows用于后续相同类型的数据包可以直接在内核中执行动作，此datapath flows相当于OpenFlow flows的缓存。对于datapath来说，其并不知道用户空间OpenFlow的存在，datapath内核模块信息如下：
 
-2.2.2 ovsdb-server
+### 2.2.2 ovsdb-server
 
 ovsdb-server是OVS轻量级的数据库服务，用于整个OVS的配置信息，包括接口/交换内容/VLAN等，OVS主进程ovs-vswitchd根据数据库中的配置信息工作，下面是ovsdb-server进程详细信息。
 
@@ -46,7 +46,7 @@ ovsdb-server是OVS轻量级的数据库服务，用于整个OVS的配置信息�
 
 /var/log/openvswitch/ovsdb-server.log是日志记录。
 
-2.2.3 OpenFlow
+### 2.2.3 OpenFlow
 
 OpenFlow是开源的用于管理交换机流表的协议，OpenFlow在OVS中的地位可以参考上面架构图，它是Controller和ovs-vswitched间的通信协议。需要注意的是，OpenFlow是一个独立的完整的流表协议，不依赖于OVS，OVS只是支持OpenFlow协议，有了支持，我们可以使用OpenFlow控制器来管理OVS中的流表，OpenFlow不仅仅支持虚拟交换机，某些硬件交换机也支持OpenFlow协议。
 
@@ -56,11 +56,11 @@ OpenFlow flow的流表项存放于用户空间主进程ovs-vswitchd中，OVS除�
 
 在OVS中，OpenFlow flow是最重要的一种flow, 然而还有其它几种flows存在，文章下面OVS概念部分会提到。
 
-2.2.4 Controller
+### 2.2.4 Controller
 
 Controller指OpenFlow控制器。OpenFlow控制器可以通过OpenFlow协议连接到任何支持OpenFlow的交换机，比如OVS。控制器通过向交换机下发流表规则来控制数据流向。除了可以通过OpenFlow控制器配置OVS中flows，也可以使用OVS提供的ovs-ofctl命令通过OpenFlow协议去连接OVS，从而配置flows，命令也能够对OVS的运行状况进行动态监控。
 
-2.2.5 Datapath
+### 2.2.5 Datapath
 
 在 OpenFlow Switch 规则的语义中，给交换机或者桥，用了一个专业的名词，叫做 Datapath。Open vSwitch 的内核模块 openvswitch.ko 实现了多个 Datapath，每个 Datapath 可以具有多个 Ports。每个 Datapath 通过关联流表（Flow Table）来定义网络包的流向。Datapath 监听网卡接口设备，将监听到的数据包首先在流表中进行匹配，找到匹配的流表项之后把对应的 Actions 返回给 Datapath，作为数据处理行为的描述。Datapath 支持数据在内核空间进行交换。
 
@@ -78,7 +78,7 @@ datapath专注于数据交换，它不需要知道OpenFlow的存在。与OpenFlo
 
 虽然有ovs-dpctl管理工具的存在，但我们没必要去手动管理datapath，这是用户空间ovs-vswitchd的工作。
 
-2.3 Open vSwitch 的工作原理
+## 2.3 Open vSwitch 的工作原理
 
 Bridge 处理数据帧遵循以下几条规则：
 
@@ -119,8 +119,6 @@ Slow Path：内核态并没有被分配太多内存，所以内核态能够保�
 当最终匹配到了一个流表项之后，则会根据 “局部性原理（局部数据在一段时间都会被频繁访问，是缓存设计的基础原理）” 再通过 netlink 协议，将这条策略下发到内核态，当这条策略下发给内核时，如果内核的内存空间不足，则会开始淘汰部分老策略。这样保证下一个相同类型的网络包能够直接从内核匹配到，以此加快执行效率。由于近因效应，接下来的网络包应该大概率能够匹配这条策略的。例如：传输一个文件，同类型的网络包会源源不断的到来。
 
 ![](/assets/network-virtualnetwork-ovs4.png)
-
-
 
 # OVS概念 {#ovs概念}
 
@@ -184,7 +182,7 @@ Bridge代表一个以太网交换机\(Switch\)，一个主机中可以创建一�
 添加一个网桥`br0`
 
 ```
-ovs-vsctl add-br br0  
+ovs-vsctl add-br br0
 ```
 
 ### Port {#port}
@@ -347,8 +345,6 @@ ovs-appctl bridge/dump-flows <br>
 datapath flows是`datapath`内核模块维护的flows，由内核模块维护意味着我们并不需要去修改管理它。与OpenFlow flows不同的是，它不支持优先级，并且只有一个表，这些特点使它非常适合做缓存。与OpenFlow一样的是它支持通配符，也支持指令集\(多个action\)
 
 datapath flows可以来自用户空间`ovs-vswitchd`缓存，也可以是datapath内核模块进行MAC地址学习到的flows，这取决与OVS是作为SDN交换机，还是像Linux Bridge那样只是一个简单基于MAC地址学习的二层交换机
-
-
 
 2.4 ovs-\*工具的使用及区别
 
