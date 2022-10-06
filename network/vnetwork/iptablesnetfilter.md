@@ -6,16 +6,11 @@ iptables是一个配置Linux内核防火墙的命令行工具，它基于内核�
 
 netfilter是Linux内核的包过滤框架，它提供了一系列的钩子（Hook）供其他模块控制包的流动。这些钩子包括
 
-* `NF_IP_PRE_ROUTING`
-  ：刚刚通过数据链路层解包进入网络层的数据包通过此钩子，它在路由之前处理
-* `NF_IP_LOCAL_IN`
-  ：经过路由查找后，送往本机（目的地址在本地）的包会通过此钩子
-* `NF_IP_FORWARD`
-  ：不是本地产生的并且目的地不是本地的包（即转发的包）会通过此钩子
-* `NF_IP_LOCAL_OUT`
-  ：所有本地生成的发往其他机器的包会通过该钩子
-* `NF_IP_POST_ROUTING`
-  ：在包就要离开本机之前会通过该钩子，它在路由之后处理
+* `NF_IP_PRE_ROUTING`：刚刚通过数据链路层解包进入网络层的数据包通过此钩子，它在路由之前处理
+* `NF_IP_LOCAL_IN`：经过路由查找后，送往本机（目的地址在本地）的包会通过此钩子
+* `NF_IP_FORWARD`：不是本地产生的并且目的地不是本地的包（即转发的包）会通过此钩子
+* `NF_IP_LOCAL_OUT`：所有本地生成的发往其他机器的包会通过该钩子
+* `NF_IP_POST_ROUTING`：在包就要离开本机之前会通过该钩子，它在路由之后处理
 
 ![](/assets/network-virtualnet-linuxnet-nfiptalbes1.png)
 
@@ -44,9 +39,7 @@ iptables通过表和链来组织数据包的过滤规则，每条规则都包括
 所有链默认都是没有任何规则的，用户可以按需要添加规则。每条规则都包括匹配和动作两部分：
 
 * 匹配可以有多条，比如匹配端口、IP、数据包类型等。匹配还可以包括模块（如conntrack、recent等），实现更复杂的过滤。
-* 动作只能有一个，通过
-  `-j`
-  指定，如ACCEPT、DROP、RETURN、SNAT、DNAT等
+* 动作只能有一个，通过`-j`指定，如ACCEPT、DROP、RETURN、SNAT、DNAT等
 
 这样，网络数据包通过iptables的过程为
 
@@ -64,64 +57,74 @@ iptables通过表和链来组织数据包的过滤规则，每条规则都包括
 查看规则列表
 
 ```
-
+iptables -nvL
 ```
 
 允许22端口
 
 ```
-
+iptables -A INPUT -p tcp --dport 22 -j ACCEPT
 ```
 
 允许来自192.168.0.4的包
 
 ```
-
+iptables -A INPUT -s 192.168.0.4 -j ACCEPT
 ```
 
 允许现有连接或与现有连接关联的包
 
 ```
-
+iptables -A INPUT -m state --state ESTABLISHED,RELATED -j ACCEPT
 ```
 
 禁止ping包
 
 ```
-
+iptables -A INPUT -p icmp --icmp-type echo-request -j DROP
 ```
 
 禁止所有其他包
 
 ```
-
+iptables -P INPUT DROP
+iptables -P FORWARD DROP
 ```
 
 MASQUERADE
 
 ```
-
+iptables -t nat -I POSTROUTING -s 10.0.0.30/32 -j MASQUERADE
 ```
 
 NAT
 
 ```
-
+iptables -I FORWARD -m state --state RELATED,ESTABLISHED -j ACCEPT
+iptables -I INPUT   -m state --state RELATED,ESTABLISHED -j ACCEPT
+iptables -t nat -I OUTPUT -d 55.55.55.55/32 -j DNAT --to-destination 10.0.0.30
+iptables -t nat -I PREROUTING -d 55.55.55.55/32 -j DNAT --to-destination 10.0.0.30
+iptables -t nat -I POSTROUTING -s 10.0.0.30/32 -j SNAT --to-source 55.55.55.55
 ```
 
 端口映射
 
 ```
-
+iptables -t nat -I OUTPUT -d 55.55.55.55/32 -p tcp -m tcp --dport 80 -j DNAT --to-destination 10.10.10.3:80
+iptables -t nat -I POSTROUTING -m conntrack ! --ctstate DNAT -j ACCEPT
+iptables -t nat -I PREROUTING -d 55.55.55.55/32 -p tcp -m tcp --dport 80 -j DNAT --to-destination 10.10.10.3:80
 ```
 
 重置所有规则
 
 ```
-
+iptables -F
+iptables -t nat -F
+iptables -t mangle -F
+iptables -X
 ```
 
-## nftables {#fank1g}
+
 
 
 
