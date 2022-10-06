@@ -17,7 +17,7 @@ netfilter是Linux内核的包过滤框架，它提供了一系列的钩子（Hoo
 * `NF_IP_POST_ROUTING`
   ：在包就要离开本机之前会通过该钩子，它在路由之后处理
 
-![](https://static.sitestack.cn/projects/sdn-handbook/linux/images/netfilter.png "iptables-netfilter - 图1")
+![](/assets/network-virtualnet-linuxnet-nfiptalbes1.png)
 
 ## iptables {#4n041j}
 
@@ -50,7 +50,7 @@ iptables通过表和链来组织数据包的过滤规则，每条规则都包括
 
 这样，网络数据包通过iptables的过程为
 
-![](https://static.sitestack.cn/projects/sdn-handbook/linux/images/iptables.png "iptables-netfilter - 图2")
+![](/assets/network-virtualnet-linuxnet-nfiptables2.png)
 
 其规律为
 
