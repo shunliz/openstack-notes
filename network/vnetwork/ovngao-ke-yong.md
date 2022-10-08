@@ -1,6 +1,8 @@
 # OVN HA {#h1-ovn-ha}
 
-## Active-Backup {#h2-active-backup}
+## L3HA
+
+### Active-Backup
 
 在启动ovsdb-server时，可以设置[主从同步选项](http://openvswitch.org/support/dist-docs/ovsdb-server.1.html)：
 
@@ -64,15 +66,27 @@ $ pcs constraint colocation add VirtualIP with master ovndb_servers-master \
 
 主从同步的实现方法可见[OVSDB Replication Implementation](http://docs.openvswitch.org/en/latest/topics/ovsdb-replication/)。
 
-
-
-## Active-Active {#h2-active-active}
+### Active-Active
 
 OVN控制平面的Active-Active高可用还在开发中，预计会借鉴etcd的方式，基于Raft算法实现。
 
 * [https://github.com/blp/ovs-reviews/tree/raft3](https://github.com/blp/ovs-reviews/tree/raft3)
 * [http://docs.openvswitch.org/en/latest/topics/high-availability/](http://docs.openvswitch.org/en/latest/topics/high-availability/)
 * [http://galsagie.github.io/2015/08/03/df-distributed-db/](http://galsagie.github.io/2015/08/03/df-distributed-db/)
+
+
+
+## L2HA
+
+L2HA is very difficult to get right. Unlike L3HA, where the consequences of problems are minor, in L2HA if two gateways are both transiently active, an L2 loop triggers and a broadcast storm results. In practice to get around this, gateways end up implementing an overly conservative “when in doubt drop all traffic” policy, or they implement something like MLAG.
+
+MLAG has multiple gateways work together to pretend to be a single L2 switch with a large LACP bond. In principle, it’s the right solution to the problem as it solves the broadcast storm problem, and has been deployed successfully in other contexts. That said, it’s difficult to get right and not recommended.
+
+
+
+参考文档：
+
+https://docs.ovn.org/en/latest/topics/high-availability.html
 
 
 
