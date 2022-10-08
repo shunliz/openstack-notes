@@ -86,7 +86,7 @@
       * [k8s网络](network/vnetwork/k8swang-luo.md)
       * CNI
       * CNM
-    * 流量控制
+    * [流量控制](network/vnetwork/liu-liang-kong-zhi.md)
       * [TCP BBR](network/vnetwork/tcp-bbr.md)
   * [neutron](network/neutron/neutron.md)
     * [Neutron OVN网络流量分析](network/vnetwork/neutron-ovn.md)
@@ -120,6 +120,4 @@
   * [监控](ops/monitor/monitor.md)
     * [云合规监控](ops/monitor/monitor/yun-he-gui-jian-kong.md)
   * [运维](ops/ops/ops.md)
-
-
 
