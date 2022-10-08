@@ -74,7 +74,6 @@
         * [bcc](network/vnetwork/ebpf/bcc.md)
         * [故障排查](network/vnetwork/ebpf/gu-zhang-pai-cha.md)
       * [XDP](network/vnetwork/xdp.md)
-      * [TCP BBR](network/vnetwork/tcp-bbr.md)
       * [iptables/netfilter](network/vnetwork/iptablesnetfilter.md)
     * [OVS](network/vnetwork/ovs.md)
       * [OVS原理](network/vnetwork/ovs/ovsyuan-li.md)
@@ -87,6 +86,8 @@
       * [k8s网络](network/vnetwork/k8swang-luo.md)
       * CNI
       * CNM
+    * 流量控制
+      * [TCP BBR](network/vnetwork/tcp-bbr.md)
   * [neutron](network/neutron/neutron.md)
     * [Neutron OVN网络流量分析](network/vnetwork/neutron-ovn.md)
     * [ML2&Vxlan](network/vnetwork/ml2andvxlan.md)
@@ -119,4 +120,6 @@
   * [监控](ops/monitor/monitor.md)
     * [云合规监控](ops/monitor/monitor/yun-he-gui-jian-kong.md)
   * [运维](ops/ops/ops.md)
+
+
 
