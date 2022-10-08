@@ -85,6 +85,7 @@
     * [OVN](network/vnetwork/ovn.md)
       * [OVN和流表](network/vnetwork/ovn-flowtable.md)
       * [OVN编译](network/vnetwork/ovnbian-yi.md)
+      * [OVN高可用](network/vnetwork/ovngao-ke-yong.md)
     * [容器网络](network/vnetwork/rong-qi-wang-luo.md)
       * [host network](network/vnetwork/host-network.md)
       * [k8s网络](network/vnetwork/k8swang-luo.md)
