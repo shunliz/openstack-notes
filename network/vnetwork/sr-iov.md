@@ -25,42 +25,113 @@ SR-IOV（Single Root I/O Virtualization）是一个将PCIe共享给虚拟机的�
 
 ## SR-IOV vs DPDK {#fn7b2z}
 
-![](/assets/network-virtualnet-linuxnet-sriovvsdpdk1.png)![](/assets/network-virtualnet-linuxnet-sriovvsdpdk2.png)
+![](/assets/network-virtualnet-linuxnet-sriovvsdpdk1.png)![](/assets/network-virtualnet-linuxnet-sriovvsdpdk2.png)![](/assets/network-virtualnet-linuxnet-sriovvsdpdk5.png)
 
 ## SR-IOV使用示例 {#anttx0}
 
 开启VF：
 
 ```
-
+modprobe -r igb
+modprobe igb max_vfs=7
+echo "options igb max_vfs=7" >>/etc/modprobe.d/igb.conf
 ```
 
 查找Virtual Function：
 
 ```
-
+# lspci | grep 82576
+0b:00.0 Ethernet controller: Intel Corporation 82576 Gigabit Network Connection (rev 01)
+0b:00.1 Ethernet controller: Intel Corporation 82576 Gigabit Network Connection(rev 01)
+0b:10.0 Ethernet controller: Intel Corporation 82576 Virtual Function (rev 01)
+0b:10.1 Ethernet controller: Intel Corporation 82576 Virtual Function (rev 01)
+0b:10.2 Ethernet controller: Intel Corporation 82576 Virtual Function (rev 01)
+0b:10.3 Ethernet controller: Intel Corporation 82576 Virtual Function (rev 01)
+0b:10.4 Ethernet controller: Intel Corporation 82576 Virtual Function (rev 01)
+0b:10.5 Ethernet controller: Intel Corporation 82576 Virtual Function (rev 01)
+0b:10.6 Ethernet controller: Intel Corporation 82576 Virtual Function (rev 01)
+0b:10.7 Ethernet controller: Intel Corporation 82576 Virtual Function (rev 01)
+0b:11.0 Ethernet controller: Intel Corporation 82576 Virtual Function (rev 01)
+0b:11.1 Ethernet controller: Intel Corporation 82576 Virtual Function (rev 01)
+0b:11.2 Ethernet controller: Intel Corporation 82576 Virtual Function (rev 01)
+0b:11.3 Ethernet controller: Intel Corporation 82576 Virtual Function (rev 01)
+0b:11.4 Ethernet controller: Intel Corporation 82576 Virtual Function (rev 01)
+0b:11.5 Ethernet controller: Intel Corporation 82576 Virtual Function (rev 01)
+# virsh nodedev-list | grep 0b
+pci_0000_0b_00_0
+pci_0000_0b_00_1
+pci_0000_0b_10_0
+pci_0000_0b_10_1
+pci_0000_0b_10_2
+pci_0000_0b_10_3
+pci_0000_0b_10_4
+pci_0000_0b_10_5
+pci_0000_0b_10_6
+pci_0000_0b_11_7
+pci_0000_0b_11_1
+pci_0000_0b_11_2
+pci_0000_0b_11_3
+pci_0000_0b_11_4
+pci_0000_0b_11_5
 ```
 
 ```
-
+$ virsh nodedev-dumpxml pci_0000_0b_00_0
+<device>
+   <name>pci_0000_0b_00_0</name>
+   <parent>pci_0000_00_01_0</parent>
+   <driver>
+      <name>igb</name>
+   </driver>
+   <capability type='pci'>
+      <domain>0</domain>
+      <bus>11</bus>
+      <slot>0</slot>
+      <function>0</function>
+      <product id='0x10c9'>82576 Gigabit Network Connection</product>
+      <vendor id='0x8086'>Intel Corporation</vendor>
+   </capability>
+</device>
 ```
 
 **通过libvirt绑定到虚拟机**
 
 ```
-
+$ cat >/tmp/interface.xml <<EOF
+<interface type='hostdev' managed='yes'>
+     <source>
+       <address type='pci' domain='0' bus='11' slot='16' function='0'/>
+     </source>
+</interface>
+EOF
+$ virsh attach-device MyGuest /tmp/interface. xml --live --config
 ```
 
 当然也可以给网卡配置MAC地址和VLAN：
 
 ```
-
+<interface type='hostdev' managed='yes'>
+     <source>
+       <address type='pci' domain='0' bus='11' slot='16' function='0'/>
+     </source>
+     <mac address='52:54:00:6d:90:02'>
+     <vlan>
+        <tag id='42'/>
+     </vlan>
+     <virtualport type='802.1Qbh'>
+       <parameters profileid='finance'/>
+     </virtualport>
+   </interface>
 ```
 
 **通过Qemu绑定到虚拟机**
 
 ```
-
+/usr/bin/qemu-kvm -name vdisk -enable-kvm -m 512 -smp 2 \
+-hda /mnt/nfs/vdisk.img \
+-monitor stdio \
+-vnc 0.0.0.0:0 \
+-device pci-assign,host=0b:00.0
 ```
 
 ## 优缺点 {#4ly8z0}
