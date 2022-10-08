@@ -75,6 +75,7 @@
         * [故障排查](network/vnetwork/ebpf/gu-zhang-pai-cha.md)
       * [XDP](network/vnetwork/xdp.md)
       * [iptables/netfilter](network/vnetwork/iptablesnetfilter.md)
+      * [SR-IOV](network/vnetwork/sr-iov.md)
     * [OVS](network/vnetwork/ovs.md)
       * [OVS原理](network/vnetwork/ovs/ovsyuan-li.md)
       * [OVS编译](network/vnetwork/ovs/ovsbian-yi.md)
