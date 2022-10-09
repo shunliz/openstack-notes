@@ -136,5 +136,5 @@
   * [监控](ops/monitor/monitor.md)
     * [云合规监控](ops/monitor/monitor/yun-he-gui-jian-kong.md)
   * [运维](ops/ops/ops.md)
-  * 安全
+  * [安全](ops/install/an-quan.md)
 
