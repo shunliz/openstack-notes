@@ -102,6 +102,7 @@
     * [ML2&Vxlan](network/vnetwork/ml2andvxlan.md)
     * [L2Gateway](network/vnetwork/l2gateway.md)
     * [OpenStack Neutron之层次化端口绑定](network/vnetwork/openstack-neutronzhi-ceng-ci-hua-duan-kou-bang-ding.md)
+    * [Octavia](network/vnetwork/octavia.md)
 * [第三部 存储](storage.md)
   * [物理存储](storage/phystorage/phystorage.md)
     * 存储协议
@@ -135,4 +136,5 @@
   * [监控](ops/monitor/monitor.md)
     * [云合规监控](ops/monitor/monitor/yun-he-gui-jian-kong.md)
   * [运维](ops/ops/ops.md)
+  * 安全
 
