@@ -117,8 +117,12 @@
   * [Cinder](storage/cinder/cinder.md)
     * [Cinder卷的加密](storage/cinder/cinder/cinderjuan-de-jia-mi.md)
   * [Ceph](storage/ceph/ceph.md)
+    * rbd
+    * cephfs
+    * radosgw
     * [ceph rbd灾备方案](storage/ceph/ceph/cephzai-bei-fang-an.md)
       * ceph rbd mirror
+    * crush
 * [第四部 其它](ops.md)
   * [安装部署](ops/install/install.md)
     * [OpenStack Ansible](ops/install/install/openstack-ansible.md)
