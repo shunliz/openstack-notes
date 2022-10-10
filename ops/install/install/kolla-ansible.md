@@ -1,6 +1,10 @@
 # Kolla集成外接ceph存储 {#articleContentId}
 
-https://blog.csdn.net/dylloveyou/article/details/79114741?spm=1001.2101.3001.6650.3&utm\_medium=distribute.pc\_relevant.none-task-blog-2%7Edefault%7ECTRLIST%7ERate-3-79114741-blog-106953019.pc\_relevant\_multi\_platform\_whitelistv3&depth\_1-utm\_source=distribute.pc\_relevant.none-task-blog-2%7Edefault%7ECTRLIST%7ERate-3-79114741-blog-106953019.pc\_relevant\_multi\_platform\_whitelistv3&utm\_relevant\_index=4
+[https://blog.csdn.net/dylloveyou/article/details/79114741?spm=1001.2101.3001.6650.3&utm\_medium=distribute.pc\_relevant.none-task-blog-2~default~CTRLIST~Rate-3-79114741-blog-106953019.pc\_relevant\_multi\_platform\_whitelistv3&depth\_1-utm\_source=distribute.pc\_relevant.none-task-blog-2~default~CTRLIST~Rate-3-79114741-blog-106953019.pc\_relevant\_multi\_platform\_whitelistv3&utm\_relevant\_index=4](https://blog.csdn.net/dylloveyou/article/details/79114741?spm=1001.2101.3001.6650.3&utm_medium=distribute.pc_relevant.none-task-blog-2~default~CTRLIST~Rate-3-79114741-blog-106953019.pc_relevant_multi_platform_whitelistv3&depth_1-utm_source=distribute.pc_relevant.none-task-blog-2~default~CTRLIST~Rate-3-79114741-blog-106953019.pc_relevant_multi_platform_whitelistv3&utm_relevant_index=4)
+
+# Octavia 项目加速 OpenStack LBaaS 落地大规模应用场景 {#articleContentId}
+
+https://blog.csdn.net/weixin\_34162695/article/details/93577062?spm=1001.2101.3001.6650.7&utm\_medium=distribute.pc\_relevant.none-task-blog-2%7Edefault%7EBlogCommendFromBaidu%7ERate-7-93577062-blog-115561185.pc\_relevant\_multi\_platform\_whitelistv4&depth\_1-utm\_source=distribute.pc\_relevant.none-task-blog-2%7Edefault%7EBlogCommendFromBaidu%7ERate-7-93577062-blog-115561185.pc\_relevant\_multi\_platform\_whitelistv4&utm\_relevant\_index=14
 
 # [MariaDB galera cluster 全部停止后如何再启动](https://www.cnblogs.com/nulige/articles/8470001.html)
 
