@@ -1,3 +1,7 @@
+# Kolla集成外接ceph存储 {#articleContentId}
+
+https://blog.csdn.net/dylloveyou/article/details/79114741?spm=1001.2101.3001.6650.3&utm\_medium=distribute.pc\_relevant.none-task-blog-2%7Edefault%7ECTRLIST%7ERate-3-79114741-blog-106953019.pc\_relevant\_multi\_platform\_whitelistv3&depth\_1-utm\_source=distribute.pc\_relevant.none-task-blog-2%7Edefault%7ECTRLIST%7ERate-3-79114741-blog-106953019.pc\_relevant\_multi\_platform\_whitelistv3&utm\_relevant\_index=4
+
 # [MariaDB galera cluster 全部停止后如何再启动](https://www.cnblogs.com/nulige/articles/8470001.html)
 
 ### 一、问题场景
