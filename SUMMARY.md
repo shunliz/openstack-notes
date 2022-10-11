@@ -125,6 +125,7 @@
     * [ceph rbd灾备方案](storage/ceph/ceph/cephzai-bei-fang-an.md)
       * ceph rbd mirror
     * [crush](storage/ceph/ceph/crush.md)
+    * [ceph调优](storage/ceph/ceph/cephdiao-you.md)
 * [第四部 其它](ops.md)
   * [安装部署](ops/install/install.md)
     * [OpenStack Ansible](ops/install/install/openstack-ansible.md)
