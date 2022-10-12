@@ -127,6 +127,7 @@
     * [crush](storage/ceph/ceph/crush.md)
     * [ceph调优](storage/ceph/ceph/cephdiao-you.md)
     * [ceph-cache-tier](storage/ceph/ceph/ceph-cache-tier.md)
+    * [Ceph集群中的逻辑结构](storage/ceph/ceph/cephji-qun-zhong-de-luo-ji-jie-gou.md)
 * [第四部 其它](ops.md)
   * [安装部署](ops/install/install.md)
     * [OpenStack Ansible](ops/install/install/openstack-ansible.md)
