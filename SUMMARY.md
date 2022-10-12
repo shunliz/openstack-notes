@@ -126,6 +126,7 @@
       * ceph rbd mirror
     * [crush](storage/ceph/ceph/crush.md)
     * [ceph调优](storage/ceph/ceph/cephdiao-you.md)
+    * [ceph-cache-tier](storage/ceph/ceph/ceph-cache-tier.md)
 * [第四部 其它](ops.md)
   * [安装部署](ops/install/install.md)
     * [OpenStack Ansible](ops/install/install/openstack-ansible.md)
