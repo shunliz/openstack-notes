@@ -4,7 +4,9 @@
 
 iSCSI target是位于互联网上服务器上的存储资源。
 
-**被访问的设备称为Target，而访问Target 称为Initiator。**![](/assets/storage-hardware-proto-iscsi1.png)说白了，就是把存储资源接入网络，在网络上用SCSI协议传输数据，通过一定的机制，使得Target接入网络后能被Initiator发现，Initiator通过网络直接连Target读写数据。
+**被访问的设备称为Target，而访问Target 称为Initiator。**![](/assets/storage-hardware-proto-iscsi1.png)![](/assets/storage-physicstorage-iscsi2.png)
+
+说白了，就是把存储资源接入网络，在网络上用SCSI协议传输数据，通过一定的机制，使得Target接入网络后能被Initiator发现，Initiator通过网络直接连Target读写数据。
 
 ![](/assets/storage-hardware-iscsi2.png)
 
@@ -24,7 +26,7 @@ Linux SCSI target framework \(tgt\) aims to simplify various SCSI target driver 
 
 MainPage: Linux SCSI target framework \(tgt\) project
 
-GitHub: https://github.com/fujita/tgt
+GitHub: [https://github.com/fujita/tgt](https://github.com/fujita/tgt)
 
 Quickstart: Scsi-target-utils Quickstart Guide - Fedora Project Wiki
 
@@ -54,8 +56,6 @@ tgt 是一个用户态的 SCSI target 框架，在 GNU/Linux 内核直接集成 
 
 3）因为工作在用户态，所以即使挂掉了，也不会对其他运行的程序产生影响。
 
-
-
 缺点：
 
 1）支持的传输协议较少。
@@ -63,8 +63,6 @@ tgt 是一个用户态的 SCSI target 框架，在 GNU/Linux 内核直接集成 
 2）对 SCSI 协议支持比较简单，一些 cluster 中的特性比如 PR 等都不支持，所以基于 stgt 的方案不能在 cluster 中使。
 
 3）由于是用户态框架，性能问题较差，根据网上的相关数据， tgt 在使用本地存储的情况下，性能相比后面会提到的 SCST、 LIO 等是有一定差距的。
-
-
 
 （2）SCST
 
@@ -90,8 +88,6 @@ SCST 可以使用异步事件通知（AEN）来通告会话状态的变更。AEN
 
 7）提供更细粒度的访问控制策略以及 QoS 保证机制（限制 initiator 连接的个数）。
 
-
-
 缺点：
 
 1）结构复杂，二次开发成本较高。
@@ -100,13 +96,9 @@ SCST 可以使用异步事件通知（AEN）来通告会话状态的变更。AEN
 
 3）kernel 部分没有并入 linux，需要手工编译。
 
-
-
 （3）LIO
 
 LIO 也即 Linux-IO，是目前 GNU/Linux 内核自带的 SCSI target 框架（自 2.6.38版本开始引入，真正支持 iSCSI 需要到 3.1 版本） ，对 iSCSI RFC 规范的支持非常好，包括完整的错误恢复都有支持。整个 LIO 是纯内核态实现的，包括前端接入和后端存储模块，为了支持用户态后端，从内核 3.17 开始引入用户态后端支持，即 TCMU\(Target Core Module in Userspace\)。
-
-
 
 优点：
 
@@ -122,8 +114,6 @@ LIO 也即 Linux-IO，是目前 GNU/Linux 内核自带的 SCSI target 框架（�
 
 6）LIO 支持最高级别的 ERL。
 
-
-
 缺点：
 
 1）不支持 AEN，所以 target 状态发生变化时，只能通过 IO或者用户手动触发以检测处理变化。
@@ -132,15 +122,11 @@ LIO 也即 Linux-IO，是目前 GNU/Linux 内核自带的 SCSI target 框架（�
 
 3）工作在内核态，出现问题会影响其他程序的运行。
 
-
-
 **软iscsi target**
 
-检查系统是否安装 scsi-target  
+检查系统是否安装 scsi-target
 
-//用来将Linux 系统模拟成为iSCSI target 的功能,也就是常说的软iscsi target. 
-
-
+//用来将Linux 系统模拟成为iSCSI target 的功能,也就是常说的软iscsi target.
 
 ## iSCSI实战
 
