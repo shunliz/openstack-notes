@@ -118,6 +118,7 @@
   * [分布式存储](storage/distributed/distributed.md)
   * [Cinder](storage/cinder/cinder.md)
     * [Cinder卷的加密](storage/cinder/cinder/cinderjuan-de-jia-mi.md)
+    * [cinder-lvm](storage/cinder/cinder/cinder-lvm.md)
   * [Ceph](storage/ceph/ceph.md)
     * rbd
     * cephfs
