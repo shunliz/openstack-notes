@@ -82,7 +82,8 @@
     * [OVS](network/vnetwork/ovs.md)
       * [OVS原理](network/vnetwork/ovs/ovsyuan-li.md)
       * [OVS编译](network/vnetwork/ovs/ovsbian-yi.md)
-      * OVN-Openstack
+      * [OVN-Openstack](network/vnetwork/ovs/ovn-openstack.md)
+      * [VXLAN](network/vnetwork/ovs/vxlan.md)
     * [OVN](network/vnetwork/ovn.md)
       * [OVN和流表](network/vnetwork/ovn-flowtable.md)
       * [OVN编译](network/vnetwork/ovnbian-yi.md)
