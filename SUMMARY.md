@@ -33,6 +33,11 @@
       * cilium
       * gpu
       * [istio](compute/container/container/istio.md)
+        * 请求路由
+        * 错误注入
+        * 流量切换
+        * 查询指标
+        * [部署模型](compute/container/container/istio/bu-shu-mo-xing.md)
       * linkerd
       * inaccel
       * knative
