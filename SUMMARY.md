@@ -33,7 +33,7 @@
       * cilium
       * gpu
       * [istio](compute/container/container/istio.md)
-        * 请求路由
+        * [请求路由](compute/container/container/istio/qing-qiu-lu-you.md)
         * 错误注入
         * 流量切换
         * 查询指标
