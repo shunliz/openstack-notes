@@ -20,8 +20,6 @@ spec:
       weight: 50
 ```
 
-
-
 超过一个链接一个请求则熔断
 
 ```
@@ -44,6 +42,33 @@ spec:
       interval: 1s
       baseEjectionTime: 3m
       maxEjectionPercent: 100
+EOF
+```
+
+
+
+镜像流量到v2
+
+```
+$ kubectl apply -f - <<EOF
+apiVersion: networking.istio.io/v1alpha3
+kind: VirtualService
+metadata:
+  name: httpbin
+spec:
+  hosts:
+    - httpbin
+  http:
+  - route:
+    - destination:
+        host: httpbin
+        subset: v1
+      weight: 100
+    mirror:
+      host: httpbin
+      subset: v2
+    mirrorPercentage:
+      value: 100.0
 EOF
 ```
 
