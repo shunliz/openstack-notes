@@ -34,7 +34,7 @@
       * gpu
       * [istio](compute/container/container/istio.md)
         * [请求路由](compute/container/container/istio/qing-qiu-lu-you.md)
-        * 错误注入
+        * [错误注入](compute/container/container/istio/cuo-wu-zhu-ru.md)
         * 流量切换
         * 查询指标
         * [部署模型](compute/container/container/istio/bu-shu-mo-xing.md)
