@@ -32,7 +32,7 @@
       * [helm&tiller](compute/container/container/helmandtiller.md)
       * cilium
       * gpu
-      * istio
+      * [istio](compute/container/container/istio.md)
       * linkerd
       * inaccel
       * knative
