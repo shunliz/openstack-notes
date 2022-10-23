@@ -41,7 +41,7 @@
       * linkerd
       * inaccel
       * knative
-      * kubeflow
+      * [kubeflow](compute/container/container/kubeflow.md)
       * multus
       * openebs
       * openfaas
