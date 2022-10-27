@@ -15,6 +15,7 @@
     * [vCPU&pCPU](compute/lqk/lqk/vcpuandpcpu.md)
     * [内存虚拟化](compute/lqk/lqk/nei-cun-xu-ni-hua.md)
     * Qemu
+      * [TCG](compute/lqk/lqk/tcg.md)
   * [Nova](compute/nova/nova.md)
     * [虚拟机初始配置（key,password,script）](compute/nova/nova/xu-ni-ji-chu-shi-pei-zhi-ff08-key-password-script.md)
     * [热迁移](compute/nova/nova/re-qian-yi.md)
