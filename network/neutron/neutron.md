@@ -1,4 +1,11 @@
-# Neutron![](/assets/network-vnetwork-netron-codearch.png)
+# Neutron![](/assets/network-vnetwork-netron-codearch.png)neutron-plugin 分为 core-plugin 和 service-plugin 两类
+
+L2-L3称为core plugin，包含network、subnet、port  
+L4-L7称为service plugin，包含router、firewall、loadbalancer、VPN、metering等等
+
+driver 是同一个 plugin 下替换不同网元实现的方式  
+ML2 type driver : vlan, vxlan, gre, etc.  
+ML2 mechanism driver : linux bridge, openvSwitch, etc
 
 ### 传统OVS实现
 
