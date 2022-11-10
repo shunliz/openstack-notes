@@ -26,3 +26,21 @@ IEEE 802.1Q 标准定义了 VLAN Header 的格式。它在普通以太网帧结�
 
 QinQ是为了扩大VLAN ID的数量而提出的技术（IEEE 802.1ad），外层tag称为Service Tag，而内层tag则称为Customer Tag。
 
+# 数据转发规则
+
+**端口接收数据时：**
+
+如果端口是tagged方式，当数据包本身不包含VLAN的话，输入的数据包就加上该缺省vlan；如果数据包本身已经包含了VLAN，那么就不再添加。
+
+如果是untagged方式，输入的数据包全部都要加上该缺省vlan。不管输入的数据包是否已经有VLAN标记。
+
+
+
+**端口发送数据时：**
+
+如果端口是tagged方式，如果端口缺省VLAN等于发送的数据包所含的VLAN，那么就会将VLAN标记从发送的数据包中去掉；如果不相等，则数据包将带着VLAN发送出去，实现VLAN的透传。
+
+如果是untagged方式，则不管端口缺省VLAN为多少，是否等于要输出的数据包的VLAN，都会将VLAN ID从数据包中去掉。
+
+
+
