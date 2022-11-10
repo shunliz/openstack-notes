@@ -112,6 +112,7 @@
     * [OpenStack Neutron之层次化端口绑定](network/vnetwork/openstack-neutronzhi-ceng-ci-hua-duan-kou-bang-ding.md)
     * [Octavia](network/vnetwork/octavia.md)
     * Kuryr Kubernetes
+    * [PortBinding](network/vnetwork/portbinding.md)
 * [第三部 存储](storage.md)
   * [物理存储](storage/phystorage/phystorage.md)
     * 存储协议
