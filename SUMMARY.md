@@ -51,6 +51,7 @@
       * [minikube](compute/container/container/minikube.md)
       * [microk8s](compute/container/container/microk8s.md)
       * [Kubevela](compute/container/container/kubevela.md)
+        * [kubevela2](compute/container/container/kubevela/kubevela2.md)
     * [K8S开发](compute/container/container/k8skai-fa.md)
       * client-go
       * kubebuilder
