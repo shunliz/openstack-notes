@@ -110,6 +110,7 @@
     * [流量控制](network/vnetwork/liu-liang-kong-zhi.md)
       * [TCP BBR](network/vnetwork/tcp-bbr.md)
     * DPDK
+      * VPP
   * [neutron](network/neutron/neutron.md)
     * [Neutron OVN网络流量分析](network/vnetwork/neutron-ovn.md)
     * [ML2&Vxlan](network/vnetwork/ml2andvxlan.md)
@@ -130,7 +131,9 @@
   * 虚拟存储
     * virtio-blk
     * [LVM](storage/phystorage/lvm.md)
-    * SPDK
+    * [SPDK](storage/phystorage/spdk.md)
+      * NVMe
+      * RDMA
   * [分布式存储](storage/distributed/distributed.md)
   * [Cinder](storage/cinder/cinder.md)
     * [Cinder卷的加密](storage/cinder/cinder/cinderjuan-de-jia-mi.md)
