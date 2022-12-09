@@ -134,6 +134,8 @@
     * [SPDK](storage/phystorage/spdk.md)
       * NVMe
       * RDMA
+    * [devicemapper](storage/phystorage/devicemapper.md)
+      * [Luks](storage/phystorage/devicemapper/luks.md)
   * [分布式存储](storage/distributed/distributed.md)
   * [Cinder](storage/cinder/cinder.md)
     * [Cinder卷的加密](storage/cinder/cinder/cinderjuan-de-jia-mi.md)
@@ -161,4 +163,5 @@
     * [云合规监控](ops/monitor/monitor/yun-he-gui-jian-kong.md)
   * [运维](ops/ops/ops.md)
   * [安全](ops/install/an-quan.md)
+    * [非对称加密](ops/install/an-quan/fei-dui-cheng-jia-mi.md)
 
