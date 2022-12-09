@@ -164,4 +164,7 @@
   * [运维](ops/ops/ops.md)
   * [安全](ops/install/an-quan.md)
     * [非对称加密](ops/install/an-quan/fei-dui-cheng-jia-mi.md)
+    * [对称加密](ops/install/an-quan/dui-cheng-jia-mi.md)
+      * 初始向量
+      * [加密模式](ops/install/an-quan/dui-cheng-jia-mi/jia-mi-mo-shi.md)
 
