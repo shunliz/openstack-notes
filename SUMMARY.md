@@ -127,7 +127,7 @@
       * FC
       * SAS
       * [NVMe-oF](storage/phystorage/phystorage/nvme-of.md)
-      * RDMA
+      * [RDMA](storage/phystorage/phystorage/rdma.md)
   * 虚拟存储
     * virtio-blk
     * [LVM](storage/phystorage/lvm.md)
