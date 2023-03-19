@@ -6,11 +6,15 @@
   * [计算硬件](compute/lqk/ji-suan-ying-jian.md)
     * [CPU](compute/lqk/ji-suan-ying-jian/cpu.md)
     * [GPU](compute/lqk/ji-suan-ying-jian/gpu.md)
+      * [GPU Direct-P2P](compute/lqk/ji-suan-ying-jian/gpu/gpu-direct-p2p.md)
     * [DPU](compute/lqk/ji-suan-ying-jian/dpu.md)
     * [FPGA](compute/lqk/ji-suan-ying-jian/fpga.md)
+    * IOMMU
   * [体系结构](compute/lqk/ti-xi-jie-gou.md)
     * SMP
     * MIMD
+    * QPI协议
+    * PCIe协议
   * [Libvirt+Qemu+KVM](compute/lqk/lqk.md)
     * [vCPU&pCPU](compute/lqk/lqk/vcpuandpcpu.md)
     * [内存虚拟化](compute/lqk/lqk/nei-cun-xu-ni-hua.md)
