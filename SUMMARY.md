@@ -74,6 +74,9 @@
       * [OSPF](network/physicalnet/physicalnet/lu-you/ospf.md)
     * [TCP](network/physicalnet/physicalnet/tcp.md)
     * [VRRP](network/physicalnet/physicalnet/vrrp.md)
+  * 网络设计
+    * CLOS架构
+    * [Spine Leaf](network/basic/spine-leaf.md)
   * [物理网络](network/physicalnet/physicalnet.md)
     * [5G](network/physicalnet/physicalnet/5g.md)
   * [虚拟网络](network/vnetwork/vnetwork.md)
