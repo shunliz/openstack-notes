@@ -179,7 +179,8 @@ PG的创建是由monitor节点发起，形成请求message发送给osd，在osd�
 
 ### 1.3.5 PG的状态迁移
 
-PG外部状态的变化最终通过其内部状态机进行驱动，集群状态的变化最终转换为一系列状态机中的事件，驱动状态机在不同状态之间进行跳转和执行处理，从而实现我们所希望的功能和行为。PG 的所有的状态是一个类似树形的结构，每个状态可能存在子状态，子状态还可能存在子状态，如下图所示：![](/assets/storage-ceph-logicstructure2.png)
+PG外部状态的变化最终通过其内部状态机进行驱动，集群状态的变化最终转换为一系列状态机中的事件，驱动状态机在不同状态之间进行跳转和执行处理，从而实现我们所希望的功能和行为。PG 的所有的状态是一个类似树形的结构，每个状态可能存在子状态，子状态还可能存在子状态，如下图所示：  
+![](/assets/storage-ceph-logicstructure2.png)
 
 * Creating创建中：PG正在被创建
 * Peering对等互联：表示一个过程，该过程中一个PG的所有OSD都需要互相通信来PG的对象及其元数据的状态达成一致。处于该状态的P不能响应IO请求。Peering的过程其实就是pg状态从初始状态然后到active+clean的变化过程。一个OSD启动之后，上面的pg开始工作，状态为initial，这时进行比对所有osd上的pglog和pg\_info，对pg的所有信息进行同步，选举primary osd和replica osd，peering过程结束，然后把peering的结果交给recovering，由recovering过程进行数据的恢复工作。
@@ -191,6 +192,17 @@ PG外部状态的变化最终通过其内部状态机进行驱动，集群状态
 * Backfilling回填中：一个新OSD加入集群后，Ceph会尝试级将部分其它OSD上的PG挪到该新OSD上，此过程被称为回填。与recovery相比，回填（backfill）是在零数据的情况下做全量拷贝，而恢复（recovery）是在已有数据的基础上做增量恢复。
 * Remapped重映射：每当PG的acting set改变后，就会发生从旧 acting set到新acting set 的数据迁移。此过程结束前，旧acting set中的主OSD将继续提供服务。一旦该过程结束，Ceph将使用新acting set中的主OSD来提供服务。
 * Stale过期的：OSD每隔0.5秒向MON报告其状态。如果因为任何原因，主OSD报告状态失败了，或者其它OSD已经报告其主 OSD down 了，Ceph MON 将会将它们的PG标记为stale状态。
+
+## ![](/assets/storage-ceph-logicstructure3.png)1.4 Object、PG和pool之间关系
+
+下图表明了存储数据，object、pg、pool、osd和存储磁盘之间关系:
+
+![](/assets/storage-ceph-logicstructure4.png)
+
+1. 存储数据与object的关系：当用户要将数据存储到Ceph集群时，存储数据都会被分割成多个object，每个object都有一个object id，每个object的大小是可以设置的， object可以看成是Ceph存储的最小存储单元。
+2. Object与PG的关系：由于object的数量很多，所以Ceph引入了pg的概念用于管理object，每个object最后都会通过CRUSH计算映射到某个pg中，一个pg可以包含多个object。
+3. PG与OSD的关系：pg也需要通过CRUSH计算映射到osd中去存储，如果是2副本的，则每个pg都会映射到二个osd，比如\[osd.1,osd.2\]，那么osd.1是存放该pg的主副本，osd.2是存放该pg的从副本，保证了数据的冗余。
+4. PG和Pool的关系：pool也是一个逻辑存储概念，我们创建存储池pool的时候，都需要指定pg的数量，逻辑上来说pg是属于某个存储池的，就有点像object是属于某个pg的。
 
 
 
