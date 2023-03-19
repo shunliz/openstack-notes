@@ -7,6 +7,7 @@
     * [CPU](compute/lqk/ji-suan-ying-jian/cpu.md)
     * [GPU](compute/lqk/ji-suan-ying-jian/gpu.md)
       * [GPU Direct-P2P](compute/lqk/ji-suan-ying-jian/gpu/gpu-direct-p2p.md)
+      * [NVLink](compute/lqk/ji-suan-ying-jian/gpu/nvlink.md)
     * [DPU](compute/lqk/ji-suan-ying-jian/dpu.md)
     * [FPGA](compute/lqk/ji-suan-ying-jian/fpga.md)
     * IOMMU
