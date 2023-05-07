@@ -14,10 +14,11 @@
     * [FPGA](compute/lqk/ji-suan-ying-jian/fpga.md)
     * IOMMU
   * [体系结构](compute/lqk/ti-xi-jie-gou.md)
-    * SMP
+    * [SMP](compute/lqk/ti-xi-jie-gou/smp.md)
     * MIMD
     * QPI协议
     * PCIe协议
+    * [PIO和MMIO](compute/lqk/ti-xi-jie-gou/piohe-mmio.md)
   * [Libvirt+Qemu+KVM](compute/lqk/lqk.md)
     * [vCPU&pCPU](compute/lqk/lqk/vcpuandpcpu.md)
     * [内存虚拟化](compute/lqk/lqk/nei-cun-xu-ni-hua.md)
