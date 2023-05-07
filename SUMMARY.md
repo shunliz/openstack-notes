@@ -5,6 +5,7 @@
 * [第一部 计算](compute.md)
   * [计算硬件](compute/lqk/ji-suan-ying-jian.md)
     * [CPU](compute/lqk/ji-suan-ying-jian/cpu.md)
+      * [SMP 引导流程](compute/lqk/ji-suan-ying-jian/cpu/smp-yin-dao-liu-cheng.md)
     * [GPU](compute/lqk/ji-suan-ying-jian/gpu.md)
       * [GPU Direct-P2P](compute/lqk/ji-suan-ying-jian/gpu/gpu-direct-p2p.md)
       * [NVLink](compute/lqk/ji-suan-ying-jian/gpu/nvlink.md)
