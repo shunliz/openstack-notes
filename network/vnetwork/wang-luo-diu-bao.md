@@ -344,8 +344,6 @@ arp\_ignore参数的作用是控制系统在收到外部的arp请求时，是否
 
 3：如果ARP请求数据包所请求的IP地址对应的本地地址其作用域（scope）为主机（host），则不回应ARP响应数据包，如果作用域为全局（global）或链路（link），则回应ARP响应数据包。
 
-
-
 **arp\_filter配置丢包**
 
 在多接口系统里面（比如腾讯云的弹性网卡场景），这些接口都可以回应arp请求，导致对端有可能学到不同的mac地址，后续报文发送可能由于mac地址和接收报文接口mac地址不一样而导致丢包，arp\_filter主要是用来适配这种场景；
@@ -363,8 +361,6 @@ sysctl -a \| grep arp\_filter
 0：默认值，表示回应arp请求的时候不检查接口情况；
 
 1：表示回应arp请求时会检查接口是否和接收请求接口一致，不一致就不回应；
-
-
 
 **arp表满导致丢包**
 
@@ -419,9 +415,11 @@ cat /proc/net/stat/arp\_cache ，unresolved\_discards是否有新增计数
 
 解决方案：根据客户需求调整缓存队列大小unres\_qlen\_bytes：
 
-网络IP层丢包
+![](/assets/network-vnet-linuxnet-drop23.png)
 
-接口ip地址配置丢包
+## 网络IP层丢包
+
+**接口ip地址配置丢包**
 
 1. 本机服务不通，检查lo接口有没有配置地址是127.0.0.1；
 
