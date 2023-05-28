@@ -38,8 +38,6 @@
 
 4.应⽤程序从socket buffer 中读取数据。
 
-
-
 **核心思路**
 
 了解了收发包的原理，可以了解到丢包原因主要会涉及⽹卡设备、⽹卡驱动、内核协议栈三⼤类。以下我们将遵循“从下到上分层分析（各层可能性出现的丢包场景），然后查看关键信息，最终得出分析结果”的原则展开介绍。
@@ -91,6 +89,8 @@ eth0: 17253386680731 42839525880 0 0 0 0 0 244182022 14879545018057 41657801805 
 ![](/assets/network-vnet-linuxnet-drop5.png)
 
 1. 查看网卡配置状态：ethtool eth1/eth0
+
+![](/assets/network-vnet-linuxnet-drop6.png)
 
 主要查看网卡和上游网络设备协商速率和模式是否符合预期；
 
@@ -182,7 +182,7 @@ ethtool -S eth1\|grep length\_errors
 
 1. RX frame: 表示 misaligned 的 frames。
 
-1. 对于 TX 的来说，出现上述 counter 增大的原因主要包括 aborted transmission, errors due to carrirer, fifo error, heartbeat erros 以及 windown error，而 collisions 则表示由于 CSMA/CD 造成的传输中断。
+2. 对于 TX 的来说，出现上述 counter 增大的原因主要包括 aborted transmission, errors due to carrirer, fifo error, heartbeat erros 以及 windown error，而 collisions 则表示由于 CSMA/CD 造成的传输中断。
 
 驱动溢出丢包
 
@@ -650,7 +650,7 @@ MTU丢包
 
 1. 根据实际情况，设置正确MTU值；
 
-1. 设置合理的tcp mss，启用TCP MTU Probe:
+2. 设置合理的tcp mss，启用TCP MTU Probe:
 
 cat /proc/sys/net/ipv4/tcp\_mtu\_probing:
 
@@ -688,9 +688,9 @@ net.ipv4.tcp\_max\_tw\_buckets = 16384
 
 1. tw\_reuse，tw\_recycle 必须在客户端和服务端timestamps 开启时才管用（默认打开）
 
-1. tw\_reuse 只对客户端起作用，开启后客户端在1s内回收；
+2. tw\_reuse 只对客户端起作用，开启后客户端在1s内回收；
 
-1. tw\_recycle对客户端和服务器同时起作用，开启后在3.5\*RTO 内回收，RTO 200ms~ 120s具体时间视网络状况。内网状况比tw\_reuse稍快，公网尤其移动网络大多要比tw\_reuse 慢，优点就是能够回收服务端的TIME\_WAIT数量；
+3. tw\_recycle对客户端和服务器同时起作用，开启后在3.5\*RTO 内回收，RTO 200ms~ 120s具体时间视网络状况。内网状况比tw\_reuse稍快，公网尤其移动网络大多要比tw\_reuse 慢，优点就是能够回收服务端的TIME\_WAIT数量；
 
 在服务端，如果网络路径会经过NAT节点，不要启用net.ipv4.tcp\_tw\_recycle，会导致时间戳混乱，引起其他丢包问题；
 
@@ -806,7 +806,7 @@ net.ipv4.tcp\_timestamps = 1
 
 1. tcp\_tw\_recycle参数。它用来快速回收TIME\_WAIT连接，不过如果在NAT环境下会引发问题;
 
-1. 当多个客户端通过NAT方式联网并与服务端交互时，服务端看到的是同一个IP，也就是说对服务端而言这些客户端实际上等同于一个，可惜由于这些客户端的时间戳可能存在差异，于是乎从服务端的视角看，便可能出现时间戳错乱的现象，进而直接导致时间戳小的数据包被丢弃。如果发生了此类问题，具体的表现通常是是客户端明明发送的SYN，但服务端就是不响应ACK。
+2. 当多个客户端通过NAT方式联网并与服务端交互时，服务端看到的是同一个IP，也就是说对服务端而言这些客户端实际上等同于一个，可惜由于这些客户端的时间戳可能存在差异，于是乎从服务端的视角看，便可能出现时间戳错乱的现象，进而直接导致时间戳小的数据包被丢弃。如果发生了此类问题，具体的表现通常是是客户端明明发送的SYN，但服务端就是不响应ACK。
 
 解决方案：
 
@@ -970,7 +970,7 @@ socket缓存区接收丢包
 
 1. 抓包分析是否存在丢包情况；
 
-1. 查看统计：
+2. 查看统计：
 
 netstat -s\|grep "packet receive errors"
 
