@@ -94,31 +94,37 @@ eth0: 17253386680731 42839525880 0 0 0 0 0 244182022 14879545018057 41657801805 
 
 主要查看网卡和上游网络设备协商速率和模式是否符合预期；
 
-解决方案：
+**解决方案：**
 
 1  重新自协商：  ethtool -r  eth1/eth0;
 
 2  如果上游不支持自协商，可以强制设置端口速率：
 
-ethtool -s eth1 speed 1000 duplex full autoneg off
+`ethtool -s eth1 speed 1000 duplex full autoneg off`
 
-网卡流控丢包
+
+
+**网卡流控丢包**
 
 1. 查看流控统计：
 
-ethtool -S eth1 \| grep control
+`ethtool -S eth1 | grep control`
+
+![](/assets/network-vnet-linuxnet-drop7.png)
 
 rx\_flow\_control\_xon是在网卡的RX Buffer满或其他网卡内部的资源受限时，给交换机端口发送的开启流控的pause帧计数。对应的，tx\_flow\_control\_xoff是在资源可用之后发送的关闭流控的pause帧计数。
 
 2 .查看网络流控配置：ethtool -a eth1
 
+![](/assets/network-vnet-linuxnet-drop8.png)
+
 解决方案：关闭网卡流控
 
+```
 ethtool -A ethx autoneg off //自协商关闭
-
 ethtool -A ethx tx off //发送模块关闭
-
 ethtool -A ethx rx off //接收模块关闭
+```
 
 报文mac地址丢包
 
