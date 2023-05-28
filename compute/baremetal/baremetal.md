@@ -20,7 +20,7 @@
 
 2）启动后，ironic-python-agent会和Ironic控制节点互通，连接到Ironic控制节点的http server，获取完整的用户系统镜像。
 
-**运行阶段    
+**运行阶段      
 **
 
 也称为Tenant阶段，裸金属服务器启动系统镜像，业务开始运行
@@ -84,6 +84,8 @@
 ### Active
 
 调用交换机，修改裸机对应的端口，使其和neutron的内网（租户网）连通。裸机从硬盘引导，通过neutron分配到内网ip地址
+
+
 
 ![](/assets/ironic_netswitch_active.png)
 
