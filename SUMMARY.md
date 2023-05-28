@@ -149,8 +149,8 @@
     * virtio-blk
     * [LVM](storage/phystorage/lvm.md)
     * [SPDK](storage/phystorage/spdk.md)
-      * NVMe
-      * RDMA
+      * [NVMe](storage/phystorage/spdk/nvme.md)
+      * [RDMA](storage/phystorage/spdk/rdma.md)
     * [devicemapper](storage/phystorage/devicemapper.md)
       * [Luks](storage/phystorage/devicemapper/luks.md)
   * [分布式存储](storage/distributed/distributed.md)
