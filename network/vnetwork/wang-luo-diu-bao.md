@@ -1050,7 +1050,7 @@ net.core.wmem\_max = 33554432
 
 附：简单总结一下内核协议栈丢包：
 
-
+![](/assets/network-vnet-linuxnet-drop41.png)![](/assets/network-vnet-linuxnet-drop42.png)
 
 相关工具介绍
 
