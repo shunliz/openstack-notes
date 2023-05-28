@@ -451,8 +451,6 @@ netstat -s\|grep "dropped because of missing route"
 
 解决方案：重新配置正确的路由；
 
-
-
 **反向路由过滤丢包**
 
 反向路由过滤机制是Linux通过反向路由查询，检查收到的数据包源IP是否可路由（Loose mode）、是否最佳路由（Strict mode），如果没有通过验证，则丢弃数据包，设计的目的是防范IP地址欺骗攻击。
@@ -524,8 +522,6 @@ net.netfilter.nf\_conntrack\_icmp\_timeout = 30
 ![](/assets/network-vnet-linuxnet-drop24.png)
 
 解决方案：内核热补丁修复或者更新内核版本（合入补丁修改）；
-
-
 
 **传输层UDP/TCP丢包**
 
@@ -910,7 +906,7 @@ len=46 ip=9.199.10.104 ttl=53 DF id=49491 sport=0 flags=R seq=6 win=0 rtt=30.3 m
 
 sysctl -w net.ipv4.tcp\_no\_delay\_ack=1
 
-TCP乱序丢包
+**TCP乱序丢包**
 
 此时TCP会无法判断是数据包丢失还是乱序，因为丢包和乱序都会导致接收端收到次序混乱的数据包，造成接收端的数据空洞。TCP会将这种情况暂定为数据包的乱序，因为乱序是时间问题（可能是数据包的迟到），而丢包则意味着重传。当TCP意识到包出现乱序的情况时，会立即ACK，该ACK的TSER部分包含的TSEV值会记录当前接收端收到有序报文段的时刻。这会使得数据包的RTT样本值增大，进一步导致RTO时间延长。这对TCP来说无疑是有益的，因为TCP有充分的时间判断数据包到底是失序还是丢了来防止不必要的数据重传。当然严重的乱序则会让发送端以为是丢包一旦重复的ACK超过TCP的阈值，便会触发超时重传机制，以及时解决这种问题；详细请参考博客：
 
@@ -920,7 +916,9 @@ TCP乱序丢包
 
 解决方案：如果在多径传输场景或者网络质量不好，可以通过修改下面值来提供系统对TCP无序传送的容错率：
 
-拥塞控制丢包
+![](/assets/network-vnet-linuxnet-drop29.png)
+
+**拥塞控制丢包**
 
 在互联网发展的过程当中，TCP算法也做出了一定改变，先后演进了
 
@@ -940,13 +938,15 @@ ProbeRTT并不适用实时音视频领域，因此可以选择直接去除，或
 
 如果没有特殊需求，切换成稳定的cubic算法；
 
-UDP层丢包
+## UDP层丢包
 
-收发包失败丢包
+**收发包失败丢包**
 
 查看：netstat 统计
 
 如果有持续的 receive buffer errors/send buffer errors 计数；
+
+![](/assets/network-vnet-linuxnet-drop30.png)
 
 解决方案：
 
@@ -972,9 +972,9 @@ UDP本身就是无连接不可靠的协议，适用于报文偶尔丢失也不�
 
 应用程序在处理UDP报文时，要采用异步方式，在两次接收报文之间不要有太多的处理逻辑
 
-应用层socket丢包
+**应用层socket丢包**
 
-socket缓存区接收丢包
+**socket缓存区接收丢包**
 
 查看：
 
@@ -1010,9 +1010,11 @@ BDP =  带宽 \* RTT
 
 可以通过计算当面节点带宽和统计平均时延来估算BDP，即缓冲区的大小，可以参考下面常见场景估计：
 
+![](/assets/network-vnet-linuxnet-drop31.png)
+
 参考：[https://docs.oracle.com/cd/E56344\_01/html/E53803/gnkor.html](https://docs.oracle.com/cd/E56344_01/html/E53803/gnkor.html)
 
-应用设置tcp连接数大小丢包
+**应用设置tcp连接数大小丢包**
 
 查看：
 
@@ -1022,7 +1024,7 @@ BDP =  带宽 \* RTT
 
 设置合理的连接队列大小，当第三次握手时，当server接收到ACK 报之后， 会进入一个新的叫 accept 的队列，该队列的长度为 min\(backlog, somaxconn\)，默认情况下，somaxconn 的值为 128，表示最多有 129 的 ESTAB 的连接等待 accept\(\)，而 backlog 的值则应该是由 int listen\(int sockfd, int backlog\) 中的第二个参数指定，listen 里面的 backlog 可以有我们的应用程序去定义的；
 
-应用发送太快导致丢包
+**应用发送太快导致丢包s**
 
 查看统计：
 
@@ -1047,6 +1049,8 @@ net.core.wmem\_default = 31457280
 net.core.wmem\_max = 33554432
 
 附：简单总结一下内核协议栈丢包：
+
+
 
 相关工具介绍
 
