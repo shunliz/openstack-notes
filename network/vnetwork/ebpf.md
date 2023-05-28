@@ -33,6 +33,7 @@ eBPF使用场景包括
 * [bcc](https://github.com/iovisor/bcc)
 * [The BSD Packet Filter: A New Architecture for User-level Packet Capture](http://step.polymtl.ca/~suchakra/PWL-Jun28-MTL.pdf)
 * [Notes on BPF & eBPF](https://jvns.ca/blog/2017/06/28/notes-on-bpf---ebpf/)
+* https://mp.weixin.qq.com/s?\_\_biz=MzA3NjY2NzY1MA==&mid=2649740393&idx=1&sn=b048e8e068052549af0c44cb678a7140&chksm=8746ba04b0313312fe87e346c0c68d235a8e81b31de1453392427af6384e612ad44713627eb0&scene=27
 
 
 
