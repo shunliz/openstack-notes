@@ -53,7 +53,7 @@
 
 针对以上6种情形，分别作出如下详述~
 
-**硬件网卡丢包**
+# **硬件网卡丢包**
 
 **Ring Buffer溢出**
 
@@ -102,7 +102,7 @@ eth0: 17253386680731 42839525880 0 0 0 0 0 244182022 14879545018057 41657801805 
 
 `ethtool -s eth1 speed 1000 duplex full autoneg off`
 
-**网卡流控丢包**
+# **网卡流控丢包**
 
 1. 查看流控统计：
 
@@ -123,8 +123,6 @@ ethtool -A ethx autoneg off //自协商关闭
 ethtool -A ethx tx off //发送模块关闭
 ethtool -A ethx rx off //接收模块关闭
 ```
-
-
 
 **报文mac地址丢包**
 
@@ -184,7 +182,7 @@ ethtool -S eth0
 
 ![](/assets/network-vnet-linuxnet-drop12.png)
 
-**网卡驱动丢包**
+# **网卡驱动丢包**
 
 ![](/assets/network-vnet-linuxnet-drop13.png)
 
@@ -252,8 +250,6 @@ service irqbalance stop
 
 2） 中断绑CPU核 echo mask &gt; /proc/irq/xxx/smp\_affinity
 
-
-
 3.根据CPU和网卡队列个数调整网卡多队列和RPS配置
 
 -CPU大于网卡队列个数：
@@ -270,8 +266,6 @@ echo 4096（网卡buff）&gt; /sys/class/net/$eth/queues/rx-$i/rps\_flow\_cnt
 
 echo 0 &gt; /sys/class/net/&lt;dev&gt;/queues/rx-&lt;n&gt;/rps\_cpus
 
-
-
 4.numa CPU调整，对齐网卡位置，可以提高内核处理速度，从而给更多CPU给应用收包，减缓丢包概率；
 
 查看网卡numa位置：
@@ -286,59 +280,35 @@ lspci -s bus-info -vv\|grep node
 
 查看 :
 
+```
 ethtool -c ethx
-
 Coalesce parameters for eth1:
-
 Adaptive RX: on  TX: on
-
 stats-block-usecs: 0
-
 sample-interval: 0
-
 pkt-rate-low: 0
-
 pkt-rate-high: 0
-
 ​
-
 rx-usecs: 25
-
 rx-frames: 0
-
 rx-usecs-irq: 0
-
 rx-frames-irq: 256
-
 ​
-
 tx-usecs: 25
-
 tx-frames: 0
-
 tx-usecs-irq: 0
-
 tx-frames-irq: 256
-
 ​
-
 rx-usecs-low: 0
-
 rx-frame-low: 0
-
 tx-usecs-low: 0
-
 tx-frame-low: 0
-
 ​
-
 rx-usecs-high: 0
-
 rx-frame-high: 0
-
 tx-usecs-high: 0
-
 tx-frame-high: 0
+```
 
 ​
 
@@ -348,17 +318,21 @@ ethtool -C ethx adaptive-rx on
 
 简单总结一下网卡驱动丢包处理：
 
-内核协议栈丢包
+![](/assets/network-vnet-linuxnet-drop16.png)
 
-以太网链路层丢包
+# 内核协议栈丢包
 
-neighbor系统arp丢包
+**以太网链路层丢包**
 
-arp\_ignore配置丢包
+**neighbor系统arp丢包**
+
+**arp\_ignore配置丢包**
 
 arp\_ignore参数的作用是控制系统在收到外部的arp请求时，是否要返回arp响应。arp\_ignore参数常用的取值主要有0，1，2，3~8较少用到；
 
 查看：sysctl -a\|grep arp\_ignore
+
+![](/assets/network-vnet-linuxnet-drop17.png)
 
 解决方案：根据实际场景设置对应值；
 
@@ -370,7 +344,9 @@ arp\_ignore参数的作用是控制系统在收到外部的arp请求时，是否
 
 3：如果ARP请求数据包所请求的IP地址对应的本地地址其作用域（scope）为主机（host），则不回应ARP响应数据包，如果作用域为全局（global）或链路（link），则回应ARP响应数据包。
 
-arp\_filter配置丢包
+
+
+**arp\_filter配置丢包**
 
 在多接口系统里面（比如腾讯云的弹性网卡场景），这些接口都可以回应arp请求，导致对端有可能学到不同的mac地址，后续报文发送可能由于mac地址和接收报文接口mac地址不一样而导致丢包，arp\_filter主要是用来适配这种场景；
 
@@ -378,7 +354,9 @@ arp\_filter配置丢包
 
 sysctl -a \| grep arp\_filter
 
-解决方案：
+![](/assets/network-vnet-linuxnet-drop19.png)
+
+**解决方案：**
 
 根据实际场景设置对应的值，一般默认是关掉此过滤规则，特殊情况可以打开；
 
@@ -386,15 +364,21 @@ sysctl -a \| grep arp\_filter
 
 1：表示回应arp请求时会检查接口是否和接收请求接口一致，不一致就不回应；
 
-arp表满导致丢包
+
+
+**arp表满导致丢包**
 
 比如下面这种情况，由于突发arp表项很多 超过协议栈默认配置，发送报文的时候部分arp创建失败，导致发送失败，从而丢包：
+
+![](/assets/network-vnet-linuxnet-drop20.png)
 
 查看：
 
 查看arp状态：cat /proc/net/stat/arp\_cache ，table\_fulls统计：
 
-查看dmesg消息（内核打印）：
+![](/assets/network-vnet-linuxnet-drop21.png)
+
+**查看dmesg消息（内核打印）**：
 
 dmesg\|grep neighbour
 
@@ -402,9 +386,7 @@ neighbour: arp\_cache: neighbor table overflow!
 
 查看当前arp表大小：ip n\|wc -l
 
-```
-  查看系统配额：
-```
+**查看系统配额：**
 
 sysctl -a \|grep net.ipv4.neigh.default.gc\_thresh
 
@@ -418,17 +400,18 @@ gc\_thresh3 ：保存在 ARP 高速缓存中的最多记录的硬限制，一旦
 
 一般在内存足够情况下，可以认为gc\_thresh3 值是arp 表总大小；
 
+![](/assets/network-vnet-linuxnet-drop22.png)
+
 解决方案：根据实际arp最大值情况（比如访问其他子机最大个数），调整arp表大小
 
-$ sudo sysctl -w net.ipv4.neigh.default.gc\_thresh1=1024
-
-$ sudo sysctl -w net.ipv4.neigh.default.gc\_thresh2=2048
-
-$ sudo sysctl -w net.ipv4.neigh.default.gc\_thresh3=4096
-
+```
+$ sudo sysctl -w net.ipv4.neigh.default.gc_thresh1=1024
+$ sudo sysctl -w net.ipv4.neigh.default.gc_thresh2=2048
+$ sudo sysctl -w net.ipv4.neigh.default.gc_thresh3=4096
 $ sudo sysctl  -p
+```
 
-arp请求缓存队列溢出丢包
+**arp请求缓存队列溢出丢包**
 
 查看：
 
