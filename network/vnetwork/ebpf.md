@@ -6,6 +6,8 @@ BPF的基本思想是对用户提供两种SOCKET选项：`SO_ATTACH_FILTER`和`S
 
 Linux 3.15 开始引入 eBPF。其扩充了 BPF 的功能，丰富了指令集。它在内核提供了一个虚拟机，用户态将过滤规则以虚拟机指令的形式传递到内核，由内核根据这些指令来过滤网络数据包。
 
+![](/assets/network-vnet-linuxnet-ebpf12.png)
+
 ![](/assets/network-virtualnet-linuxnet-ebpf1.png)
 
 ![](/assets/network-vnet-linuxnet-ebpf11.png)
