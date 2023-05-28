@@ -1,3 +1,5 @@
+# ![](/assets/network-overall11.png)
+
 # 1, 传统网络到虚拟化网络的演进
 
 # 传统网络![](/assets/network-traditional-network.png)虚拟网络![](/assets/network-virtualnetwork.png)分布式虚拟网络![](/assets/network-distributedvirtualnetwork.png)
@@ -46,11 +48,7 @@ NOTE：因为多租户之间还是依赖共享网络（e.g. 需要访问外部�
 
 ![](/assets/network-privateroutingmultitntprivnetwork.png)
 
-
-
 # 3, 专有硬件向软硬结合演进
-
-
 
 
 
