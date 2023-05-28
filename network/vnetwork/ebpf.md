@@ -8,6 +8,8 @@ Linux 3.15 开始引入 eBPF。其扩充了 BPF 的功能，丰富了指令集�
 
 ![](/assets/network-virtualnet-linuxnet-ebpf1.png)
 
+![](/assets/network-vnet-linuxnet-ebpf11.png)
+
 BPF和eBPF的内核文档见[Documentation/networking/filter.txt](https://www.kernel.org/doc/Documentation/networking/filter.txt)。
 
 ## 使用场景 {#btqncg}
