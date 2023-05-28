@@ -1,6 +1,6 @@
 # XDP {#dnqxk5}
 
-XDP（eXpress Data Path）为Linux内核提供了高性能、可编程的网络数据路径。由于网络包在还未进入网络协议栈之前就处理，它给Linux网络带来了巨大的性能提升（性能比DPDK还要高）。
+XDP（eXpress Data Path）为Linux内核提供了高性能、可编程的网络数据路径。由于网络包在还未进入网络协议栈之前就处理，它给Linux网络带来了巨大的性能提升（性能比DPDK还要高）。![](/assets/network-virtualnet-inuxnet-xdp21.png)
 
 ![](/assets/network-virtualnet-linuxnet-xdp1.png)
 
@@ -39,8 +39,6 @@ XDP主要的特性包括
 
 * XDP不提供缓存队列（qdisc），TX设备太慢时直接丢包，因而不要在RX比TX快的设备上使用XDP
 * XDP程序是专用的，不具备网络协议栈的通用性
-
-
 
 # XDP架构 {#7p4i8f}
 
