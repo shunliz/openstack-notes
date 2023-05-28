@@ -82,6 +82,7 @@
     * [Spine Leaf](network/basic/spine-leaf.md)
   * [物理网络](network/physicalnet/physicalnet.md)
     * [5G](network/physicalnet/physicalnet/5g.md)
+    * [网卡多队列](network/physicalnet/physicalnet/wang-qia-duo-dui-lie.md)
   * [虚拟网络](network/vnetwork/vnetwork.md)
     * [Linux网络](network/vnetwork/linuxwang-luo.md)
       * [Linux网络配置](network/vnetwork/linuxwang-luo-pei-zhi.md)

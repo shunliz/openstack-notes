@@ -102,8 +102,6 @@ eth0: 17253386680731 42839525880 0 0 0 0 0 244182022 14879545018057 41657801805 
 
 `ethtool -s eth1 speed 1000 duplex full autoneg off`
 
-
-
 **网卡流控丢包**
 
 1. 查看流控统计：
@@ -126,7 +124,9 @@ ethtool -A ethx tx off //发送模块关闭
 ethtool -A ethx rx off //接收模块关闭
 ```
 
-报文mac地址丢包
+
+
+**报文mac地址丢包**
 
 一般计算机网卡都工作在非混杂模式下，此时网卡只接受来自网络端口的目的地址指向自己的数据，如果报文的目的mac地址不是对端的接口的mac地址，一般都会丢包，一般这种情况很有可能是源端设置静态arp表项或者动态学习的arp表项没有及时更新，但目的端mac地址已发生变化（换了网卡），没有更新通知到源端（比如更新报文被丢失，中间交换机异常等情况）；
 
@@ -142,31 +142,37 @@ ethtool -A ethx rx off //接收模块关闭
 
 2.可以在源端手动设置正确的静态的arp表项；
 
-其他网卡异常丢包
+**其他网卡异常丢包**
 
 这类异常比少见，但如果都不是上面哪些情况，但网卡统计里面任然有丢包计数，可以试着排查一下：
 
-网卡firmware版本:
+**网卡firmware版本:**
 
 排查一下网卡phy芯片firmware是不是有bug，安装的版本是不是符合预期，查看 ethtool -i eth1:
 
 和厂家提case询问是不是已知问题，有没有新版本等；
 
-网线接触不良：
+![](/assets/network-vnet-linuxnet-drop9.png)
+
+**网线接触不良：**
 
 如果网卡统计里面存在crc error 计数增长，很可能是网线接触不良，可以通知网管排查一下：
 
 ethtool -S eth0
 
+![](/assets/network-vnet-linuxnet-drop10.png)
+
 解决方案：一般试着重新插拔一下网线，或者换一根网线，排查插口是否符合端口规格等;
 
-报文长度丢包
+**报文长度丢包**
 
 网卡有接收正确报文长度范围，一般正常以太网报文长度范围：64-1518，发送端正常情况会填充或者分片来适配，偶尔会发生一些异常情况导致发送报文不正常丢包；
 
 查看：
 
-ethtool -S eth1\|grep length\_errors
+`ethtool -S eth1|grep length_errors`
+
+![](/assets/v.png)
 
 解决方案：
 
@@ -176,7 +182,11 @@ ethtool -S eth1\|grep length\_errors
 
 简单总结一下网卡丢包：
 
-网卡驱动丢包
+![](/assets/network-vnet-linuxnet-drop12.png)
+
+**网卡驱动丢包**
+
+![](/assets/network-vnet-linuxnet-drop13.png)
 
 查看：ifconfig eth1/eth0 等接口
 
@@ -190,7 +200,7 @@ ethtool -S eth1\|grep length\_errors
 
 2. 对于 TX 的来说，出现上述 counter 增大的原因主要包括 aborted transmission, errors due to carrirer, fifo error, heartbeat erros 以及 windown error，而 collisions 则表示由于 CSMA/CD 造成的传输中断。
 
-驱动溢出丢包
+**驱动溢出丢包**
 
 netdev\_max\_backlog是内核从NIC收到包后，交由协议栈（如IP、TCP）处理之前的缓冲队列。每个CPU核都有一个backlog队列，与Ring Buffer同理，当接收包的速率大于内核协议栈处理的速率时，CPU的backlog队列不断增长，当达到设定的netdev\_max\_backlog值时，数据包将被丢弃。
 
@@ -198,19 +208,23 @@ netdev\_max\_backlog是内核从NIC收到包后，交由协议栈（如IP、TCP�
 
 通过查看/proc/net/softnet\_stat可以确定是否发生了netdev backlog队列溢出：
 
+![](/assets/network-vnet-linuxnet-drop14.png)
+
 其中：每一行代表每个CPU核的状态统计，从CPU0依次往下；每一列代表一个CPU核的各项统计：第一列代表中断处理程序收到的包总数；第二列即代表由于netdev\_max\_backlog队列溢出而被丢弃的包总数。从上面的输出可以看出，这台服务器统计中，并没有因为netdev\_max\_backlog导致的丢包。
 
 解决方案：
 
-netdev\_max\_backlog的默认值是1000，在高速链路上，可能会出现上述第二统计不为0的情况，可以通过修改内核参数net.core.netdev\_max\_backlog来解决：
+netdev\_max\_backlog的默认值是1000，在高速链路上，可能会出现上述第二列统计不为0的情况，可以通过修改内核参数net.core.netdev\_max\_backlog来解决：
 
-$ sysctl -w net.core.netdev\_max\_backlog=2000
+`$ sysctl -w net.core.netdev_max_backlog=2000`
 
-单核负载高导致丢包
+**单核负载高导致丢包**
 
 单核CPU软中断占有高, 导致应用没有机会收发或者收包比较慢，即使调整netdev\_max\_backlog队列大小仍然会一段时间后丢包，处理速度跟不上网卡接收的速度;
 
 查看：mpstat -P ALL 1
+
+![](/assets/network-vnet-linuxnet-drop15.png)
 
 单核软中断占有100%，导致应用没有机会收发或者收包比较慢而丢包；
 
@@ -238,6 +252,8 @@ service irqbalance stop
 
 2） 中断绑CPU核 echo mask &gt; /proc/irq/xxx/smp\_affinity
 
+
+
 3.根据CPU和网卡队列个数调整网卡多队列和RPS配置
 
 -CPU大于网卡队列个数：
@@ -253,6 +269,8 @@ echo 4096（网卡buff）&gt; /sys/class/net/$eth/queues/rx-$i/rps\_flow\_cnt
 2）CPU小于网卡队列个数，绑中断就可以，可以试着关闭RPS看一下效果：
 
 echo 0 &gt; /sys/class/net/&lt;dev&gt;/queues/rx-&lt;n&gt;/rps\_cpus
+
+
 
 4.numa CPU调整，对齐网卡位置，可以提高内核处理速度，从而给更多CPU给应用收包，减缓丢包概率；
 
