@@ -126,8 +126,8 @@
       * CNM
     * [流量控制](network/vnetwork/liu-liang-kong-zhi.md)
       * [TCP BBR](network/vnetwork/tcp-bbr.md)
-    * DPDK
-      * VPP
+    * [DPDK](network/vnetwork/dpdk.md)
+      * [VPP](network/vnetwork/dpdk/vpp.md)
   * [neutron](network/neutron/neutron.md)
     * [Neutron OVN网络流量分析](network/vnetwork/neutron-ovn.md)
     * [ML2&Vxlan](network/vnetwork/ml2andvxlan.md)
