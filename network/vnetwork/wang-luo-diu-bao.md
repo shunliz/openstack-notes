@@ -433,9 +433,9 @@ cat /proc/net/stat/arp\_cache ，unresolved\_discards是否有新增计数
 
 比如ip r add local 本机ip地址 dev eth0 table local ；
 
-路由丢包
+## 路由丢包
 
-路由配置丢包
+**路由配置丢包**
 
 查看：
 
@@ -451,7 +451,9 @@ netstat -s\|grep "dropped because of missing route"
 
 解决方案：重新配置正确的路由；
 
-反向路由过滤丢包
+
+
+**反向路由过滤丢包**
 
 反向路由过滤机制是Linux通过反向路由查询，检查收到的数据包源IP是否可路由（Loose mode）、是否最佳路由（Strict mode），如果没有通过验证，则丢弃数据包，设计的目的是防范IP地址欺骗攻击。
 
@@ -481,9 +483,9 @@ $ sysctl -w net.ipv4.conf.all.rp\_filter=2或
 
 $ sysctl -w net.ipv4.conf.eth0.rp\_filter=2
 
-防火墙丢包
+**防火墙丢包**
 
-客户设置规则导致丢包
+**客户设置规则导致丢包**
 
 查看：
 
@@ -491,9 +493,9 @@ iptables -nvL \|grep DROP ;
 
 解决方案：  修改防火墙规则；
 
-连接跟踪导致丢包
+**连接跟踪导致丢包**
 
-连接跟踪表溢出丢包
+**连接跟踪表溢出丢包**
 
 kernel 用 ip\_conntrack 模块来记录 iptables 网络包的状态，并把每条记录保存到 table 里（这个 table 在内存里，可以通过/proc/net/ip\_conntrack 查看当前已经记录的总数），如果网络状况繁忙，比如高连接，高并发连接等会导致逐步占用这个 table 可用空间，一般这个 table 很大不容易占满并且可以自己清理，table 的记录会一直呆在 table 里占用空间直到源 IP 发一个 RST 包，但是如果出现被攻击、错误的网络配置、有问题的路由/路由器、有问题的网卡等情况的时候，就会导致源 IP 发的这个 RST 包收不到，这样就积累在 table 里，越积累越多直到占满。无论，哪种情况导致table变满，满了以后就会丢包，出现外部无法连接服务器的情况。内核会报如下错误信息：kernel: ip\_conntrack: table full, dropping packet；
 
@@ -515,15 +517,19 @@ net.netfilter.nf\_conntrack\_udp\_timeout\_stream = 180
 
 net.netfilter.nf\_conntrack\_icmp\_timeout = 30
 
-ct创建冲突失导致丢包
+**ct创建冲突失导致丢包**
 
 查看：当前连接跟踪统计：cat /proc/net/stat/nf\_conntrack，可以查各种ct异常丢包统计
 
+![](/assets/network-vnet-linuxnet-drop24.png)
+
 解决方案：内核热补丁修复或者更新内核版本（合入补丁修改）；
 
-传输层UDP/TCP丢包
 
-tcp 连接跟踪安全检查丢包
+
+**传输层UDP/TCP丢包**
+
+**tcp 连接跟踪安全检查丢包**
 
 丢包原因：由于连接没有断开，但服务端或者client之前出现过发包异常等情况（报文没有经过连接跟踪模块更新窗口计数），没有更新合法的window范围，导致后续报文安全检查被丢包；协议栈用nf\_conntrack\_tcp\_be\_liberal 来控制这个选项：
 
@@ -551,9 +557,9 @@ sysctl -w net.netfilter.nf\_log.2=ipt\_LOG
 
 解决方案：根据实际抓包分析情况判断是不是此机制导致的丢包，可以试着关闭试一下；
 
-分片重组丢包
+**分片重组丢包**
 
-情况总结：超时
+**情况总结：超时**
 
 查看：
 
@@ -581,7 +587,7 @@ net.ipv4.ipfrag\_high\_thresh
 
 net.ipv4.ipfrag\_low\_thresh
 
-分片安全距检查离丢包
+**分片安全距检查离丢包**
 
 查看：
 
@@ -597,7 +603,7 @@ pfrag\_max\_dist特性，在一些场景下其实并不适用：
 
 2.发送端的并发度很高，同时SMP架构，导致很容易造成这种乱序情况；
 
-分片hash bucket冲突链太长超过系统默认值128
+**分片hash bucket冲突链太长超过系统默认值128**
 
 查看：
 
@@ -607,7 +613,7 @@ inet\_frag\_find: Fragment hash bucket 128 list length grew over limit. Dropping
 
 解决方案：热补丁调整hash大小；
 
-系统内存不足，创建新分片队列失败
+**系统内存不足，创建新分片队列失败**
 
 查看方法：
 
@@ -617,9 +623,11 @@ netstat -s\|grep reassembles
 
 dropwatch查看丢包位置 ：
 
+![](/assets/network-vnet-linuxnet-drop25.png)
+
 解决方案：
 
-a.增大系统网络内存：
+**a.增大系统网络内存：**
 
 net.core.rmem\_default
 
@@ -627,7 +635,7 @@ net.core.rmem\_max
 
 net.core.wmem\_default
 
-b.系统回收内存：
+**b.系统回收内存：**
 
 紧急情况下，可以用 /proc/sys/vm/drop\_caches, 去释放一下虚拟内存；
 
@@ -643,7 +651,9 @@ To free pagecache, dentries and inodes:
 
 echo 3 &gt; /proc/sys/vm/drop\_caches
 
-MTU丢包
+## MTU丢包
+
+![](/assets/network-vnet-linuxnet-drop26.png)
 
 查看：
 
@@ -657,21 +667,18 @@ MTU丢包
 
 2. 设置合理的tcp mss，启用TCP MTU Probe:
 
-cat /proc/sys/net/ipv4/tcp\_mtu\_probing:
-
-tcp\_mtu\_probing - INTEGER Controls TCP Packetization-Layer Path MTU Discovery.
-
+```
+cat /proc/sys/net/ipv4/tcp_mtu_probing:
+tcp_mtu_probing - INTEGER Controls TCP Packetization-Layer Path MTU Discovery.
 Takes three values:
-
 0 - Disabled
-
 1 - Disabled by default, enabled when an ICMP black hole detected
+2 - Always enabled, use initial MSS of tcp_base_mss.
+```
 
-2 - Always enabled, use initial MSS of tcp\_base\_mss.
+**tcp层丢包**
 
-tcp层丢包
-
-TIME\_WAIT过多丢包
+**TIME\_WAIT过多丢包**
 
 大量TIMEWAIT出现，并且需要解决的场景，在高并发短连接的TCP服务器上，当服务器处理完请求后立刻按照主动正常关闭连接。。。这个场景下，会出现大量socket处于TIMEWAIT状态。如果客户端的并发量持续很高，此时部分客户端就会显示连接不上；
 
@@ -703,7 +710,7 @@ net.ipv4.tcp\_max\_tw\_buckets = 16384
 
 sysctl -w net.ipv4.tcp\_max\_tw\_buckets=163840；
 
-时间戳异常丢包
+**时间戳异常丢包**
 
 当多个客户端处于同一个NAT环境时，同时访问服务器，不同客户端的时间可能不一致，此时服务端接收到同一个NAT发送的请求，就会出现时间戳错乱的现象，于是后面的数据包就被丢弃了，具体的表现通常是是客户端明明发送的SYN，但服务端就是不响应ACK。在服务器借助下面的命令可以来确认数据包是否有不断被丢弃的现象。
 
@@ -717,19 +724,23 @@ netstat -s \| grep rejects
 
 如果网络路径会经过NAT节点，不要启用net.ipv4.tcp\_tw\_recycle；
 
-TCP队列问题导致丢包
+## TCP队列问题导致丢包
 
-原理：
+**原理：**
 
-tcp状态机（三次握手）
+**tcp状态机（三次握手）**
+
+![](/assets/network-vnet-linuxnet-drop27.png)
 
 协议处理：
 
-一个是半连接队列（syn queue）：
+![](/assets/network-vnet-linuxnet-drop28.png)
+
+**一个是半连接队列（syn queue）：**
 
 在三次握手协议中，服务器维护一个半连接队列，该队列为每个客户端的SYN包开设一个条目\(服务端在接收到SYN包的时候，就已经创建了request\_sock结构，存储在半连接队列中\)，该条目表明服务器已收到SYN包，并向客户发出确认，正在等待客户的确认包（会进行第二次握手发送SYN＋ACK的包加以确认）。这些条目所标识的连接在服务器处于Syn\_RECV状态，当服务器收到客户的确认包时，删除该条目，服务器进入ESTABLISHED状态。该队列为SYN队列，长度为max\(64,/proc/sys/net/ipv4/tcp\_max\_syn\_backlog\),  机器的tcp\_max\_syn\_backlog值在/proc/sys/net/ipv4/tcp\_max\_syn\_backlog下配置;
 
-一个是全连接队列（accept queue）：
+**一个是全连接队列（accept queue）：**
 
 第三次握手时，当server接收到ACK 报之后， 会进入一个新的叫 accept 的队列，该队列的长度为 min\(backlog, somaxconn\)，默认情况下，somaxconn 的值为 128，表示最多有 129 的 ESTAB 的连接等待 accept\(\)，而 backlog 的值则应该是由 int listen\(int sockfd, int backlog\) 中的第二个参数指定，listen 里面的 backlog 可以有我们的应用程序去定义的;
 
@@ -765,7 +776,7 @@ Linux内核参进行优化，可以缓解压力 tcp\_abort\_on\_overflow=1
 
 应用程序设置问题，通知客户程序修改；
 
-syn flood攻击丢包
+## **syn flood攻击丢包**
 
 目前，Linux下默认会进行5次重发SYN-ACK包，重试的间隔时间从1s开始，下次的重试间隔时间是前一次的双倍，5次的重试时间间隔为1s, 2s, 4s, 8s, 16s，总共31s，第5次发出后还要等32s都知道第5次也超时了，所以，总共需要 1s + 2s + 4s+ 8s+ 16s + 32s = 63s，TCP才会把断开这个连接。由于，SYN超时需要63秒，那么就给攻击者一个攻击服务器的机会，攻击者在短时间内发送大量的SYN包给Server\(俗称 SYN flood 攻击\)，用于耗尽Server的SYN队列。对于应对SYN 过多的问题;
 
@@ -781,7 +792,7 @@ syn flood攻击丢包
 
 启用tcp\_abort\_on\_overflow， tcp\_abort\_on\_overflow修改成 1，1表示第三步的时候如果全连接队列满了，server发送一个reset包给client，表示废掉这个握手过程和这个连接（本来在server端这个连接就还没建立起来）；
 
-PAWS机制丢包
+## PAWS机制丢包
 
 原理：PAWS\(Protect Against Wrapped Sequence numbers\)，高带宽下，TCP序列号可能在较短的时间内就被重复使用\(recycle/wrapped\)
 
@@ -817,7 +828,7 @@ net.ipv4.tcp\_timestamps = 1
 
 在NAT环境下，清除tcp时间戳选项，或者不开启tcp\_tw\_recycle参数；
 
-TLP问题丢包
+## TLP问题丢包
 
 TLP主要是为了解决尾丢包重传效率的问题，TLP能够有效的避免较长的RTO超时，进而提高TCP性能，详细参考文章：
 
@@ -843,7 +854,7 @@ sysctl -a \| grep tcp\_early\_retrans
 
 3.打开快速ack选项，socket里面有个 TCP\_QUICKACK 选项， 需要每次recv后再设置一次。
 
-内存不足导致丢包
+**内存不足导致丢包**
 
 查看：
 
@@ -871,7 +882,7 @@ sysclt -w net.ipv4.tcp\_rmem=
 
 sysctl -p
 
-TCP超时丢包
+**TCP超时丢包**
 
 查看：
 
@@ -879,23 +890,17 @@ TCP超时丢包
 
 用其他工具测试一下当前端到端网络质量（hping等）；
 
-\# hping -S 9.199.10.104 -A
-
-HPING 9.199.10.104 \(bond1 9.199.10.104\): SA set, 40 headers + 0 data bytes
-
+```
+# hping -S 9.199.10.104 -A
+HPING 9.199.10.104 (bond1 9.199.10.104): SA set, 40 headers + 0 data bytes
 len=46 ip=9.199.10.104 ttl=53 DF id=47617 sport=0 flags=R seq=0 win=0 rtt=38.3 ms
-
 len=46 ip=9.199.10.104 ttl=53 DF id=47658 sport=0 flags=R seq=1 win=0 rtt=38.3 ms
-
 len=46 ip=9.199.10.104 ttl=53 DF id=47739 sport=0 flags=R seq=2 win=0 rtt=30.4 ms
-
 len=46 ip=9.199.10.104 ttl=53 DF id=47842 sport=0 flags=R seq=3 win=0 rtt=30.4 ms
-
 len=46 ip=9.199.10.104 ttl=53 DF id=48485 sport=0 flags=R seq=4 win=0 rtt=38.7 ms
-
 len=46 ip=9.199.10.104 ttl=53 DF id=49274 sport=0 flags=R seq=5 win=0 rtt=34.1 ms
-
 len=46 ip=9.199.10.104 ttl=53 DF id=49491 sport=0 flags=R seq=6 win=0 rtt=30.3 ms
+```
 
 解决方案：
 
