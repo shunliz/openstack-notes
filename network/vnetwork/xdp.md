@@ -28,6 +28,8 @@ XDP（eXpress Data Path）为Linux内核提供了高性能、可编程的网络�
 
 ![](/assets/network-virtualnet-inuxnet-xdp21.png)
 
+![](/assets/network-vnet-linuxnet-xdp11.png)
+
 ![](/assets/network-virtualnet-linuxnet-xdp1.png)
 
 XDP主要的特性包括
@@ -474,7 +476,7 @@ BPF map 是 key/value 存储，在加载 eBPF 程序时定义（defined upon loa
 
 ```c
 // 从内核 BPF 代码示例 xdp2_kern.c 修改而来。
- 
+
 1 // 用于统计包数
 2 struct bpf_map_def SEC("maps") rxcnt = {
 3     .type = BPF_MAP_TYPE_PERCPU_ARRAY,
@@ -551,19 +553,19 @@ BPF map 是 key/value 存储，在加载 eBPF 程序时定义（defined upon loa
 
 * 定义了一个 BPF map 存储统计信息。用户态程序可以 poll 这个 map 来获取统计信息。
 
-* context 对象 `struct xdp_md *ctx` 中有包数据的 start/end 指针，可用于直接访问包数据。
+* context 对象 `struct xdp_md *ctx` 中有包数据的 start/end 指针，可用于直接访问包数据。
 
-* 将数据指针和 `data_end` 比较，确保内存访问不会越界。
+* 将数据指针和 `data_end` 比较，确保内存访问不会越界。
 
 * 程序必须自己解析包，包括 VLAN headers 等东西。
 
 * 直接通过指针（direct packet data access）修改包头。
 
-* 内核提供的 map lookup helper。这是程序中唯一的真实函数调用；其他函数都是内联，包括 `htons()`。
+* 内核提供的 map lookup helper。这是程序中唯一的真实函数调用；其他函数都是内联，包括 `htons()`。
 
 * 最终针对这个包的判决通过程序返回值传递给调用方。
 
-将这段程序安装到网卡接口上时，它首先会被编译成 eBPF 字节码，然后经受校验器检查。 这里的检查项包括：
+将这段程序安装到网卡接口上时，它首先会被编译成 eBPF 字节码，然后经受校验器检查。 这里的检查项包括：
 
 1. 无循环操作；程序大小（指令数量）；
 
@@ -597,7 +599,7 @@ DPDK 是目前性能最高的包处理框架 \[18\]，因此本文将 XDP 与 DP
 
 * 关闭超线性（Hyperthreading）。
 
-* 网卡：两块 Mellanox ConnectX-5 Ex VPI dual-port 100Gbps，mlx5 驱动。
+* 网卡：两块 Mellanox ConnectX-5 Ex VPI dual-port 100Gbps，mlx5 驱动。
 
 * 内核：Linux 4.18
 
@@ -607,7 +609,7 @@ DPDK 是目前性能最高的包处理框架 \[18\]，因此本文将 XDP 与 DP
 
 * 直接弃包（packet drop）性能。
 
-  为展示最高的包处理性能，我们将用最简单的操作 —— 丢弃接收到的包 —— 来测试。 这个测试能有效测量系统的整体开销，也是真正的包处理应用能达到的性能上限。
+  为展示最高的包处理性能，我们将用最简单的操作 —— 丢弃接收到的包 —— 来测试。 这个测试能有效测量系统的整体开销，也是真正的包处理应用能达到的性能上限。
 
 * CPU 使用量。
 
@@ -615,9 +617,9 @@ DPDK 是目前性能最高的包处理框架 \[18\]，因此本文将 XDP 与 DP
 
 * 包转发性能。
 
-  转发的复杂性要更高一些，例如，涉及到与多块网卡的交互、重写二层头等等。 这里会将转发延迟也考虑进去。
+  转发的复杂性要更高一些，例如，涉及到与多块网卡的交互、重写二层头等等。 这里会将转发延迟也考虑进去。
 
-我们已经验证，使用 MTU（1500 字节）包时，我们的系统单核就能达到线速（100 Gbps）, 而且 CPU 有 50% 是空闲的。显然，真正的挑战在于 PPS，而非带宽，其他一些测试也已经指出了这一点 \[46\]。 出于这个原因，我们用最小包（64 字节）测试，衡量指标是 PPS。
+我们已经验证，使用 MTU（1500 字节）包时，我们的系统单核就能达到线速（100 Gbps）, 而且 CPU 有 50% 是空闲的。显然，真正的挑战在于 PPS，而非带宽，其他一些测试也已经指出了这一点 \[46\]。 出于这个原因，我们用最小包（64 字节）测试，衡量指标是 PPS。
 
 对于 XDP 和 Linux 内核网络栈的测试，由于它们没有显式指定某些 CPU 来处理网络包的方式，因此我们通过配置硬件 RSS（Receive Side Scaling）来讲流量定向到指定 CPU。
 
@@ -627,12 +629,11 @@ DPDK 是目前性能最高的包处理框架 \[18\]，因此本文将 XDP 与 DP
 
 ![](/assets/network-vnet-linuxnet-xdp23.png)
 
-Fig 3. 直接弃包（packet drop）性能。DPDK 需要预留一个 CPU 运行控制任务，因此只剩下 5 个 CPU 做包处理。  
-
+Fig 3. 直接弃包（packet drop）性能。DPDK 需要预留一个 CPU 运行控制任务，因此只剩下 5 个 CPU 做包处理。
 
 上图是性能与 CPU 数量的关系。
 
-* XDP 基准性能是 `24Mpps/core`，DPDK 是 `43.5Mpps/core`。
+* XDP 基准性能是 `24Mpps/core`，DPDK 是 `43.5Mpps/core`。
 
 * 二者在分别达到各自的峰值之前，PPS 都是随 CPU 数量线性增长的。
 
@@ -640,13 +641,13 @@ Fig 3. 直接弃包（packet drop）性能。DPDK 需要预留一个 CPU 运行�
 
 再看图中 Linux 网络栈在两种配置下的性能：
 
-1. 通过 iptables 的 raw table 丢弃流量，这是 Linux 网络栈中最早能丢弃包的地方；
+1. 通过 iptables 的 raw table 丢弃流量，这是 Linux 网络栈中最早能丢弃包的地方；
 
-2. 通过 conntrack（连接跟踪）模块，这个模块的开销非常大，但在很多 Linux 发行版中都是默认开启的。
+2. 通过 conntrack（连接跟踪）模块，这个模块的开销非常大，但在很多 Linux 发行版中都是默认开启的。
 
-conntrack 模式达到了 1.8Mpps/core，raw 模式是 4.8Mpps/core ；这两种模式均未达到硬件瓶颈。 最终的性能，XDP 比常规网络栈的最快方式快了 5 倍。
+conntrack 模式达到了 1.8Mpps/core，raw 模式是 4.8Mpps/core ；这两种模式均未达到硬件瓶颈。 最终的性能，XDP 比常规网络栈的最快方式快了 5 倍。
 
-Linux raw mode test 中，我们还测量了 XDP 程序不丢弃包，而是更新包数统计然后将包 送到内核网络栈的场景。 这种情况下，XDP 单核的处理性能会下降到 4.5Mpps/core，有 13.3ns 处理延迟。 图中并未给出这个测试结果，因为这个开销太小了。
+Linux raw mode test 中，我们还测量了 XDP 程序不丢弃包，而是更新包数统计然后将包 送到内核网络栈的场景。 这种情况下，XDP 单核的处理性能会下降到 4.5Mpps/core，有 13.3ns 处理延迟。 图中并未给出这个测试结果，因为这个开销太小了。
 
 ## 4.2 CPU Usage
 
@@ -654,7 +655,7 @@ Linux raw mode test 中，我们还测量了 XDP 程序不丢弃包，而是更�
 
 Fig 4. 直接弃包（packet drop）场景下的 CPU 利用率。
 
-用系统提供的 `mpstat` 命令测量 CPU 利用率。结果如图 4 。
+用系统提供的 `mpstat` 命令测量 CPU 利用率。结果如图 4 。
 
 * DPDK 是 busy poll 模式，因此 CPU 永远是 100%。
 
@@ -664,9 +665,9 @@ Fig 4. 直接弃包（packet drop）场景下的 CPU 利用率。
 
 ## 4.3 包转发性能
 
-这个测试中，转发应用执行非常简单的 MAC 地址重写：直接交换源和目的 MAC 地址，然后转发。 这是转发场景下最精简的步骤了，因此结果代表了所有真实转发应用的性能上限。
+这个测试中，转发应用执行非常简单的 MAC 地址重写：直接交换源和目的 MAC 地址，然后转发。 这是转发场景下最精简的步骤了，因此结果代表了所有真实转发应用的性能上限。
 
-* 图中包括了同网卡转发和不同网卡转发（XDP 程序返回码不同）的结果。
+* 图中包括了同网卡转发和不同网卡转发（XDP 程序返回码不同）的结果。
 
 * DPDK 示例程序只支持通过另一个网卡转发，因此这里只列出了这种情况下的性能。
 
@@ -688,12 +689,298 @@ Fig 5. 转发性能。在同一网卡接口上收发会占用同一 PCI port 的
 
 ![](/assets/network-vnet-linuxnet-xdp26.png)
 
-表 1. 转发延迟。机器网卡的两个接口直连，在转发速率分别为 100pps 和 1Mpps 的条件下，持续 50s 测量端到端延迟  
+表 1. 转发延迟。机器网卡的两个接口直连，在转发速率分别为 100pps 和 1Mpps 的条件下，持续 50s 测量端到端延迟
+
+高 pps 场景下，XDP 的延迟已经接近 DPDK。但在低 pps 场景下，XDP 延迟比 DPDK 大的多，原因是 XDP 是基于中断的，中断处理时间（ interrupt processing time）此时占大头；而 DPDK 是轮询模式，延迟相对比较固定。
 
 
-高 pps 场景下，XDP 的延迟已经接近 DPDK。但在低 pps 场景下，XDP 延迟比 DPDK 大的多，原因是 XDP 是基于中断的，中断处理时间（ interrupt processing time）此时占大头；而 DPDK 是轮询模式，延迟相对比较固定。
+
+## 4.4 讨论：XDP 性能与 DPDK 还有差距的原因
+
+### XDP 未做底层代码优化
+
+上一节已经看到，XDP 相比于常规 Linux 网络栈性能有了显著提升。但对于大部分 XDP 场景来说，性能还是与 DPDK 有差距。我们认为，这是主要是因为 DPDK 做了相当多的底层 代码优化。举个例子来解释，考虑 packet drop 例子：
+
+* XDP 24Mpps/core，对应 `41.6ns/packet`
+
+* DPDK 43.5Mpps，对应 `22.9ns/packet`
+
+多出来的 18.7ns 在我们的 3.6GHz 机器上对应 67 个时钟周期。因此，很显然 每个很小的优化在这里都会产生很大的影响。例如，我们测量出在测试 机器上，每次函数调用需要 1.3ns。mlx5 驱动处理每个包都有 10 次 函数调用，总计就是 13ns。
+
+### 通用目的操作系统，首要目标：更好的扩展和配置，而非极致性能
+
+另外，在 Linux 这样的通用目的操作系统中，某些开销是不可避免的， 因为设备驱动或子系统的组织方式是为了实现更好的扩展和配置，而非极致性能。
+
+但是，我们认为有些优化还是有必要的。例如，我们尝试将内核中与测试网卡无关的 DMA 函数调用删掉， 这样将前面提到的 10 个函数调用降低到了 6 个，测试结果显示这将单核性能提升到了 29Mpps/core。 依此推测的话，将另外 6 个函数调用也优化掉，能将 XDP 的性能提升到 `37.6Mpps`。 实际上我们不可能将 6 个全部去掉，但去掉其中几个，再加上一些其他优化，我 们相信 XDP 和 DPDK 的性能差距将越来越小。
+
+其他驱动的测试结果也是类似的，例如 i40e driver for 40 Gbps Intel cards。
+
+基于以上讨论，我们相信未来 XDP 与 DPDK 的性能差距将越来越小。
+
+另一方面，考虑到 XDP 在灵活性和与内核集成方面的优势， XDP 已经是很多实际场景中的非常有竞争力的方式。下文给出几个例子。
+
+# 5 真实场景使用案例
+
+本节给出三个例子来具体展示 XDP 在真实世界中的应用。 这几个案例都是已经真实在用的，但本文出于解释目的，将使用简化的版本。 同时也建议读者参考 \[38\]，后者是独立的文章，介绍使用 XDP 解决实际工作中网络服务所面临的一些挑战。
+
+本节目的是展示真实 XDP 方案的可行性，因此不会将重点放在与业界最新的实现做详尽性能对比上。 我们会拿常规的 Linux 内核网络栈的性能作为 baseline，来对比 XDP 应用的性能。
+
+## 5.1 案例一：软件路由（software routing）
+
+### 内核数据平面 & 控制平面（BIRD/FRR）
+
+Linux 内核实现了一个功能完整的路由表，作为数据平面，支持
+
+* policy routing
+
+* source-specific routing
+
+* multipath load balancing, and more.
+
+对于控制平面，Bird \[10\] 或 FRR \[17\] 这样的路由守护进程（ routing daemons）实现了多种路由控制平面协议。Linux 提供的这套生态系统功能如此丰富 ，因此再在另一个包处理框架中重新实现一套类似的路由栈代价将非常高， 更实际的方式是对 Linux 内核的数据平面进行优化。
+
+### XDP：直接查询内核路由表并转发
+
+XDP 非常适合做这件事情，尤其是它提供了一个 helper 函数，能从 XDP 程序中直接查询内核路由表。
+
+* 如果查询成功，会返回 egress interface 和下一跳 MAC 地址， XDP 程序利用这些信息足够将包立即转发出去。
+
+* 如果下一跳 MAC 还是未知的（因为之前还没进行过 neighbour lookup），XDP 程序就 能将包传给内核网络栈，后者会解析 neighbor 地址，这样随后的包 就能直接被 XDP 程序转发了。
+
+### 测试：XDP routing + 全球 BGP 路由表
+
+为展示 XDP 路由的性能，我们用 Linux 内核代码中的 XDP routing 例子 \[1\]，与常规 Linux 内核网络栈的性能做对比。 两组测试：
+
+1. 路由表中只有一条路由；
+
+2. 路由表中有从 routeviews.org 中 dump 而来的全球 BGP 路由表（global BGP routing table）。 包含 752,138 条路由。随机生成 4000 个目的 IP 地址，以确保能充分利用到这种路由表。
+
+   如果目的 IP 地址少于 4000 个，实际用到的路由表部分会较小，能够保存在 CPU 缓存中，使得结果不准确。 增大 IP 数量至 4000 个以上，不会对转发性能造成影响，但可以避免缓存导致的结果不准问题。
+
+对于两组测试，下一跳 MAC 地址都是与我们的发送网卡直接相关的接口的地址。
+
+### 性能：2.5x
+
+![](/assets/network-vnet-linuxnet-xdp31.png)
+
+Fig 6. 软件路由的性能。由于性能随核数线性增加，这里只给出单核的结果。
+
+测试结果如上图所示。
+
+* full table lookup 性能提升了 2.5 倍；
+
+* smaller routing table 组，提升了 3 倍。
+
+这说明，XDP 路由程序 + 单核 + 10Gbps 网卡 的软硬件配置，就能 处理整张全球 BGP 路由表（保守估计每个包平均 300 字节）。
+
+## 5.2 案例二：Inline DoS Mitigation
+
+DoS 攻击还是像瘟疫一样纠缠着互联网，现在通常的方式是：通过已经入侵的大量设备发起分布式（DDoS）攻击。
+
+有了XDP 之后，我们能直接在应用服务器（application servers）上 部署包过滤程序来防御此类攻击（inline DoS mitigation）， 无需修改应用代码。如果应用是部署在虚拟机里，那 XDP 程序还可以 部署在宿主机（hypervisor）上，这样单个程序就能保护机器上所有的虚拟机。
+
+### **模拟 Cloudflare 防御架构**
+
+为展示工作原理，我们用 XDP 作为过滤机制，模拟 Cloudflare 的 DDoS 防御架构 \[6\]。 他们的 Gatebot architecture ，首先在各 PoP 点机器上采样，然后统一收起来做分析， 根据分析结果生成防御规则。
+
+防御规则的形式是对包数据（payload）进行一系列简单检查， 能直接编译成 eBPF 代码然后分发到 PoP 点的所有服务器上。这里说的代码是 XDP 程序 ，它会将匹配到规则的所有流量丢弃，同时将统计信息更新到 BPF map。
+
+### 程序逻辑
+
+为验证这种方案的性能，我们编写一个 XDP 程序，它
+
+1. 解析包头，执行一些简单验证。对每个包：执行四次读取操作，以解析外层包头。
+
+2. 将符合攻击特性的流量丢弃。具体：丢弃 UDP + 特定端口的流量。
+
+3. 将其他流量通过 CPU redirect 方式重定向给另一个 CPU 做进一步处理；
+
+### 性能
+
+我们用 netperf 做性能压测 \[26\]。
+
+* 用 netperf TCP round-trip benchmark，单个 TCP 连接来回小的 request/reply，统计 transactions/second。
+
+  模拟的是交互式应用，例如小的远程过程调用（RPC）。
+
+* 实验在单核上进行，模拟多个流量（正常流量+攻击流量）竞争同一物理资源的场景。
+
+* 在 beseline 35K 业务 TPS（transactions per second）基础上，打少量 UDP 流量作为攻击流量。逐渐加大攻击流量，观察 TPS 的变化。
+
+![](/assets/network-vnet-linuxnet-xdp32.png)
+
+Fig 7. DDoS 性能。业务吞吐（TPS）随攻击流量的变化。
+
+结果如上图所示，
+
+* 没有 XDP 的一组，性能急剧下降：攻击流量在 3Mpps 时性能减半，3.5Mpps 时基本跌零；
+
+* 有 XDP 程序的一组，攻击流量达到 19.5Mpps 之前，业务吞吐保持在 28.5K TPS 以上，过了这个临界点性能才开始急剧下降。
+
+以上结果表明，XDP 防御 DDoS 攻击在实际中是完全可行的，单核就能轻松处理 10Gbps 的、都是最小包（minimum-packet）的 DoS 流量。 这种 DDoS 防御的部署更加灵活，无需硬件或应用做任何改动。
+
+## 5.3 案例三：负载均衡（load balancing）
+
+### Facebook Katran
+
+负载均衡的场景，我们用 Facebook 开源的 Katran 作为例子 \[15\]。Katran 的工作原理是对外通告服务的 IP，这样目标是这个 IP 的流量就会被路由到 XDP 实现的负载均衡器。
+
+* 负载均衡器对包头（source packet header）进行哈希，以此选择目标应用服务器。
+
+* 然后将对包进行封装（encap），发送给应用服务器；
+
+* 应用服务器解封装（decap），处理请求，然后直接将回包发给客户端（DSR 模式）。
+
+在这个过程中，XDP 程序负责哈希、封装以及将包从接收网卡再发出去的任务。 配置信息存储在 BPF map 中，整个封装逻辑是完全在 eBPF 中实现的。
+
+### 性能
+
+为测试性能，我们给 Katran XDP 程序配置几个固定的目标机器。 对照组是 IPVS，它是 Linux 内核的一部分。性能如表 2 所示，随 CPU 数量线性增长， XDP 比 IPVS 性能高 4.3 倍。
+
+表 2. 负载均衡器性能（Mpps）  
 
 
+![](/assets/network-vnet-linuxnet-xdp34.png)
+
+> 配置：1 VIP/core, 100 DstIPs/VIP.
+
+# 6 XDP 的未来方向
+
+XDP 已经能用于解决真实问题，但作为 Linux 内核的一部分，XDP 还在快速开发过程中。
+
+## 6.1 eBPF 程序的限制
+
+前面提到，加载到 eBPF 虚拟机的程序必须保证其安全性（不会破坏内核），因此对 eBPF 程序作了一下限制，归结为两方面：
+
+1. 确保程序会终止：在实现上是通过禁止循环和限制程序的最大指令数（max size of the program）；
+
+2. 确保内存访问的安全：通过 3.4 小结介绍的寄存器状态跟踪（register state tracking）来实现。
+
+### 校验逻辑偏保守
+
+由于校验器的首要职责是保证内核的安全，因此其校验逻辑比较保守， 凡是它不能证明为安全的，一律都拒绝。有时这会导致假阴性（false negatives）， 即某些实际上是安全的程序被拒绝加载；这方面在持续改进。
+
+* 校验器的错误提示也已经更加友好，以帮助开发者更快定位问题。
+
+* 近期已经支持了 BPF 函数调用（function calls）。
+
+* 正在计划支持有限循环（bounded loops）。
+
+* 正在提升校验器效率，以便处理更大的 BPF 程序。
+
+### 缺少标准库
+
+相比于用户空间 C 程序，eBPF 程序的另一个限制是缺少标准库，包括 内存分配、线程、锁等等库。
+
+1. 内核的生命周期和执行上下文管理（life cycle and execution context management ）部分地弥补了这一不足，（例如，加载的 XDP 程序会为每个收到的包执行），
+
+2. 内核提供的 helper 函数也部分地弥补了一不足。
+
+### 一个网卡接口只能 attach 一个 XDP 程序
+
+这个限制其实也是可以绕过的：将 XDP 程序组织成程序数组，通过尾 调用，根据包上下文在程序之间跳转，或者是将几个程序做 chaining。
+
+## 6.2 用户体验和调试
+
+XDP 程序运行在内核，因此常规的用户空间 debug 工具是用不了的，但内核自带的 debug 和 introspection 功能是可以用在 XDP （及其他 eBPF 程序）上的。 包括：
+
+* tracepoints and kprobes \[13\]
+
+* performance counters that are part of the perf subsystem \[42\]
+
+但不熟悉内核生态系统的开发者可能会对这些工具感到非常陌生，难以使用。因此，也出 现了一些更方便普通开发者的工具，包括 BCC \[50\]、bpftool \[8\]、libbpf 函数库 \[30\] 等等。
+
+## 6.3 驱动支持
+
+设备要支持 XDP，需要实现内核核心网络栈暴露出的一个 API。 写作本文时 Linux 4.18 已经有 12 种驱动支持 XDP，包括了大部分高速网卡。 最新列表见 \[2\]。
+
+随着 XDP 系统的不断成熟，核心代码逐渐上移到内核中，驱动需要维护的代码越 来越少。例如，redirection action 支持新的 target 时，无需驱动做任何改动。
+
+最后，对于那些不支持 XDP 的驱动，内核提供了 Generic XDP feature \[39\]，这是软件实现的 XDP，性能会低一些， 在实现上就是将 XDP 的执行上移到了核心网络栈（core networking stack）。
+
+> XDP 在内核收包函数 **receive\_skb**\(\) 之前，
+
+![](/assets/network-vnet-linuxnet-xdp36.png)
+
+> Generic XDP 在 **receive\_skb**\(\) 之后，
+
+![](/assets/network-vnet-linuxnet-xdp37.png)
+
+> 更多关于 Generic XDP，可参考参考：[容器网络\|深入理解Cilium](https://blog.csdn.net/lianhunqianr1/article/details/122757814)
+
+## 6.4 性能提升
+
+**XDP**和**DPDK**之间还有一些性能差距，一些改进工作正在进行中：
+
+* 驱动代码 micro-optimisations
+
+* 删除核心 XDP 代码中的非必要操作
+
+* 通过批处理平摊处理开销
+
+## 6.5 QoS 和 Rate Transitions
+
+当前，XDP 还没有任何 QoS 机制。 尤其是，如果对端已经过载（例如两端的网络速度或特性不匹配），XDP 程序是收不到任何背压（back-pressure）的，
+
+虽然 XDP 中缺少 QoS，但 Linux 内核网络栈中却有很多业界最佳的 Active Queue Management \(AQM\) 特性和 packet scheduling algorithms \[23\]。 这些特性中，部分并不适用于 XDP，但我们相信能够 以一种对包处理应用完全透明的方式，选择其中部分集成到 XDP。 我们计划对这一方向进行更深入研究。
+
+## 6.6 加速传输层协议
+
+我们已经证明 XDP 能在保留操作系统原有功能的前提下，集成到操作系统中，实现高速包数据。
+
+目前的 XDP 还是用于无状态包处理（stateless packet processing） ，如果将这个模型扩展到有状态传输层协议（stateful transport protocols），例如 TCP，它能给依赖可靠/有状态传输的应用提供类似的性能提升。
+
+实际上，已经有一些研究证明，相比于操作系统的协议栈，accelerated transport protocols 能显著提升性能\[5, 25, 35, 52\]。其中的一个解决方案 \[52\] 表明，在保留内 核 TCP 协议栈的的前提下，原始包处理性能（raw packet processing）存在巨大的提升 空间。
+
+XDP 非常适用于这种场景，目前也已经有一些关于如何实现的初步讨论 \[21\]， 虽然离实际使用还很远，但仍然是一个令人振奋的、扩展 XDP 系统 scope 的方向。
+
+## 6.7 内核-用户空间零拷贝（zero-copy to userspace）
+
+3.1 小节提到，XDP 程序能将数据包重定向到用户空间应用（userspace application）打 开的特殊类型 socket。这可以用于加速客户端和服务端在同一台机器 的网络密集型应用（network-heavy applications running on the local machine）。
+
+> 更多信息可参考： \(译\) 利用 ebpf sockmap/redirection 提升 socket 性能（2020）。 这里使用的是 BPF 而非 XDP，但核心原理是一样的，只是程序执行的位置（hook）不同。 译注。
+
+但在目前的实现中，这种方式在底层仍然需要拷贝包数据，因此性能会打折扣。
+
+目前已经有工作在进行，通过 AF\_XDP 实现真正的数据零拷贝。但这项工作需要 对网络设备的内存处理过程有一些限制，因此需要设备驱动的显式支持。 第一个支持这个功能的 patch 已经合并到 4.19 内核，更多驱动的支持 正在添加中。初步的性能测试结果还是很乐观的，显示能达到 20Mpps/core 的内核到用户 空间传递（transfer）速度。
+
+## 6.8 XDP 作为基础构建模块（XDP as a building block）
+
+正如 DPDK 用于高层包处理框架的底层构建模块（例如 \[31\]），XDP 有望成为高层应用的运行时环境 （runtime environment for higher-level applications）。
+
+实际上，我们看到一些基于 XDP 的应用和框架已经出现了。包括
+
+* Cilium security middle-ware \[3\]
+
+* Suricata network monitor \[4\]
+
+* Open vSwitch \[49\]
+
+* P4-to-XDP compiler project \[51\]
+
+甚至还有人尝试将 XDP 作为 DPDK 的一种底层驱动 \[53\]。
+
+# 7 总结
+
+本文描述了**XDP**，一个安全、快速、可编程、集成到操作系统内核的包处理框架。 测试结果显示，XDP能提供**24Mpps/core 的**高处理性能，这一数字虽然与基于 kernel bypass 的**DPDK**仍有差距，但提供了其他一些非常有竞争力的优势：
+
+1. 兼容**内核安全**和**管理框架**（kernel bypass 方式在bypass 内核网络栈的同时，也将安全和设备管理等这些极其重要的基础设施 bypass 了）；
+
+2. 兼容**内核网络栈**，可选择性利用内核已有的基础设施和功能；
+
+3. 提供与**内核 API**一样稳定的编程接口；
+
+4. 对**应用完全透明**；
+
+5. 更新、替换程序的过程不会引起服务中断；
+
+6. 无需**专门硬件，无需独占CPU**等资源。
+
+相比于**kernel bypass**这种非此即彼、完全绕开内核的方式，我们相信 XDP 有更广阔的的应用前景。Facebook、Cloudflare 等公司实际落地的 XDP 应用，更加增强了我们的这种信心。
+
+最后，**XDP**系统还在快速发展，前面也列出了一些正在未来可能会做的开发/优化工作。
+
+# 致谢
 
 ## 参考文档 {#fdsrev}
 
