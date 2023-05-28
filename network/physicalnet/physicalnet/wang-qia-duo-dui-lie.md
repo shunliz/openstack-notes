@@ -10,9 +10,7 @@ RFS：虽然完成了数据包的软中断处理的核分配，但是如果，�
 
 ![](/assets/network-pnet-netcard-multiq2.png)
 
-
-
-
+![](/assets/network-pnet-netcard-multiq3.png)
 
 ## GRO（Generic Receive Offloading）
 
@@ -24,11 +22,7 @@ Large Receive Offloading \(LRO\) 是一个硬件优化，GRO 是 LRO 的一种�
 
 LRO 的实现，一般来说，对合并包的规则非常宽松。GRO 是 LRO 的软件实现，但是对于包合并的规则更严苛。如果用 tcpdump 抓包，有时会看到机器收到了看起来不现实的、非常大的包， 这很可能是系统开启了 GRO。
 
-
-
-
-
 参考文献
 
-https://zhuanlan.zhihu.com/p/482772138?utm\_id=0
+[https://zhuanlan.zhihu.com/p/482772138?utm\_id=0](https://zhuanlan.zhihu.com/p/482772138?utm_id=0)
 
