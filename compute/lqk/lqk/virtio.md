@@ -10,8 +10,6 @@
 
 _**举**例来说，当virtio-net驱动**发送网络数据包**时，会将数据放置于Available Ring中之后，会触发一次通知（Notification）。这时QEMU会接管控制，将此网络包传递到**TAP设备**。接着QEMU将数据放于Used Ring中，并发出一次通知，这次通知会触发虚拟中断的注入。虚拟机收到这个中断后，就会到Used Ring中取得后端已经放置的数据。至此一次发送操作就完成了。**接收网络数据包**的行为也是类似，只不过这次virtio-net驱动是将空的buffer放置于队列之中，以便后端将收到的数据填充完成而已。_
 
-
-
 ![](/assets/compute-lqk-virtio-virtio4.png)
 
 ![](/assets/compute-lqk-virtio-virtio5.png)
@@ -36,7 +34,7 @@ QEMU实现的virtio网络后端带来的网络性能并不如意，究其原因�
 * 《[Open vSwitch（OVS）文档](https://rtoax.blog.csdn.net/article/details/109005008)》
 * 《[《深入浅出DPDK》读书笔记（十五）：DPDK应用篇（Open vSwitch（OVS）中的DPDK性能加速）](https://rtoax.blog.csdn.net/article/details/109371440)》
 
-![](/assets/compute-lqk-virtio-virtio21.png)**3.vhost-user: **使用DPDK加速的后端
+![](/assets/compute-lqk-virtio-virtio21.png)**3.vhost-user: **使用DPDK加速的后端
 
 GitHub仓库：[https://github.com/openebs/vhost-user](https://github.com/openebs/vhost-user)
 
@@ -52,17 +50,33 @@ DPDK社区一直致力于加速数据中心的网络数据平面，而virtio网�
 
 通过这个unix socket，vhost-user协议允许QEMU通过以下重要的操作来配置数据平面的offload：
 
-* 1. 特性协商：virtio的特性与vhost-user新定义的特性都可以通过类似的方式协商，而所谓协商的具体实现就是QEMU接收vhost-user的特性，与自己支持的特性取交集。
-* 2. 内存区域配置：QEMU配置好内存映射区域，vhost-user使用mmap接口来映射它们。
-* 3. Vring配置：QEMU将Virtqueue的个数与地址发送给vhost-user，以便vhost-user访问。
-* 4. 通知配置：
-  **vhost-user仍然使用eventfd来实现前后端通知。**
+* 1. 特性协商：virtio的特性与vhost-user新定义的特性都可以通过类似的方式协商，而所谓协商的具体实现就是QEMU接收vhost-user的特性，与自己支持的特性取交集。
+* 1. 内存区域配置：QEMU配置好内存映射区域，vhost-user使用mmap接口来映射它们。
+* 1. Vring配置：QEMU将Virtqueue的个数与地址发送给vhost-user，以便vhost-user访问。
+* 1. 通知配置：
+     **vhost-user仍然使用eventfd来实现前后端通知。**
 
 基于DPDK的**Open vSwitch\(OVS-DPDK\)**一直以来就对vhost-user提供了支持，读者可以通过在OVS-DPDK上**创建vhost-user端口**来使用这种高效的用户态后端。
 
+# ![](/assets/compute-lqk-virtio-virtio32.png)**4.vDPA:**使用硬件加速数据面
+
+---
+
+**Virtio作为一种半虚拟化的解决方案**，其性能一直不如设备的pass-through，即将物理设备（通常是网卡的VF）直接分配给虚拟机，其优点在于数据平面是在虚拟机与硬件之间直通的，几乎不需要主机的干预。而virtio的发展，虽然带来了性能的提升，可终究无法达到pass-through的I/O性能，始终需要主机（主要是软件交换机）的干预。
+
+**vDPA\(vhost Data Path Acceleration\)即是让virtio数据平面不需主机干预的解决方案。**从图中可以看到virtio的控制平面仍需要**vDPA driver**进行传递，也就是说QEMU，或者虚拟机仍然使用原先的控制平面协议作为接口，而这些控制信息被传递到硬件中，硬件会通过这些信息配置好数据平面。而数据平面上，经过配置后的数据平面可以在虚拟机和网卡之间直通。
+
+鉴于现在后端的数据处理其实完全在硬件中，原先的前后端通知方式也可以几乎完全规避主机的干预，以中断为例，原先中断必须由主机处理，主机通过软件交换机得知中断的目的地之后，将虚拟中断注入到虚拟机中，而在vDPA中，网卡可以直接将中断发送到虚拟机中。
+
+总体来看，vDPA的数据平面与**SR-IOV设备直通**的数据平面非常接近，并且在性能数据上也能达到后者的水准。更重要的是vDPA框架保有virtio这套标准的接口，使云服务提供商在不改变virtio接口的前提下，得到更高的性能。
+
+《[SR-IOV：网卡直通技术](https://www.cnblogs.com/liuhongru/p/11068460.html)》
+
+《[关于英特尔® 以太网服务器适配器中 SR-IOV 的常见问题解答](https://www.intel.cn/content/www/cn/zh/support/articles/000005722/network-and-i-o/ethernet-products.html)》
+
+需要注意的是，vDPA框架中利用到的硬件必须至少支持virtio ring的标准，否则可想而知，硬件是无法与前端进行正确通信的。另外，原先软件交换机提供的交换功能，也转而在硬件中实现。
 
 
-![](/assets/compute-lqk-virtio-virtio32.png)
 
-
+![](/assets/compute-lqk-virtio-virtio41.png)
 
