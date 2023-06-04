@@ -154,8 +154,6 @@ ip,nw\_dst=10.0.0.0/16 actions=output:1
 
 这样，前面提出的问题被解决了，Megaflow cache的匹配又足够模糊了。为了发挥Tuple Priority Sorting的最大作用：在下发OpenFlow规则时，应当尽量将相同Match的OpenFlow规则配置相同的优先级，并且一个OpenFlow Table中，优先级应当尽量少（OpenFlow定义的优先级是16bit整数）。
 
-
-
 **Staged Lookup（分段查找）**
 
 如果将之前的OpenFlow规则稍作修改：
@@ -183,8 +181,6 @@ priority=300,ip,nw\_dst=20.0.0.0/16,tcp\_dst=22 actions=drop
 虽然有了Staged Lookup，但是之前查找一个Hash table变成了要查找4个hash table，直观感受是查找性能要下降。但是实际性能差不多，因为大部分的不匹配在查找前两个Hash table就能返回。而前两个hash table的所需要的hash值，计算起来比计算完整的hash值要更节约时间。并且4个Hash table，后面的包含了前面的所有field，而散列值的计算可以是增量计算，就算查找到了第4个Hash table，计算散列值的消耗与拆分前是一样的。
 
 Staged Lookup要发挥作用，在下发OpenFlow规则时，如果匹配包含了tcp\_dst这类易变化的field，应当尽量包含一些metadata，L2 field，或者L3 field。
-
-
 
 **Prefix Tracking**
 
@@ -234,13 +230,9 @@ OpenVSwitch还有一些其他的优化手段，但是整体而言，都是为了
 
 根据OpenVSwitch的转发流程，OpenVSwitch需要维护三个数据：Microflow cache，Megaflow cache和OpenFlow Table。前面介绍的是这三个数据之间的关系以及在转发过程中的作用。这部分来看看OpenVSwitch如何管理这三组数据。
 
-
-
 **OpenFlow Table**
 
 从OpenVSwitch的角度来说，OpenFlow的管理是简单的。因为OpenFlow是由SDN controller管理，OpenVSwitch只是提供了OpenFlow增删改查的接口。
-
-
 
 **Megaflow Cache**
 
@@ -260,8 +252,6 @@ handlers:35 ofconns:2 ports:6 revalidators:13 rules:735
 
 同时OpenVSwitch还会定期的获取megaflow cache的统计值（大概1秒一次），以获得kernel datapath处理的packets数和bytes数。在OpenFlow规则中看到的packets数和bytes数的统计，就是这个定期同步任务的结果。获取megaflow cache统计值的核心目的是为了确定哪些megaflow cache一段时间没有使用，必须被删除。因为首先megaflow cache的规模是有限的，其次megaflow cache越小，转发性能也越好，所以需要有一个老化的过程。默认情况下，OpenVSwitch设置给megaflow cache的老化时间是10秒。如果megaflow cache已经超过了配置的最大值，这个老化时间也会相应的减少。
 
-
-
 **Microflow cache**
 
 对于最新版本的OpenVSwitch，Mircoflow cache只是到megaflow cache中各个Hash table的一个缓存，因此其时效性不是那么的重要，维护起来也更加的简单。
@@ -269,4 +259,67 @@ handlers:35 ofconns:2 ports:6 revalidators:13 rules:735
 首先，microflow cache有一个固定的大小，如果microflow cache满了就用新的规则随机替换旧的规则，所以，也不需要老化功能；其次，如果因为更新，使得megaflow cache发生变化，microflow cache不会主动的更新，只有当下一个网络包到达microflow cache时，因为对应不到原来的megaflow cache中的Hash table，会重新的在megaflow cache Hash table中查找，进而重新定位到相应的Hash table。因此，microflow的管理也是被动的。
 
 最后，回顾一下OpenVSwitch的实现，它从来不是一个局部最优的解决方案，它的设计哲学是以一个相对较优的方案满足所有的应用场景。
+
+
+
+**TSS**
+
+# 元组空间搜索算法
+
+由于OpenFlow的匹配域扩展到了十二个字段甚至更多的字段，其协议解析后提取的查表关键字（即sw\_flow\_key）数据结构表示如图2所示。  
+![](/assets/network-virtualnet-ovs-openflowtss1.png)
+
+#### 图2 sw\_flow\_key数据结构
+
+所以设计查找算法在性能、存储方面更具挑战。在防火墙、QoS等方面已经对多字段查表进行了大量的研究，若将匹配域中的每一个字段又被称为一个维度，多字段的软件查表算法大体上可以分为两类：单维组合分类算法和多维联合分类算法。单维组合查找算法的主要思想是：单独地对数据包每个字段进行匹配，并对每个字段的匹配结果进行合并从而找到最终匹配的规则，其代表包括递归流分类（RFC）、位向量（BV）等。多维联合分类查找算法的大致思想是不单独地考虑每个字段内部特点，而是简单地把包头的所有字段看作一个维度，进行联合查找，其代表包括决策树（Decision tree）、元组空间搜索（TSS）等。
+
+由于OVS选择采用元组空间查找\(Tuple Space Search，TSS\)，因此这里只重点介绍TSS算法，感兴趣的同学可百度其他算法。TSS算法的主要思想是，将所有规则按照各字段前缀长度的组合划分成比规则数目小得多的元组集合，然后在这些元组里进行哈希查找。举个例子，有如下规则集，如表2所示包含三个匹配域和10条对应的规则。表中R1-R10为规则，F1、F2、F3为三个匹配字段，每个字段均为4bit。
+
+#### 表2 规则集
+
+| 规则 | F1 | F2 | F3 |
+| :--- | :--- | :--- | :--- |
+| R1 | 0\*\*\* | 01\*\* | 100\* |
+| R2 | 01\*\* | 1\*\*\* | 010\* |
+| R3 | 1\*\*\* | 01\*\* | 110\* |
+| R4 | 00\*\* | 0\*\*\* | 100\* |
+| R5 | \* | 0101 | \* |
+| R6 | 1\*\*\* | 10\*\* | 101\* |
+| R7 | 00\*\* | 1\*\*\* | 000\* |
+| R8 | \* | 1101 | \* |
+| R9 | \* | 1001 | \* |
+| R10 | 10\*\* | 1\*\*\* | 010\* |
+
+用\[x，y，z\]中的x、y、z分别表示F1、 F2、F3的前缀长度。则10条规则表示如下。
+
+#### 表3 规则前缀集
+
+| 规则 | 前缀组合\[x，y，z\] |
+| :--- | :--- |
+| R1 | \[1,2,3\] |
+| R2 | \[2,1,3\] |
+| R3 | \[1,2,3\] |
+| R4 | \[2,1,3\] |
+| R5 | \[0,4,0\] |
+| R6 | \[1,2,3\] |
+| R7 | \[2,1,3\] |
+| R8 | \[0,4,0\] |
+| R9 | \[0,4,0\] |
+| R10 | \[2,1,3\] |
+
+由上表可知，规则可分为三类，R1、R3、R6∈\[1,2,3\]，R5、R8、R9∈\[0,4,0\]，R2、R4、R7、R10∈\[2,1,3\]。在不考虑规则优先级的情况下，TSS的查找表构造如图3所示。
+
+![](/assets/network-virtualnet-ovs-openflow2.png)
+
+所以最多只需要三次Hash查找，即可找到对应表项。可以看到TSS的一个最大优点是，当所有规则的各字段长度的组合相对较少时，TSS算法是很高效的。如例子中的，10条规则只需要3次hash查找即可。TSS的缺点是当所有规则的各字段的组合很多时，最坏情况下的搜索次数就变为n（n为规则的数量）。在上个例子中，假设所有规则的字段组合都不一致，那么TSS查表次数就为10，退化为最原始的顺序查表。因此，TSS的算法是否高效与转发规则的特征有直接的关系。
+
+那么为什么OVS选择TSS，而不选择其他查找算法？论文\[2\]给出了以下三点解释：
+
+（1）在虚拟化数据中心环境下，流的添加删除比较频繁，TSS支持高效的、常数时间的表项更新；  
+（2）TSS支持任意匹配域的组合；  
+（3）TSS存储空间随着流的数量线性增长。
+
+综上原因，OVS选择了TSS查表算法，并对其进行了一些优化（优化的一些手段，例如优先级排序、分段hash查找等等，详见论文和源码）。结合上面所提到的Microflow Cache和Megaflow Cache，给出目前OVS中内核态查表的流程，如图4所示。
+
+![](/assets/network-virtualnet-ovs-openflowtss3.png)
 
