@@ -1,4 +1,3 @@
-
 ### 流表寄存器意义
 
 | **寄存器** | **功能** | **详解** |
@@ -140,10 +139,6 @@ l  put\_arp\(P, A, E\)和put\_nd\(P, A, E\)讲参数存储到openflow的字段�
 
  cookie=0xc6c881ee, table=18, priority=90,arp,reg14=0x3,metadata=0x2,dl_src=52:54:00:c1:68:72,arp_sha=52:54:00:c1:68:72 actions=resubmit(,19)
 
- cookie=0x9e2a7562, table=18, priority=90,arp,reg14=0x2,metadata=0x2,dl_src=52:54:00:c1:68:70,arp_sha=52:54:00:c1:68:70 actions=resubmit(,19)
-
- cookie=0x686267fe, table=18, priority=90,arp,reg14=0x2,metadata=0x3,dl_src=52:54:00:c1:68:71,arp_sha=52:54:00:c1:68:71 actions=resubmit(,19)
-
  //继续
 
  cookie=0xb76a420f, table=18, priority=0,metadata=0x2 actions=resubmit(,19)
@@ -258,13 +253,6 @@ l  put\_arp\(P, A, E\)和put\_nd\(P, A, E\)讲参数存储到openflow的字段�
 
  cookie=0x1ab8df97, table=27, priority=0,metadata=0x3 actions=resubmit(,28)
 
- cookie=0x8592b902, table=27, priority=0,metadata=0x2 actions=resubmit(,28)
-
- cookie=0xe3f59b41, table=28, priority=0,metadata=0x3 actions=resubmit(,29)
-
- cookie=0xba22fb48, table=28, priority=0,metadata=0x2 actions=resubmit(,29)
-
-
 
  //泛洪
 
@@ -279,12 +267,6 @@ l  put\_arp\(P, A, E\)和put\_nd\(P, A, E\)讲参数存储到openflow的字段�
  cookie=0x13381c84, table=29, priority=50,metadata=0x3,dl_dst=52:54:00:c1:68:73 actions=load:0x3->NXM_NX_REG15[],resubmit(,32)
 
  cookie=0x23555b13, table=29, priority=50,metadata=0x2,dl_dst=52:54:00:c1:68:50 actions=load:0x1->NXM_NX_REG15[],resubmit(,32)
-
- cookie=0x3f8b4ff9, table=29, priority=50,metadata=0x2,dl_dst=52:54:00:c1:68:70 actions=load:0x2->NXM_NX_REG15[],resubmit(,32)
-
- cookie=0x615dbb2a, table=29, priority=50,metadata=0x3,dl_dst=52:54:00:c1:68:71 actions=load:0x2->NXM_NX_REG15[],resubmit(,32)
-
- cookie=0xb88437bc, table=29, priority=50,metadata=0x3,dl_dst=52:54:00:c1:68:60 actions=load:0x1->NXM_NX_REG15[],resubmit(,32)
 
 
 
@@ -458,13 +440,6 @@ l  put\_arp\(P, A, E\)和put\_nd\(P, A, E\)讲参数存储到openflow的字段�
 
  cookie=0x0, table=64, priority=100,reg10=0x1/0x1,reg15=0x2,metadata=0x3 actions=push:NXM_OF_IN_PORT[],load:0->NXM_OF_IN_PORT[],resubmit(,65),pop:NXM_OF_IN_PORT[]
 
- cookie=0x0, table=64, priority=100,reg10=0x1/0x1,reg15=0x2,metadata=0x2 actions=push:NXM_OF_IN_PORT[],load:0->NXM_OF_IN_PORT[],resubmit(,65),pop:NXM_OF_IN_PORT[]
-
- cookie=0x0, table=64, priority=100,reg10=0x1/0x1,reg15=0x1,metadata=0x3 actions=push:NXM_OF_IN_PORT[],load:0->NXM_OF_IN_PORT[],resubmit(,65),pop:NXM_OF_IN_PORT[]
-
- cookie=0x0, table=64, priority=100,reg10=0x1/0x1,reg15=0x2,metadata=0x1 actions=push:NXM_OF_IN_PORT[],load:0->NXM_OF_IN_PORT[],resubmit(,65),pop:NXM_OF_IN_PORT[]
-
- cookie=0x0, table=64, priority=100,reg10=0x1/0x1,reg15=0x1,metadata=0x2 actions=push:NXM_OF_IN_PORT[],load:0->NXM_OF_IN_PORT[],resubmit(,65),pop:NXM_OF_IN_PORT[]
 
  cookie=0x0, table=64, priority=0 actions=resubmit(,65)
 
@@ -505,7 +480,7 @@ l  put\_arp\(P, A, E\)和put\_nd\(P, A, E\)讲参数存储到openflow的字段�
 
 ### 流量追踪
 
-https://www.cnblogs.com/weiduoduo/p/11142747.html
+[https://www.cnblogs.com/weiduoduo/p/11142747.html](https://www.cnblogs.com/weiduoduo/p/11142747.html)
 
 ping
 
@@ -685,14 +660,13 @@ Megaflow: recirc_id=0x1cd,ct_state=+new-est-rel-inv+trk,eth,ip,in_port=4,vlan_tc
 Datapath actions: ct_clear
 ```
 
-
 OVN Trace
 
 ```
 $ sudo ovn-trace --minimal sw0 'inport == "sw0-port1" && eth.src == 00:00:00:00:00:01 && eth.dst == 00:00:00:00:00:02'
 # reg14=0x1,vlan_tci=0x0000,dl_src=00:00:00:00:00:01,dl_dst=00:00:00:00:00:02,dl_type=0x0000
 output("sw0-port2");
- 
+
 $ ovn-trace --summary sw0 'inport == "sw0-port1" && eth.src == 00:00:00:00:00:01 && eth.dst == 00:00:00:00:00:02'
 # reg14=0x1,vlan_tci=0x0000,dl_src=00:00:00:00:00:01,dl_dst=00:00:00:00:00:02,dl_type=0x0000
 ingress(dp="sw0", inport="sw0-port1") {
@@ -704,10 +678,10 @@ ingress(dp="sw0", inport="sw0-port1") {
         /* output to "sw0-port2", type "" */;
     };
 };
- 
+
 $ ovn-trace --detailed sw0 'inport == "sw0-port1" && eth.src == 00:00:00:00:00:01 && eth.dst == 00:00:00:00:00:02'
 # reg14=0x1,vlan_tci=0x0000,dl_src=00:00:00:00:00:01,dl_dst=00:00:00:00:00:02,dl_type=0x0000
- 
+
 ingress(dp="sw0", inport="sw0-port1")
 -------------------------------------
  0. ls_in_port_sec_l2 (ovn-northd.c:2979): inport == "sw0-port1" && eth.src == {00:00:00:00:00:01}, priority 50, uuid 50dd1db0
@@ -715,16 +689,16 @@ ingress(dp="sw0", inport="sw0-port1")
 13. ls_in_l2_lkup (ovn-northd.c:3274): eth.dst == 00:00:00:00:00:02, priority 50, uuid faab2844
     outport = "sw0-port2";
     output;
- 
+
 egress(dp="sw0", inport="sw0-port1", outport="sw0-port2")
 ---------------------------------------------------------
  8. ls_out_port_sec_l2 (ovn-northd.c:3399): outport == "sw0-port2" && eth.dst == {00:00:00:00:00:02}, priority 50, uuid 4b4d798e
     output;
     /* output to "sw0-port2", type "" */
- 
+
 $ ovn-trace --detailed sw0 'inport == "sw0-port1" && eth.src == 00:00:00:00:00:ff && eth.dst == 00:00:00:00:00:02'
 # reg14=0x1,vlan_tci=0x0000,dl_src=00:00:00:00:00:ff,dl_dst=00:00:00:00:00:02,dl_type=0x0000
- 
+
 ingress(dp="sw0", inport="sw0-port1")
 -------------------------------------
  0. ls_in_port_sec_l2: no match (implicit drop)
