@@ -24,29 +24,6 @@
  cookie=0x1b96db9, duration=79156.683s, table=8, n_packets=0, n_bytes=0, priority=100,metadata=0x7,vlan_tci=0x1000/0x1000 actions=drop
  cookie=0xab874b4, duration=96240.248s, table=8, n_packets=0, n_bytes=0, priority=100,metadata=0x5,dl_src=01:00:00:00:00:00/01:00:00:00:00:00 actions=drop
  cookie=0x8a384251, duration=87681.563s, table=8, n_packets=0, n_bytes=0, priority=100,metadata=0x6,dl_src=01:00:00:00:00:00/01:00:00:00:00:00 actions=drop
- cookie=0x1b96db9, duration=79156.683s, table=8, n_packets=0, n_bytes=0, priority=100,metadata=0x7,dl_src=01:00:00:00:00:00/01:00:00:00:00:00 actions=drop
-
-
- cookie=0xfc6369dc, duration=88638.930s, table=8, n_packets=0, n_bytes=0, priority=50,reg14=0x1,metadata=0x5,dl_src=fa:10:dd:1b:30:01 actions=resubmit(,9)
- cookie=0x7985c8ec, duration=88621.461s, table=8, n_packets=0, n_bytes=0, priority=50,reg14=0x2,metadata=0x5,dl_src=fa:10:dd:1b:30:02 actions=resubmit(,9)
- cookie=0xd0e12cee, duration=87681.562s, table=8, n_packets=34, n_bytes=3156, priority=50,reg14=0x1,metadata=0x6,dl_src=fa:10:dd:1b:40:01 actions=resubmit(,9)
- cookie=0xd41d6822, duration=79156.688s, table=8, n_packets=0, n_bytes=0, priority=50,reg14=0x3,metadata=0x5 actions=resubmit(,9)
- cookie=0xfb376ec4, duration=79156.670s, table=8, n_packets=0, n_bytes=0, priority=50,reg14=0x3,metadata=0x6 actions=resubmit(,9)
- cookie=0x5f864969, duration=79156.684s, table=8, n_packets=0, n_bytes=0, priority=50,reg14=0x2,metadata=0x7,dl_dst=01:00:00:00:00:00/01:00:00:00:00:00 actions=resubmit(,9)
- cookie=0xacd96dc9, duration=79156.683s, table=8, n_packets=0, n_bytes=0, priority=50,reg14=0x1,metadata=0x7,dl_dst=01:00:00:00:00:00/01:00:00:00:00:00 actions=resubmit(,9)
- cookie=0xa0308908, duration=79156.683s, table=8, n_packets=0, n_bytes=0, priority=50,reg14=0x1,metadata=0x7,dl_dst=02:d4:1d:8c:30:01 actions=resubmit(,9)
- cookie=0x670f23f7, duration=79156.683s, table=8, n_packets=0, n_bytes=0, priority=50,reg14=0x2,metadata=0x7,dl_dst=02:d4:1d:8c:40:01 actions=resubmit(,9)
-
- cookie=0x2f8b8135, duration=79156.684s, table=9, n_packets=0, n_bytes=0, priority=100,ip,metadata=0x7,nw_dst=224.0.0.0/4 actions=drop
- cookie=0x80287555, duration=79156.684s, table=9, n_packets=0, n_bytes=0, priority=100,ip,reg9=0/0x2,metadata=0x7,nw_src=30.1.1.1 actions=drop
- cookie=0x8404f27d, duration=79156.683s, table=9, n_packets=0, n_bytes=0, priority=100,ip,reg9=0/0x2,metadata=0x7,nw_src=40.1.1.1 actions=drop
- cookie=0x80287555, duration=79156.683s, table=9, n_packets=0, n_bytes=0, priority=100,ip,reg9=0/0x2,metadata=0x7,nw_src=30.1.1.255 actions=drop
- cookie=0x8404f27d, duration=79156.682s, table=9, n_packets=0, n_bytes=0, priority=100,ip,reg9=0/0x2,metadata=0x7,nw_src=40.1.1.255 actions=drop
- cookie=0x2f8b8135, duration=79156.683s, table=9, n_packets=0, n_bytes=0, priority=100,ip,metadata=0x7,nw_dst=0.0.0.0/8 actions=drop
- cookie=0x2f8b8135, duration=79156.683s, table=9, n_packets=0, n_bytes=0, priority=100,ip,metadata=0x7,nw_dst=127.0.0.0/8 actions=drop
- cookie=0x2f8b8135, duration=79156.683s, table=9, n_packets=0, n_bytes=0, priority=100,ip,metadata=0x7,nw_src=0.0.0.0/8 actions=drop
- cookie=0x2f8b8135, duration=79156.683s, table=9, n_packets=0, n_bytes=0, priority=100,ip,metadata=0x7,nw_src=127.0.0.0/8 actions=drop
- cookie=0x2f8b8135, duration=79156.683s, table=9, n_packets=0, n_bytes=0, priority=100,ip,metadata=0x7,nw_src=255.255.255.255 actions=drop
 
 
  ### 3、port-security配置额外生成，接收的源检查，保证vm port和ip+mac的一一对应关系。不对应的，在下面[8]中 drop
@@ -116,11 +93,6 @@
  cookie=0x1bf2c714, duration=79156.684s, table=9, n_packets=0, n_bytes=0, priority=80,tcp,metadata=0x7,nw_dst=30.1.1.1,nw_frag=not_later actions=controller(userdata=00.00.00.0b.00.00.00.00.ff.ff.00.18.00.00.23.20.00.1b.00.00.00.00.04.06.00.30.00.00.00.00.00.00.ff.ff.00.18.00.00.23.20.00.1b.00.00.00.00.02.06.00.30.00.00.00.00.00.00.ff.ff.00.18.00.00.23.20.00.1c.00.00.00.00.04.06.00.30.00.00.00.00.00.00.ff.ff.00.18.00.00.23.20.00.1c.00.00.00.00.02.06.00.30.00.00.00.00.00.00.ff.ff.00.18.00.00.23.20.00.1b.00.00.00.00.0e.04.00.20.00.00.00.00.00.00.ff.ff.00.18.00.00.23.20.00.1b.00.00.00.00.10.04.00.20.00.00.00.00.00.00.ff.ff.00.18.00.00.23.20.00.1c.00.00.00.00.0e.04.00.20.00.00.00.00.00.00.ff.ff.00.18.00.00.23.20.00.1c.00.00.00.00.10.04.00.20.00.00.00.00.00.00.ff.ff.00.10.00.00.23.20.00.0e.ff.f8.0a.00.00.00)
  cookie=0x7703c2e1, duration=79156.683s, table=9, n_packets=0, n_bytes=0, priority=80,udp,metadata=0x7,nw_dst=30.1.1.1,nw_frag=not_later actions=controller(userdata=00.00.00.0a.00.00.00.00.ff.ff.00.18.00.00.23.20.00.1b.00.00.00.00.04.06.00.30.00.00.00.00.00.00.ff.ff.00.18.00.00.23.20.00.1b.00.00.00.00.02.06.00.30.00.00.00.00.00.00.ff.ff.00.18.00.00.23.20.00.1c.00.00.00.00.04.06.00.30.00.00.00.00.00.00.ff.ff.00.18.00.00.23.20.00.1c.00.00.00.00.02.06.00.30.00.00.00.00.00.00.ff.ff.00.18.00.00.23.20.00.1b.00.00.00.00.0e.04.00.20.00.00.00.00.00.00.ff.ff.00.18.00.00.23.20.00.1b.00.00.00.00.10.04.00.20.00.00.00.00.00.00.ff.ff.00.18.00.00.23.20.00.1c.00.00.00.00.0e.04.00.20.00.00.00.00.00.00.ff.ff.00.18.00.00.23.20.00.1c.00.00.00.00.10.04.00.20.00.00.00.00.00.00.00.19.00.10.00.01.3a.01.ff.00.00.00.00.00.00.00.00.19.00.10.80.00.26.01.03.00.00.00.00.00.00.00.00.19.00.10.80.00.28.01.03.00.00.00.00.00.00.00.ff.ff.00.10.00.00.23.20.00.0e.ff.f8.0a.00.00.00)
  cookie=0x881f5578, duration=79156.683s, table=9, n_packets=0, n_bytes=0, priority=80,udp,metadata=0x7,nw_dst=40.1.1.1,nw_frag=not_later actions=controller(userdata=00.00.00.0a.00.00.00.00.ff.ff.00.18.00.00.23.20.00.1b.00.00.00.00.04.06.00.30.00.00.00.00.00.00.ff.ff.00.18.00.00.23.20.00.1b.00.00.00.00.02.06.00.30.00.00.00.00.00.00.ff.ff.00.18.00.00.23.20.00.1c.00.00.00.00.04.06.00.30.00.00.00.00.00.00.ff.ff.00.18.00.00.23.20.00.1c.00.00.00.00.02.06.00.30.00.00.00.00.00.00.ff.ff.00.18.00.00.23.20.00.1b.00.00.00.00.0e.04.00.20.00.00.00.00.00.00.ff.ff.00.18.00.00.23.20.00.1b.00.00.00.00.10.04.00.20.00.00.00.00.00.00.ff.ff.00.18.00.00.23.20.00.1c.00.00.00.00.0e.04.00.20.00.00.00.00.00.00.ff.ff.00.18.00.00.23.20.00.1c.00.00.00.00.10.04.00.20.00.00.00.00.00.00.00.19.00.10.00.01.3a.01.ff.00.00.00.00.00.00.00.00.19.00.10.80.00.26.01.03.00.00.00.00.00.00.00.00.19.00.10.80.00.28.01.03.00.00.00.00.00.00.00.ff.ff.00.10.00.00.23.20.00.0e.ff.f8.0a.00.00.00)
- cookie=0x5bcf8f33, duration=79156.683s, table=9, n_packets=0, n_bytes=0, priority=80,tcp,metadata=0x7,nw_dst=40.1.1.1,nw_frag=not_later actions=controller(userdata=00.00.00.0b.00.00.00.00.ff.ff.00.18.00.00.23.20.00.1b.00.00.00.00.04.06.00.30.00.00.00.00.00.00.ff.ff.00.18.00.00.23.20.00.1b.00.00.00.00.02.06.00.30.00.00.00.00.00.00.ff.ff.00.18.00.00.23.20.00.1c.00.00.00.00.04.06.00.30.00.00.00.00.00.00.ff.ff.00.18.00.00.23.20.00.1c.00.00.00.00.02.06.00.30.00.00.00.00.00.00.ff.ff.00.18.00.00.23.20.00.1b.00.00.00.00.0e.04.00.20.00.00.00.00.00.00.ff.ff.00.18.00.00.23.20.00.1b.00.00.00.00.10.04.00.20.00.00.00.00.00.00.ff.ff.00.18.00.00.23.20.00.1c.00.00.00.00.0e.04.00.20.00.00.00.00.00.00.ff.ff.00.18.00.00.23.20.00.1c.00.00.00.00.10.04.00.20.00.00.00.00.00.00.ff.ff.00.10.00.00.23.20.00.0e.ff.f8.0a.00.00.00)
- cookie=0xf7515999, duration=79156.684s, table=9, n_packets=0, n_bytes=0, priority=70,ip,metadata=0x7,nw_dst=30.1.1.1,nw_frag=not_later actions=controller(userdata=00.00.00.0a.00.00.00.00.ff.ff.00.18.00.00.23.20.00.1b.00.00.00.00.04.06.00.30.00.00.00.00.00.00.ff.ff.00.18.00.00.23.20.00.1b.00.00.00.00.02.06.00.30.00.00.00.00.00.00.ff.ff.00.18.00.00.23.20.00.1c.00.00.00.00.04.06.00.30.00.00.00.00.00.00.ff.ff.00.18.00.00.23.20.00.1c.00.00.00.00.02.06.00.30.00.00.00.00.00.00.ff.ff.00.18.00.00.23.20.00.1b.00.00.00.00.0e.04.00.20.00.00.00.00.00.00.ff.ff.00.18.00.00.23.20.00.1b.00.00.00.00.10.04.00.20.00.00.00.00.00.00.ff.ff.00.18.00.00.23.20.00.1c.00.00.00.00.0e.04.00.20.00.00.00.00.00.00.ff.ff.00.18.00.00.23.20.00.1c.00.00.00.00.10.04.00.20.00.00.00.00.00.00.00.19.00.10.00.01.3a.01.ff.00.00.00.00.00.00.00.00.19.00.10.80.00.26.01.03.00.00.00.00.00.00.00.00.19.00.10.80.00.28.01.02.00.00.00.00.00.00.00.ff.ff.00.10.00.00.23.20.00.0e.ff.f8.0a.00.00.00)
- cookie=0xf232f747, duration=79156.683s, table=9, n_packets=0, n_bytes=0, priority=70,ip,metadata=0x7,nw_dst=40.1.1.1,nw_frag=not_later actions=controller(userdata=00.00.00.0a.00.00.00.00.ff.ff.00.18.00.00.23.20.00.1b.00.00.00.00.04.06.00.30.00.00.00.00.00.00.ff.ff.00.18.00.00.23.20.00.1b.00.00.00.00.02.06.00.30.00.00.00.00.00.00.ff.ff.00.18.00.00.23.20.00.1c.00.00.00.00.04.06.00.30.00.00.00.00.00.00.ff.ff.00.18.00.00.23.20.00.1c.00.00.00.00.02.06.00.30.00.00.00.00.00.00.ff.ff.00.18.00.00.23.20.00.1b.00.00.00.00.0e.04.00.20.00.00.00.00.00.00.ff.ff.00.18.00.00.23.20.00.1b.00.00.00.00.10.04.00.20.00.00.00.00.00.00.ff.ff.00.18.00.00.23.20.00.1c.00.00.00.00.0e.04.00.20.00.00.00.00.00.00.ff.ff.00.18.00.00.23.20.00.1c.00.00.00.00.10.04.00.20.00.00.00.00.00.00.00.19.00.10.00.01.3a.01.ff.00.00.00.00.00.00.00.00.19.00.10.80.00.26.01.03.00.00.00.00.00.00.00.00.19.00.10.80.00.28.01.02.00.00.00.00.00.00.00.ff.ff.00.10.00.00.23.20.00.0e.ff.f8.0a.00.00.00)
- cookie=0x6982c737, duration=79156.683s, table=9, n_packets=0, n_bytes=0, priority=60,ip,metadata=0x7,nw_dst=30.1.1.1 actions=drop
- cookie=0x760a445f, duration=79156.683s, table=9, n_packets=0, n_bytes=0, priority=60,ip,metadata=0x7,nw_dst=40.1.1.1 actions=drop
 
 
 ### 11、router上的其他广播，丢弃。
@@ -131,48 +103,22 @@
  cookie=0xdbd78f03, duration=79156.683s, table=9, n_packets=0, n_bytes=0, priority=40,ip,reg14=0x1,metadata=0x7,nw_ttl=1,nw_frag=not_later actions=controller(userdata=00.00.00.0a.00.00.00.00.ff.ff.00.18.00.00.23.20.00.1b.00.00.00.00.04.06.00.30.00.00.00.00.00.00.ff.ff.00.18.00.00.23.20.00.1b.00.00.00.00.02.06.00.30.00.00.00.00.00.00.ff.ff.00.18.00.00.23.20.00.1c.00.00.00.00.04.06.00.30.00.00.00.00.00.00.ff.ff.00.18.00.00.23.20.00.1c.00.00.00.00.02.06.00.30.00.00.00.00.00.00.00.19.00.10.80.00.26.01.0b.00.00.00.00.00.00.00.00.19.00.10.80.00.28.01.00.00.00.00.00.00.00.00.ff.ff.00.18.00.00.23.20.00.06.00.20.00.00.00.00.00.00.0e.04.00.00.10.04.00.19.00.10.80.00.16.04.1e.01.01.01.00.00.00.00.00.19.00.10.00.01.3a.01.ff.00.00.00.00.00.00.00.ff.ff.00.10.00.00.23.20.00.0e.ff.f8.0a.00.00.00)
  cookie=0x6a19bf6a, duration=79156.683s, table=9, n_packets=0, n_bytes=0, priority=40,ip,reg14=0x2,metadata=0x7,nw_ttl=0,nw_frag=not_later actions=controller(userdata=00.00.00.0a.00.00.00.00.ff.ff.00.18.00.00.23.20.00.1b.00.00.00.00.04.06.00.30.00.00.00.00.00.00.ff.ff.00.18.00.00.23.20.00.1b.00.00.00.00.02.06.00.30.00.00.00.00.00.00.ff.ff.00.18.00.00.23.20.00.1c.00.00.00.00.04.06.00.30.00.00.00.00.00.00.ff.ff.00.18.00.00.23.20.00.1c.00.00.00.00.02.06.00.30.00.00.00.00.00.00.00.19.00.10.80.00.26.01.0b.00.00.00.00.00.00.00.00.19.00.10.80.00.28.01.00.00.00.00.00.00.00.00.ff.ff.00.18.00.00.23.20.00.06.00.20.00.00.00.00.00.00.0e.04.00.00.10.04.00.19.00.10.80.00.16.04.28.01.01.01.00.00.00.00.00.19.00.10.00.01.3a.01.ff.00.00.00.00.00.00.00.ff.ff.00.10.00.00.23.20.00.0e.ff.f8.0a.00.00.00)
  cookie=0xdbd78f03, duration=79156.683s, table=9, n_packets=0, n_bytes=0, priority=40,ip,reg14=0x1,metadata=0x7,nw_ttl=0,nw_frag=not_later actions=controller(userdata=00.00.00.0a.00.00.00.00.ff.ff.00.18.00.00.23.20.00.1b.00.00.00.00.04.06.00.30.00.00.00.00.00.00.ff.ff.00.18.00.00.23.20.00.1b.00.00.00.00.02.06.00.30.00.00.00.00.00.00.ff.ff.00.18.00.00.23.20.00.1c.00.00.00.00.04.06.00.30.00.00.00.00.00.00.ff.ff.00.18.00.00.23.20.00.1c.00.00.00.00.02.06.00.30.00.00.00.00.00.00.00.19.00.10.80.00.26.01.0b.00.00.00.00.00.00.00.00.19.00.10.80.00.28.01.00.00.00.00.00.00.00.00.ff.ff.00.18.00.00.23.20.00.06.00.20.00.00.00.00.00.00.0e.04.00.00.10.04.00.19.00.10.80.00.16.04.1e.01.01.01.00.00.00.00.00.19.00.10.00.01.3a.01.ff.00.00.00.00.00.00.00.ff.ff.00.10.00.00.23.20.00.0e.ff.f8.0a.00.00.00)
- cookie=0x6a19bf6a, duration=79156.683s, table=9, n_packets=0, n_bytes=0, priority=40,ip,reg14=0x2,metadata=0x7,nw_ttl=1,nw_frag=not_later actions=controller(userdata=00.00.00.0a.00.00.00.00.ff.ff.00.18.00.00.23.20.00.1b.00.00.00.00.04.06.00.30.00.00.00.00.00.00.ff.ff.00.18.00.00.23.20.00.1b.00.00.00.00.02.06.00.30.00.00.00.00.00.00.ff.ff.00.18.00.00.23.20.00.1c.00.00.00.00.04.06.00.30.00.00.00.00.00.00.ff.ff.00.18.00.00.23.20.00.1c.00.00.00.00.02.06.00.30.00.00.00.00.00.00.00.19.00.10.80.00.26.01.0b.00.00.00.00.00.00.00.00.19.00.10.80.00.28.01.00.00.00.00.00.00.00.00.ff.ff.00.18.00.00.23.20.00.06.00.20.00.00.00.00.00.00.0e.04.00.00.10.04.00.19.00.10.80.00.16.04.28.01.01.01.00.00.00.00.00.19.00.10.00.01.3a.01.ff.00.00.00.00.00.00.00.ff.ff.00.10.00.00.23.20.00.0e.ff.f8.0a.00.00.00)
- cookie=0x57b1321d, duration=79156.684s, table=9, n_packets=0, n_bytes=0, priority=30,ip,metadata=0x7,nw_ttl=1 actions=drop
- cookie=0x57b1321d, duration=79156.683s, table=9, n_packets=0, n_bytes=0, priority=30,ip,metadata=0x7,nw_ttl=0 actions=drop
-
-
-
- cookie=0x74b39f35, duration=96240.249s, table=9, n_packets=72, n_bytes=6352, priority=0,metadata=0x5 actions=resubmit(,10)
- cookie=0x7c4115fa, duration=87681.563s, table=9, n_packets=1, n_bytes=42, priority=0,metadata=0x6 actions=resubmit(,10)
- cookie=0x3846a8f1, duration=79156.683s, table=9, n_packets=0, n_bytes=0, priority=0,metadata=0x7 actions=resubmit(,10)
 
 ### 13、logic sw中 vm发出的arp报文，next，这部分不包含请求网关的（其在[7]中已经代答），在下面 [23]中代答；其他未知的arp，drop
  cookie=0xb8a417ee, duration=88638.930s, table=10, n_packets=0, n_bytes=0, priority=90,arp,reg14=0x1,metadata=0x5,dl_src=fa:10:dd:1b:30:01,arp_spa=30.1.1.11,arp_sha=fa:10:dd:1b:30:01 actions=resubmit(,11)
  cookie=0x168bcf46, duration=88621.461s, table=10, n_packets=0, n_bytes=0, priority=90,arp,reg14=0x2,metadata=0x5,dl_src=fa:10:dd:1b:30:02,arp_spa=30.1.1.12,arp_sha=fa:10:dd:1b:30:02 actions=resubmit(,11)
- cookie=0x4611c4a2, duration=87681.563s, table=10, n_packets=1, n_bytes=42, priority=90,arp,reg14=0x1,metadata=0x6,dl_src=fa:10:dd:1b:40:01,arp_spa=40.1.1.11,arp_sha=fa:10:dd:1b:40:01 actions=resubmit(,11)
- cookie=0x334b415e, duration=88638.930s, table=10, n_packets=0, n_bytes=0, priority=80,arp,reg14=0x1,metadata=0x5 actions=drop
- cookie=0x3cdad3cd, duration=88621.461s, table=10, n_packets=0, n_bytes=0, priority=80,arp,reg14=0x2,metadata=0x5 actions=drop
- cookie=0x39a221b2, duration=87681.563s, table=10, n_packets=0, n_bytes=0, priority=80,arp,reg14=0x1,metadata=0x6 actions=drop
 
 
 ### next�next......
  cookie=0xd72dc9ec, duration=96240.249s, table=10, n_packets=72, n_bytes=6352, priority=0,metadata=0x5 actions=resubmit(,11)
  cookie=0x914db8cb, duration=87681.563s, table=10, n_packets=26, n_bytes=2548, priority=0,metadata=0x6 actions=resubmit(,11)
  cookie=0x83a968d6, duration=79156.684s, table=10, n_packets=0, n_bytes=0, priority=0,metadata=0x7 actions=resubmit(,11)
- cookie=0x6637dd4d, duration=96240.249s, table=11, n_packets=72, n_bytes=6352, priority=0,metadata=0x5 actions=resubmit(,12)
- cookie=0xaa003dd3, duration=87681.563s, table=11, n_packets=27, n_bytes=2590, priority=0,metadata=0x6 actions=resubmit(,12)
- cookie=0x3bdef87, duration=79156.684s, table=11, n_packets=0, n_bytes=0, priority=0,metadata=0x7 actions=resubmit(,12)
- cookie=0x7d10478a, duration=96240.249s, table=12, n_packets=64, n_bytes=5760, priority=0,metadata=0x5 actions=resubmit(,13)
- cookie=0x662de14f, duration=87681.563s, table=12, n_packets=27, n_bytes=2590, priority=0,metadata=0x6 actions=resubmit(,13)
- cookie=0x2f100e98, duration=79156.683s, table=12, n_packets=0, n_bytes=0, priority=0,metadata=0x7 actions=resubmit(,13)
-
 
 #### 14、ct ��������相关，nat、安全组等功能，本节未做配置
  cookie=0xb67c82a9, duration=96240.248s, table=13, n_packets=0, n_bytes=0, priority=100,ip,reg0=0x1/0x1,metadata=0x5 actions=ct(table=14,zone=NXM_NX_REG13[0..15])
  cookie=0x65cf352e, duration=87681.563s, table=13, n_packets=0, n_bytes=0, priority=100,ip,reg0=0x1/0x1,metadata=0x6 actions=ct(table=14,zone=NXM_NX_REG13[0..15])
 
 
- cookie=0xc621f835, duration=96240.248s, table=13, n_packets=72, n_bytes=6352, priority=0,metadata=0x5 actions=resubmit(,14)
- cookie=0x1c44a08e, duration=87681.563s, table=13, n_packets=27, n_bytes=2590, priority=0,metadata=0x6 actions=resubmit(,14)
- cookie=0x73bbe239, duration=79156.683s, table=13, n_packets=0, n_bytes=0, priority=0,metadata=0x7 actions=resubmit(,14)
- cookie=0x20417229, duration=96240.249s, table=14, n_packets=72, n_bytes=6352, priority=0,metadata=0x5 actions=resubmit(,15)
- cookie=0x93196d05, duration=87681.563s, table=14, n_packets=27, n_bytes=2590, priority=0,metadata=0x6 actions=resubmit(,15)
- cookie=0x416e25d5, duration=79156.683s, table=14, n_packets=0, n_bytes=0, priority=0,metadata=0x7 actions=resubmit(,15)
 
 ### 15、逻辑路由器上转发到vm的报文，为转发修改报文，同内核协议栈一样，这里先修改ttl 和 smac {ttl--, eth.src = 02:d4:1d:8c:40:01}�，在[16]中修改dmac
 #       reg0=XXREG0[96..127]=ip4.dst, reg1=XXREG0[64..95]={40.1.1.1, }, reg15=2(output:rt-400-port，确认了转发出接口), reg10=1（标记着什么？？）
@@ -205,11 +151,6 @@
 
  cookie=0xc81907db, duration=96240.249s, table=17, n_packets=72, n_bytes=6352, priority=0,metadata=0x5 actions=resubmit(,18)
  cookie=0xa472f92f, duration=87681.562s, table=17, n_packets=27, n_bytes=2590, priority=0,metadata=0x6 actions=resubmit(,18)
- cookie=0x2f7d5364, duration=79156.683s, table=17, n_packets=0, n_bytes=0, priority=0,metadata=0x7 actions=resubmit(,18)
- cookie=0xe1bbed5a, duration=96240.249s, table=18, n_packets=0, n_bytes=0, priority=100,ip,reg0=0x2/0x2,metadata=0x5 actions=ct(commit,zone=NXM_NX_REG13[0..15],exec(load:0->NXM_NX_CT_LABEL[0])),resubmit(,19)
- cookie=0xb6359085, duration=87681.562s, table=18, n_packets=0, n_bytes=0, priority=100,ip,reg0=0x2/0x2,metadata=0x6 actions=ct(commit,zone=NXM_NX_REG13[0..15],exec(load:0->NXM_NX_CT_LABEL[0])),resubmit(,19)
- cookie=0xf049421, duration=96240.249s, table=18, n_packets=0, n_bytes=0, priority=100,ip,reg0=0x4/0x4,metadata=0x5 actions=ct(table=19,zone=NXM_NX_REG13[0..15],nat)
- cookie=0x80c13bc3, duration=87681.563s, table=18, n_packets=0, n_bytes=0, priority=100,ip,reg0=0x4/0x4,metadata=0x6 actions=ct(table=19,zone=NXM_NX_REG13[0..15],nat)
 
 
  ### 21、ref [5]，接[20]的处理，如果没有在table 66 修改mac成功，match dl_dst=00:00:00:00:00:00，控制器会从router转发端口广播一个arp request，
@@ -236,17 +177,6 @@
  cookie=0x590e4150, duration=87669.756s, table=19, n_packets=1, n_bytes=42, priority=50,arp,metadata=0x6,arp_tpa=40.1.1.12,arp_op=1 actions=move:NXM_OF_ETH_SRC[]->NXM_OF_ETH_DST[],mod_dl_src:fa:10:dd:1b:40:02,load:0x2->NXM_OF_ARP_OP[],move:NXM_NX_ARP_SHA[]->NXM_NX_ARP_THA[],load:0xfa10dd1b4002->NXM_NX_ARP_SHA[],move:NXM_OF_ARP_SPA[]->NXM_OF_ARP_TPA[],load:0x2801010c->NXM_OF_ARP_SPA[],move:NXM_NX_REG14[]->NXM_NX_REG15[],load:0x1->NXM_NX_REG10[0],resubmit(,32)
 
 
- cookie=0x777b5126, duration=96240.249s, table=19, n_packets=64, n_bytes=6016, priority=0,metadata=0x5 actions=resubmit(,20)
- cookie=0xa95d6fb7, duration=87681.563s, table=19, n_packets=26, n_bytes=2548, priority=0,metadata=0x6 actions=resubmit(,20)
- cookie=0x48696989, duration=96240.249s, table=20, n_packets=64, n_bytes=6016, priority=0,metadata=0x5 actions=resubmit(,21)
- cookie=0x5f224fab, duration=87681.562s, table=20, n_packets=26, n_bytes=2548, priority=0,metadata=0x6 actions=resubmit(,21)
- cookie=0xc412ee7, duration=96240.248s, table=21, n_packets=64, n_bytes=6016, priority=0,metadata=0x5 actions=resubmit(,22)
- cookie=0xf05391c6, duration=87681.563s, table=21, n_packets=26, n_bytes=2548, priority=0,metadata=0x6 actions=resubmit(,22)
- cookie=0xb49e92fc, duration=96240.249s, table=22, n_packets=64, n_bytes=6016, priority=0,metadata=0x5 actions=resubmit(,23)
- cookie=0x3746f497, duration=87681.562s, table=22, n_packets=26, n_bytes=2548, priority=0,metadata=0x6 actions=resubmit(,23)
- cookie=0x7d948f61, duration=96240.249s, table=23, n_packets=64, n_bytes=6016, priority=0,metadata=0x5 actions=resubmit(,24)
- cookie=0xe1515175, duration=87681.563s, table=23, n_packets=26, n_bytes=2548, priority=0,metadata=0x6 actions=resubmit(,24)
-
  ### 24、logic sw中的 组播、广播mac地址，设置reg15=0xffff（所有接口），走table32发送
  cookie=0xb077ce92, duration=96240.249s, table=24, n_packets=16, n_bytes=1312, priority=100,metadata=0x5,dl_dst=01:00:00:00:00:00/01:00:00:00:00:00 actions=load:0xffff->NXM_NX_REG15[],resubmit(,32)
  cookie=0x3aee71af, duration=87681.562s, table=24, n_packets=0, n_bytes=0, priority=100,metadata=0x6,dl_dst=01:00:00:00:00:00/01:00:00:00:00:00 actions=load:0xffff->NXM_NX_REG15[],resubmit(,32)
@@ -254,11 +184,6 @@
  ### 25、logic sw中，去往具体的vm mac的报文，设置出接口（reg15），走table32发送
  cookie=0x8cfc69ef, duration=96240.249s, table=24, n_packets=24, n_bytes=2352, priority=50,metadata=0x5,dl_dst=fa:10:dd:1b:30:01 actions=load:0x1->NXM_NX_REG15[],resubmit(,32)
  cookie=0x1326bb75, duration=96240.249s, table=24, n_packets=24, n_bytes=2352, priority=50,metadata=0x5,dl_dst=fa:10:dd:1b:30:02 actions=load:0x2->NXM_NX_REG15[],resubmit(,32)
- cookie=0xa9d9de34, duration=87681.563s, table=24, n_packets=26, n_bytes=2548, priority=50,metadata=0x6,dl_dst=fa:10:dd:1b:40:02 actions=load:0x2->NXM_NX_REG15[],resubmit(,32)
- cookie=0xbac6e0e1, duration=87681.563s, table=24, n_packets=0, n_bytes=0, priority=50,metadata=0x6,dl_dst=fa:10:dd:1b:40:01 actions=load:0x1->NXM_NX_REG15[],resubmit(,32)
- ### 26、logic sw中，去往网关 mac的报文，设置出接口（reg15），走table32发送
- cookie=0x1628cdab, duration=79156.688s, table=24, n_packets=0, n_bytes=0, priority=50,metadata=0x5,dl_dst=02:d4:1d:8c:30:01 actions=load:0x3->NXM_NX_REG15[],resubmit(,32)
- cookie=0xc613bcbf, duration=79156.670s, table=24, n_packets=0, n_bytes=0, priority=50,metadata=0x6,dl_dst=02:d4:1d:8c:40:01 actions=load:0x3->NXM_NX_REG15[],resubmit(,32)
 
 
  ### 27、reg10的这两个标记暂时没看到，可能其他功能标记，后续补充
@@ -283,10 +208,6 @@
  ### 31、sw中，单播流量next到table34。广播流量，复制到所有的vm接口（经过table34检查是否是合法同接口进出后才会真正发出[33]）发送，
  cookie=0x0, duration=96240.250s, table=33, n_packets=29, n_bytes=2562, priority=100,reg15=0x1,metadata=0x5 actions=load:0x1->NXM_NX_REG13[],load:0x2->NXM_NX_REG11[],load:0x3->NXM_NX_REG12[],resubmit(,34)
  cookie=0x0, duration=96240.249s, table=33, n_packets=16, n_bytes=1312, priority=100,reg15=0xffff,metadata=0x5 actions=load:0x1->NXM_NX_REG13[],load:0x1->NXM_NX_REG15[],resubmit(,34),load:0x4->NXM_NX_REG13[],load:0x2->NXM_NX_REG15[],resubmit(,34),load:0xffff->NXM_NX_REG15[]
- cookie=0x0, duration=96239.640s, table=33, n_packets=27, n_bytes=2478, priority=100,reg15=0x2,metadata=0x5 actions=load:0x4->NXM_NX_REG13[],load:0x2->NXM_NX_REG11[],load:0x3->NXM_NX_REG12[],resubmit(,34)
- cookie=0x0, duration=87681.565s, table=33, n_packets=27, n_bytes=2590, priority=100,reg15=0x1,metadata=0x6 actions=load:0x5->NXM_NX_REG13[],load:0x6->NXM_NX_REG11[],load:0x7->NXM_NX_REG12[],resubmit(,34)
- cookie=0x0, duration=87681.562s, table=33, n_packets=0, n_bytes=0, priority=100,reg15=0xffff,metadata=0x6 actions=load:0x5->NXM_NX_REG13[],load:0x1->NXM_NX_REG15[],resubmit(,34),load:0xffff->NXM_NX_REG15[]
- cookie=0x0, duration=79156.688s, table=33, n_packets=0, n_bytes=0, priority=100,reg15=0x1,metadata=0x7 actions=load:0x8->NXM_NX_REG11[],load:0x9->NXM_NX_REG12[],resubmit(,34)
 
  ### 这两个流表完全一样？？？
  cookie=0x0, duration=132318.613s, table=33, n_packets=7, n_bytes=630, priority=100,reg15=0x3,metadata=0x5 actions=load:0x2->NXM_NX_REG11[],load:0x3->NXM_NX_REG12[],resubmit(,34)
@@ -308,29 +229,16 @@
 
  cookie=0xa9ce7962, duration=96240.249s, table=40, n_packets=64, n_bytes=5760, priority=0,metadata=0x5 actions=resubmit(,41)
  cookie=0x52b09533, duration=87681.563s, table=40, n_packets=27, n_bytes=2590, priority=0,metadata=0x6 actions=resubmit(,41)
- cookie=0x6d6f641e, duration=79156.683s, table=40, n_packets=0, n_bytes=0, priority=0,metadata=0x7 actions=resubmit(,41)
- cookie=0x994d4ef5, duration=96240.249s, table=41, n_packets=72, n_bytes=6352, priority=0,metadata=0x5 actions=resubmit(,42)
- cookie=0xdd4931f, duration=87681.563s, table=41, n_packets=27, n_bytes=2590, priority=0,metadata=0x6 actions=resubmit(,42)
- cookie=0x8ab720d1, duration=79156.683s, table=41, n_packets=0, n_bytes=0, priority=0,metadata=0x7 actions=resubmit(,42)
 
  ### reg0=0x1/0x1暂时没用到，后面配置nat的时候应该会涉及
  cookie=0xa72ee3d0, duration=96240.248s, table=42, n_packets=0, n_bytes=0, priority=100,ip,reg0=0x1/0x1,metadata=0x5 actions=ct(table=43,zone=NXM_NX_REG13[0..15])
  cookie=0xeba5cabc, duration=87681.563s, table=42, n_packets=0, n_bytes=0, priority=100,ip,reg0=0x1/0x1,metadata=0x6 actions=ct(table=43,zone=NXM_NX_REG13[0..15])
- cookie=0x9a697c9c, duration=96240.249s, table=42, n_packets=72, n_bytes=6352, priority=0,metadata=0x5 actions=resubmit(,43)
- cookie=0x13706991, duration=87681.563s, table=42, n_packets=27, n_bytes=2590, priority=0,metadata=0x6 actions=resubmit(,43)
- cookie=0x20cb6482, duration=79156.683s, table=42, n_packets=0, n_bytes=0, priority=0,metadata=0x7 actions=resubmit(,43)
 
  ### 34、router上，发送流程直接next 到64，都是ct流程
  cookie=0x7ad6517b, duration=79156.683s, table=43, n_packets=0, n_bytes=0, priority=100,reg15=0x1,metadata=0x7 actions=resubmit(,64)
  cookie=0x98f146e0, duration=79156.683s, table=43, n_packets=0, n_bytes=0, priority=100,reg15=0x2,metadata=0x7 actions=resubmit(,64)
  cookie=0x68cab2f4, duration=96240.249s, table=43, n_packets=72, n_bytes=6352, priority=0,metadata=0x5 actions=resubmit(,44)
  cookie=0xa5308219, duration=87681.563s, table=43, n_packets=27, n_bytes=2590, priority=0,metadata=0x6 actions=resubmit(,44)
- cookie=0x8f1c32ec, duration=96240.249s, table=44, n_packets=72, n_bytes=6352, priority=0,metadata=0x5 actions=resubmit(,45)
- cookie=0xc5868361, duration=87681.562s, table=44, n_packets=27, n_bytes=2590, priority=0,metadata=0x6 actions=resubmit(,45)
- cookie=0x50958557, duration=96240.249s, table=45, n_packets=72, n_bytes=6352, priority=0,metadata=0x5 actions=resubmit(,46)
- cookie=0x99f2218d, duration=87681.563s, table=45, n_packets=27, n_bytes=2590, priority=0,metadata=0x6 actions=resubmit(,46)
- cookie=0x8f5a5285, duration=96240.248s, table=46, n_packets=72, n_bytes=6352, priority=0,metadata=0x5 actions=resubmit(,47)
- cookie=0x907800bc, duration=87681.562s, table=46, n_packets=27, n_bytes=2590, priority=0,metadata=0x6 actions=resubmit(,47)
 
  ### 35、nat流程后续补充（reg0未设置）
  cookie=0x3520b159, duration=96240.249s, table=47, n_packets=0, n_bytes=0, priority=100,ip,reg0=0x4/0x4,metadata=0x5 actions=ct(table=48,zone=NXM_NX_REG13[0..15],nat)
@@ -344,39 +252,12 @@
  cookie=0xc44012d6, duration=88638.930s, table=48, n_packets=0, n_bytes=0, priority=90,ip,reg15=0x1,metadata=0x5,dl_dst=fa:10:dd:1b:30:01,nw_dst=30.1.1.11 actions=resubmit(,49)
  cookie=0xc44012d6, duration=88638.930s, table=48, n_packets=0, n_bytes=0, priority=90,ip,reg15=0x1,metadata=0x5,dl_dst=fa:10:dd:1b:30:01,nw_dst=30.1.1.255 actions=resubmit(,49)
  cookie=0xc44012d6, duration=88638.930s, table=48, n_packets=0, n_bytes=0, priority=90,ip,reg15=0x1,metadata=0x5,dl_dst=fa:10:dd:1b:30:01,nw_dst=255.255.255.255 actions=resubmit(,49)
- cookie=0xaa43bcf0, duration=88621.461s, table=48, n_packets=0, n_bytes=0, priority=90,ip,reg15=0x2,metadata=0x5,dl_dst=fa:10:dd:1b:30:02,nw_dst=30.1.1.12 actions=resubmit(,49)
- cookie=0xaa43bcf0, duration=88621.461s, table=48, n_packets=0, n_bytes=0, priority=90,ip,reg15=0x2,metadata=0x5,dl_dst=fa:10:dd:1b:30:02,nw_dst=30.1.1.255 actions=resubmit(,49)
- cookie=0xaa43bcf0, duration=88621.461s, table=48, n_packets=0, n_bytes=0, priority=90,ip,reg15=0x2,metadata=0x5,dl_dst=fa:10:dd:1b:30:02,nw_dst=255.255.255.255 actions=resubmit(,49)
- cookie=0xa0296c2b, duration=87681.563s, table=48, n_packets=26, n_bytes=2548, priority=90,ip,reg15=0x1,metadata=0x6,dl_dst=fa:10:dd:1b:40:01,nw_dst=40.1.1.11 actions=resubmit(,49)
- cookie=0xa0296c2b, duration=87681.563s, table=48, n_packets=0, n_bytes=0, priority=90,ip,reg15=0x1,metadata=0x6,dl_dst=fa:10:dd:1b:40:01,nw_dst=255.255.255.255 actions=resubmit(,49)
- cookie=0xa0296c2b, duration=87681.562s, table=48, n_packets=0, n_bytes=0, priority=90,ip,reg15=0x1,metadata=0x6,dl_dst=fa:10:dd:1b:40:01,nw_dst=40.1.1.255 actions=resubmit(,49)
- cookie=0xc44012d6, duration=88638.930s, table=48, n_packets=0, n_bytes=0, priority=90,ip,reg15=0x1,metadata=0x5,dl_dst=fa:10:dd:1b:30:01,nw_dst=224.0.0.0/4 actions=resubmit(,49)
- cookie=0xaa43bcf0, duration=88621.461s, table=48, n_packets=0, n_bytes=0, priority=90,ip,reg15=0x2,metadata=0x5,dl_dst=fa:10:dd:1b:30:02,nw_dst=224.0.0.0/4 actions=resubmit(,49)
- cookie=0xa0296c2b, duration=87681.562s, table=48, n_packets=0, n_bytes=0, priority=90,ip,reg15=0x1,metadata=0x6,dl_dst=fa:10:dd:1b:40:01,nw_dst=224.0.0.0/4 actions=resubmit(,49)
- cookie=0x5aba29f3, duration=88638.930s, table=48, n_packets=0, n_bytes=0, priority=80,ip,reg15=0x1,metadata=0x5,dl_dst=fa:10:dd:1b:30:01 actions=drop
- cookie=0x9ee46441, duration=88621.461s, table=48, n_packets=0, n_bytes=0, priority=80,ip,reg15=0x2,metadata=0x5,dl_dst=fa:10:dd:1b:30:02 actions=drop
- cookie=0x8545cdd2, duration=87681.562s, table=48, n_packets=0, n_bytes=0, priority=80,ip,reg15=0x1,metadata=0x6,dl_dst=fa:10:dd:1b:40:01 actions=drop
- cookie=0xb346c480, duration=96240.249s, table=48, n_packets=72, n_bytes=6352, priority=0,metadata=0x5 actions=resubmit(,49)
- cookie=0xf7f294f, duration=87681.563s, table=48, n_packets=1, n_bytes=42, priority=0,metadata=0x6 actions=resubmit(,49)
-
- cookie=0xf47b1c4f, duration=96240.248s, table=49, n_packets=16, n_bytes=1312, priority=100,metadata=0x5,dl_dst=01:00:00:00:00:00/01:00:00:00:00:00 actions=resubmit(,64)
- cookie=0xcfd2ac11, duration=87681.563s, table=49, n_packets=0, n_bytes=0, priority=100,metadata=0x6,dl_dst=01:00:00:00:00:00/01:00:00:00:00:00 actions=resubmit(,64)
- cookie=0x9ac968ff, duration=88638.930s, table=49, n_packets=0, n_bytes=0, priority=50,reg15=0x1,metadata=0x5,dl_dst=fa:10:dd:1b:30:01 actions=resubmit(,64)
- cookie=0xb72767c4, duration=88621.461s, table=49, n_packets=0, n_bytes=0, priority=50,reg15=0x2,metadata=0x5,dl_dst=fa:10:dd:1b:30:02 actions=resubmit(,64)
- cookie=0xb50a1d6e, duration=87681.563s, table=49, n_packets=27, n_bytes=2590, priority=50,reg15=0x1,metadata=0x6,dl_dst=fa:10:dd:1b:40:01 actions=resubmit(,64)
- cookie=0x6b1a23ee, duration=79156.688s, table=49, n_packets=0, n_bytes=0, priority=50,reg15=0x3,metadata=0x5 actions=resubmit(,64)
- cookie=0x7155a145, duration=79156.670s, table=49, n_packets=0, n_bytes=0, priority=50,reg15=0x3,metadata=0x6 actions=resubmit(,64)
 
 
  ### 37、清空IN_PORT后，转table65发送，恢复IN_PORT
  cookie=0x0, duration=96240.250s, table=64, n_packets=5, n_bytes=210, priority=100,reg10=0x1/0x1,reg15=0x1,metadata=0x5 actions=push:NXM_OF_IN_PORT[],load:0->NXM_OF_IN_PORT[],resubmit(,65),pop:NXM_OF_IN_PORT[]
  cookie=0x0, duration=96239.640s, table=64, n_packets=3, n_bytes=126, priority=100,reg10=0x1/0x1,reg15=0x2,metadata=0x5 actions=push:NXM_OF_IN_PORT[],load:0->NXM_OF_IN_PORT[],resubmit(,65),pop:NXM_OF_IN_PORT[]
  cookie=0x0, duration=87681.565s, table=64, n_packets=1, n_bytes=42, priority=100,reg10=0x1/0x1,reg15=0x1,metadata=0x6 actions=push:NXM_OF_IN_PORT[],load:0->NXM_OF_IN_PORT[],resubmit(,65),pop:NXM_OF_IN_PORT[]
- cookie=0x0, duration=79156.688s, table=64, n_packets=0, n_bytes=0, priority=100,reg10=0x1/0x1,reg15=0x3,metadata=0x5 actions=push:NXM_OF_IN_PORT[],load:0->NXM_OF_IN_PORT[],resubmit(,65),pop:NXM_OF_IN_PORT[]
- cookie=0x0, duration=79156.688s, table=64, n_packets=0, n_bytes=0, priority=100,reg10=0x1/0x1,reg15=0x1,metadata=0x7 actions=push:NXM_OF_IN_PORT[],load:0->NXM_OF_IN_PORT[],resubmit(,65),pop:NXM_OF_IN_PORT[]
- cookie=0x0, duration=79156.670s, table=64, n_packets=0, n_bytes=0, priority=100,reg10=0x1/0x1,reg15=0x3,metadata=0x6 actions=push:NXM_OF_IN_PORT[],load:0->NXM_OF_IN_PORT[],resubmit(,65),pop:NXM_OF_IN_PORT[]
- cookie=0x0, duration=195.496s, table=64, n_packets=3, n_bytes=238, priority=100,reg10=0x1/0x1,reg15=0x2,metadata=0x7 actions=push:NXM_OF_IN_PORT[],load:0->NXM_OF_IN_PORT[],resubmit(,65),pop:NXM_OF_IN_PORT[]
- cookie=0x0, duration=279153.636s, table=64, n_packets=120, n_bytes=11056, priority=0 actions=resubmit(,65)
 
  ### 38、table65就是所有跑到终点的报文的终点站，根据datapath+outport标识，从对应ovs接口发出，注意这里都是通往本机器vm的流量，去往其他主机的都在 [28][29]中从tunnel口发出了
  cookie=0x0, duration=96240.250s, table=65, n_packets=37, n_bytes=3218, priority=100,reg15=0x1,metadata=0x5 actions=output:"sw-300-port-vm1"
@@ -481,11 +362,6 @@ ovs-vsctl set Open_vSwitch . external-ids:ovn-bridge-mappings=dataNet:br-ex
  cookie=0x15203869, duration=959.143s, table=12, n_packets=0, n_bytes=0, priority=100,ip,reg14=0x3,metadata=0x7,nw_dst=192.168.77.32 actions=ct(commit,table=13,zone=NXM_NX_REG11[0..15],nat(dst=30.1.1.12))
  cookie=0x2c74407a, duration=393.564s, table=12, n_packets=0, n_bytes=0, priority=100,ip,reg14=0x3,metadata=0x7,nw_dst=192.168.77.42 actions=ct(commit,table=13,zone=NXM_NX_REG11[0..15],nat(dst=40.1.1.12))
  cookie=0x4ee4c35c, duration=959.143s, table=12, n_packets=0, n_bytes=0, priority=50,ip,metadata=0x7,nw_dst=192.168.77.32 actions=load:0x1->OXM_OF_PKT_REG4[0],resubmit(,13)
- cookie=0xbfda9be3, duration=393.564s, table=12, n_packets=0, n_bytes=0, priority=50,ip,metadata=0x7,nw_dst=192.168.77.42 actions=load:0x1->OXM_OF_PKT_REG4[0],resubmit(,13)
- cookie=0x2f100e98, duration=99026.437s, table=12, n_packets=1436, n_bytes=140236, priority=0,metadata=0x7 actions=resubmit(,13)
-
- cookie=0xa616964f, duration=959.144s, table=17, n_packets=2, n_bytes=196, priority=100,ip,reg15=0x3,metadata=0x7,nw_src=30.1.1.12 actions=resubmit(,18)
- cookie=0xcd109cd8, duration=393.564s, table=17, n_packets=0, n_bytes=0, priority=100,ip,reg15=0x3,metadata=0x7,nw_src=40.1.1.12 actions=resubmit(,18)
 
 #### 5、VM->pub的流量，snat处理，走ct表项做nat。第二条实际上是走不到的，n_packets=0,实际流量在Node节点上
  cookie=0x2345dfd5, duration=959.144s, table=40, n_packets=2, n_bytes=196, priority=100,ip,reg15=0x3,metadata=0x7,nw_src=30.1.1.12 actions=mod_dl_src:0a:10:dd:1b:30:02,ct(table=41,zone=NXM_NX_REG11[0..15],nat)
@@ -583,11 +459,6 @@ cookie=0x568f4201, duration=4690.495s, table=11, n_packets=0, n_bytes=0, priorit
 ##
  cookie=0x6169800e, duration=4690.496s, table=44, n_packets=8, n_bytes=537, priority=2000,ct_state=-new+est-rpl+trk,ct_label=0/0x1,tcp,reg15=0x2,metadata=0x6,nw_src=30.1.1.12,tp_dst=4444 actions=controller(userdata=00.00.00.07.00.00.00.00.00.06.76.6d.2d.34.30.30.2d.32.2d.69.6e.2d.70.65.72.6d.69.74.34.34.34.34),resubmit(,45)
  cookie=0x4f257b76, duration=30.827s, table=44, n_packets=0, n_bytes=0, priority=2000,ct_state=-new+est-rpl+trk,ct_label=0x1/0x1,tcp,reg15=0x2,metadata=0x6,nw_src=30.1.1.111,tp_dst=5555 actions=load:0x1->NXM_NX_XXREG0[97],resubmit(,45)
- cookie=0x32d72a94, duration=30.827s, table=44, n_packets=0, n_bytes=0, priority=2000,ct_state=-new+est-rpl+trk,ct_label=0/0x1,tcp,reg15=0x2,metadata=0x6,nw_src=30.1.1.111,tp_dst=5555 actions=resubmit(,45)
- cookie=0x4f257b76, duration=30.827s, table=44, n_packets=0, n_bytes=0, priority=2000,ct_state=-new+est-rpl+trk,ct_label=0x1/0x1,tcp,reg15=0x2,metadata=0x6,nw_src=30.1.1.112,tp_dst=5555 actions=load:0x1->NXM_NX_XXREG0[97],resubmit(,45)
- cookie=0x32d72a94, duration=30.827s, table=44, n_packets=0, n_bytes=0, priority=2000,ct_state=-new+est-rpl+trk,ct_label=0/0x1,tcp,reg15=0x2,metadata=0x6,nw_src=30.1.1.112,tp_dst=5555 actions=resubmit(,45)
-
- cookie=0x91ef48b0, duration=4690.496s, table=44, n_packets=2, n_bytes=148, priority=2000,ct_state=+new-est+trk,tcp,reg15=0x2,metadata=0x6,nw_src=30.1.1.12,tp_dst=4444 actions=load:0x1->NXM_NX_XXREG0[97],controller(userdata=00.00.00.07.00.00.00.00.00.06.76.6d.2d.34.30.30.2d.32.2d.69.6e.2d.70.65.72.6d.69.74.34.34.34.34),resubmit(,45)
 
  cookie=0x4f257b76, duration=30.827s, table=44, n_packets=0, n_bytes=0, priority=2000,ct_state=+new-est+trk,tcp,reg15=0x2,metadata=0x6,nw_src=30.1.1.111,tp_dst=5555 actions=load:0x1->NXM_NX_XXREG0[97],resubmit(,45)
  cookie=0x4f257b76, duration=30.827s, table=44, n_packets=0, n_bytes=0, priority=2000,ct_state=+new-est+trk,tcp,reg15=0x2,metadata=0x6,nw_src=30.1.1.112,tp_dst=5555 actions=load:0x1->NXM_NX_XXREG0[97],resubmit(,45)
@@ -666,5 +537,5 @@ cookie=0x568f4201, duration=4690.495s, table=11, n_packets=0, n_bytes=0, priorit
     recirc_id(0x75),in_port(8),ct_state(+new+trk),eth(),eth_type(0x0800),ipv4(src=77.1.1.1,dst=192.168.77.99,proto=6,frag=no),tcp(dst=99), packets:0, bytes:0, used:never, actions:ct(commit,zone=8,label=0x2/0x2,nat(dst=30.1.1.12:9999)),recirc(0x76)
     recirc_id(0x76),in_port(8),ct_state(+new-est+trk),eth(src=ba:1e:14:c9:ca:dd,dst=02:d4:1d:8c:ff:01),eth_type(0x0800),ipv4(dst=30.1.1.12,ttl=64,frag=no), packets:0, bytes:0, used:never, actions:ct_clear,set(eth(src=02:d4:1d:8c:30:01,dst=aa:10:dd:1b:30:02)),set(ipv4(ttl=63)),3
 
-https://www.jianshu.com/p/45fd05700682
+[https://www.jianshu.com/p/45fd05700682](https://www.jianshu.com/p/45fd05700682)
 
