@@ -68,19 +68,22 @@ external_ids:iface-status=active
 Get endpoint status
 
 ```
-
+ovn-nbctl --if-exists get Logical_Switch_Port $eid addresses
 ```
 
 ### Delete container {#1f479c4ac11c1c1303eb591f9139830f}
 
 ```
-
+ip netns del $eid
+ip link delete veth_outside
+ovs-vsctl --if-exists del-port veth_outside
+ovn-nbctl lsp-del $eid
 ```
 
 ### Delete network {#cd515540515989d4b1cd0cfa39c39808}
 
 ```
-
+ovn-nbctl ls-del red-net
 ```
 
 
