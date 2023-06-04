@@ -120,9 +120,8 @@ RDMA技术为什么可以应用在上述场景中呢？这就涉及到它的以�
 > #include <sys/sendfile.h>
 > ssize_t sendfile(int out_fd, int in_fd, off_t *offset, size_t count);
 > ```
-
-> 在linux2.6.33版本之前 sendfile指支持文件到套接字之间传输数据，即in\_fd相当于一个支持mmap的文件，out\_fd必须是一个socket。但从linux2.6.33版本开始，out\_fd可以是任意类型文件描述符。所以从linux2.6.33版本开始sendfile可以支持“文件到文件”和“文件到套接字”之间的数据传输。  
 >
+> 在linux2.6.33版本之前 sendfile指支持文件到套接字之间传输数据，即in\_fd相当于一个支持mmap的文件，out\_fd必须是一个socket。但从linux2.6.33版本开始，out\_fd可以是任意类型文件描述符。所以从linux2.6.33版本开始sendfile可以支持“文件到文件”和“文件到套接字”之间的数据传输。
 >
 > ###### "传统I/O” VS “sendfile零拷贝I/O”
 >
@@ -144,9 +143,7 @@ RDMA技术为什么可以应用在上述场景中呢？这就涉及到它的以�
 >  ③ 发出write系统调用，导致用户空间到内核空间的上下文切换\(第三次上下文切换\)。将数据从内核空间缓冲区拷贝到内核空间socket相关联的缓冲区\(第二次拷贝: kernel buffer ——&gt; socket buffer\)。  
 >  ④ write系统调用返回，导致内核空间到用户空间的上下文切换\(第四次上下文切换\)。通过DMA引擎将内核空间socket缓冲区中的数据传递到协议引擎\(第三次拷贝: socket buffer ——&gt; protocol engine\)
 >
-> **总的来说，通过mmap实现的零拷贝I/O进行了4次用户空间与内核空间的上下文切换，以及3次数据拷贝。其中3次数据拷贝中包括了2次DMA拷贝和1次CPU拷贝。**  
->   
->
+> **总的来说，通过mmap实现的零拷贝I/O进行了4次用户空间与内核空间的上下文切换，以及3次数据拷贝。其中3次数据拷贝中包括了2次DMA拷贝和1次CPU拷贝。**
 >
 > ### FileChannel与零拷贝
 >
@@ -164,8 +161,6 @@ RDMA技术为什么可以应用在上述场景中呢？这就涉及到它的以�
 >  */
 > public static final MapMode READ_ONLY = new MapMode("READ_ONLY");
 > ```
->
->
 >
 > 只读模式来说，如果程序试图进行写操作，则会抛出ReadOnlyBufferException异常
 >
@@ -195,11 +190,109 @@ RDMA技术为什么可以应用在上述场景中呢？这就涉及到它的以�
 > **FileChannel的transferTo、transferFrom**  
 >  如果操作系统底层支持的话transferTo、transferFrom也会使用相关的零拷贝技术来实现数据的传输。所以，这里是否使用零拷贝必须依赖于底层的系统实现。
 
-
-
 * **内核Bypass**：指的是IO（数据）流程可以绕过内核，即在用户层就可以把数据准备好并通知硬件准备发送和接收。避免了系统调用和上下文切换的开销。
 
 ![](/assets/storage-virtual-rdmaov6.png)
 
+上图（原图[\[1\]](https://link.zhihu.com/?target=https%3A//pc.nanog.org/static/published/meetings/NANOG76/1999/20190612_Cardona_Towards_Hyperscale_High_v1.pdf)）可以很好的解释“0拷贝”和“内核Bypass”的含义。上下两部分分别是基于Socket的和基于RDMA的一次收-发流程，左右分别为两个节点。可以明显的看到Socket流程中在软件中多了一次拷贝动作。而RDMA绕过了内核同时也减少了内存拷贝，数据可以直接在用户层和硬件间传递。
 
+* **CPU卸载：**指的是可以在远端节点CPU不参与通信的情况下（当然要持有访问远端某段内存的“钥匙”才行）对内存进行读写，这实际上是**把报文封装和解析放到硬件中做了**。而传统的以太网通信，双方CPU都必须参与各层报文的解析，如果数据量大且交互频繁，对CPU来讲将是一笔不小的开销，而这些被占用的CPU计算资源本可以做一些更有价值的工作。
+
+![](/assets/storage-virtual-rdmaov11.png)
+
+通信领域两大出场率最高的性能指标就是“带宽”和“时延”。简单的说，所谓带宽指的是指单位时间内能够传输的数据量，而时延指的是数据从本端发出到被对端接收所耗费的时间。因为上述几个特点，相比于传统以太网，RDMA技术同时做到了更高带宽和更低时延，所以其在带宽敏感的场景——比如海量数据的交互，时延敏感——比如多个计算节点间的数据同步的场景下得以发挥其作用。
+
+## 协议
+
+RDMA本身指的是一种技术，具体协议层面，包含Infiniband（IB），RDMA over Converged Ethernet（RoCE）和internet Wide Area RDMA Protocol（iWARP）。三种协议都符合RDMA标准，使用相同的上层接口，在不同层次上有一些差别。
+
+![](/assets/storage-virtual-rdmaov12.png)
+
+上图[\[2\]](https://link.zhihu.com/?target=https%3A//www.snia.org/sites/default/files/ESF/RoCE-vs.-iWARP-Final.pdf)对于几种常见的RDMA技术的协议层次做了非常清晰的对比，
+
+### Infiniband
+
+2000年由IBTA（InfiniBand Trade Association）提出的IB协议是当之无愧的核心，其规定了一整套完整的链路层到传输层（非传统OSI七层模型的传输层，而是位于其之上）规范，但是其无法兼容现有以太网，除了需要支持IB的网卡之外，企业如果想部署的话还要重新购买配套的交换设备。
+
+### RoCE
+
+RoCE从英文全称就可以看出它是基于以太网链路层的协议，v1版本网络层仍然使用了IB规范，而v2使用了UDP+IP作为网络层，使得数据包也可以被路由。RoCE可以被认为是IB的“低成本解决方案”，将IB的报文封装成以太网包进行收发。由于RoCE v2可以使用以太网的交换设备，所以现在在企业中应用也比较多，但是相同场景下相比IB性能要有一些损失。
+
+### iWARP
+
+iWARP协议是IETF基于TCP提出的，因为TCP是面向连接的可靠协议，这使得iWARP在面对有损网络场景（可以理解为网络环境中可能经常出现丢包）时相比于RoCE v2和IB具有更好的可靠性，在大规模组网时也有明显的优势。但是大量的TCP连接会耗费很多的内存资源，另外TCP复杂的流控等机制会导致性能问题，所以从性能上看iWARP要比UDP的RoCE v2和IB差。
+
+需要注意的是，虽然有软件实现的RoCE和iWARP协议，但是真正商用时上述几种协议都需要专门的硬件（网卡）支持。
+
+iWARP本身不是由Infiniband直接发展而来的，但是它继承了一些Infiniband技术的设计思想。这三种协议的关系如下图所示：
+
+![](/assets/storage-virtual-rdmaov13.png)
+
+## 玩家
+
+### 标准/生态组织
+
+提到IB协议，就不得不提到两大组织——IBTA和OFA。
+
+### IBTA[\[3\]](https://link.zhihu.com/?target=https%3A//www.infinibandta.org/)
+
+成立于1999年，负责制定和维护Infiniband协议标准。IBTA独立于各个厂商，通过赞助技术活动和推动资源共享来将整个行业整合在一起，并且通过线上交流、营销和线下活动等方式积极推广IB和RoCE。
+
+IBTA会对商用的IB和RoCE设备进行协议标准符合性和互操作性测试及认证，由很多大型的IT厂商组成的委员会领导，其主要成员包括博通，HPE，IBM，英特尔，Mellanox和微软等，华为也是IBTA的会员。
+
+### OFA[\[4\]](https://link.zhihu.com/?target=https%3A//www.openfabrics.org/)
+
+成立于2004年的非盈利组织，负责开发、测试、认证、支持和分发独立于厂商的开源跨平台infiniband协议栈，2010年开始支持RoCE。其对用于支撑RDMA/Kernel bypass应用的OFED（OpenFabrics Enterprise Distribution）软件栈负责，保证其与主流软硬件的兼容性和易用性。OFED软件栈包括驱动、内核、中间件和API。
+
+上述两个组织是配合关系，IBTA主要负责开发、维护和增强Infiniband协议标准；OFA负责开发和维护Infiniband协议和上层应用API。
+
+### 开发社区
+
+### Linux社区
+
+Linux内核的RDMA子系统还算比较活跃，经常会讨论一些协议细节，对框架的修改比较频繁，另外包括华为和Mellanox在内的一些厂商也会经常对驱动代码进行修改。
+
+邮件订阅：[http://vger.kernel.org/vger-lists.html\#linux-rdma](https://link.zhihu.com/?target=http%3A//vger.kernel.org/vger-lists.html%23linux-rdma)
+
+代码位于内核drivers/infiniband/目录下，包括框架核心代码和各厂商的驱动代码。
+
+代码仓：[https://git.kernel.org/pub/scm/linux/kernel/git/rdma/rdma.git/](https://link.zhihu.com/?target=https%3A//git.kernel.org/pub/scm/linux/kernel/git/rdma/rdma.git/)
+
+### RDMA社区
+
+对于上层用户，IB提供了一套与Socket套接字类似的接口——libibverbs，前文所述三种协议都可以使用。参考着协议、API文档和示例程序很容易就可以写一个Demo出来。本专栏中的RDMA社区专指其用户态社区，在github上其仓库的名字为linux-rdma。
+
+主要包含两个子仓库：
+
+* rdma-core
+
+用户态核心代码，API，文档以及各个厂商的用户态驱动。
+
+* perftest
+
+一个功能强大的用于测试RDMA性能的工具。
+
+代码仓：[https://github.com/linux-rdma/](https://link.zhihu.com/?target=https%3A//github.com/linux-rdma/)
+
+### UCX[\[5\]](https://link.zhihu.com/?target=https%3A//www.openucx.org/)
+
+UCX是一个建立在RDMA等技术之上的用于数据处理和高性能计算的通信框架，RDMA是其底层核心之一。我们可以将其理解为是位于应用和RDMA API之间的中间件，向上层用户又封装了一层更易开发的接口。
+
+![](/assets/storage-virtual-rdmaov14.png)
+
+### 硬件厂商
+
+设计和生产IB相关硬件的厂商有不少，包括Mellanox、华为、收购了Qlogic的IB技术的Intel，博通、Marvell，富士通等等，这里就不逐个展开了，仅简单提一下Mellanox和华为。
+
+* Mellanox
+
+IB领域的领头羊，协议标准制定、软硬件开发和生态建设都能看到Mellanox的身影，其在社区和标准制定上上拥有最大的话语权。目前最新一代的网卡是支持200Gb/s的ConnextX-6系列。
+
+* 华为
+
+去年初推出的鲲鹏920芯片已经支持100Gb/s的RoCE协议，技术上在国内处于领先地位。但是软硬件和影响力方面距离Mellanox还有比较长的路要走，相信华为能够早日赶上老大哥的步伐。
+
+### 用户
+
+微软、IBM和国内的阿里、京东都正在使用RDMA，另外还有很多大型IT公司在做初步的开发和测试。在数据中心和高性能计算场景下，RDMA代替传统网络是大势所趋。笔者对于市场接触不多，所以并不能提供更详细的应用情况。
 
