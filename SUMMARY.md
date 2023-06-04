@@ -114,6 +114,7 @@
       * [OVS编译](network/vnetwork/ovs/ovsbian-yi.md)
       * [OVN-Openstack](network/vnetwork/ovs/ovn-openstack.md)
       * [VXLAN](network/vnetwork/ovs/vxlan.md)
+        * [VXLAN理论解析](network/vnetwork/ovs/vxlan/vxlanli-lun-jie-xi.md)
       * [openvswitch流表转发原理](network/vnetwork/ovs/openflowliu-biao-cha-zhao.md)
     * [OVN](network/vnetwork/ovn.md)
       * [OVN和流表](network/vnetwork/ovn-flowtable.md)
