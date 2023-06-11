@@ -21,6 +21,7 @@ csi-driver-host-path 是社区实现的一个 CSI 插件的示例，它以 hostp
 * utils.go基本公用函数
 
 * hostpath.go入口，启动rpc服务，只要把编写好的 gRPC Server 注册给 CSI，它就可以响应来自 External Components 的 CSI 请求了。
+
 * identityserver.go身份验证的rpc接口
 
 ### 启动rpc服务 {#启动rpc服务}
@@ -629,13 +630,11 @@ NodeUnstageVolume 和 NodeUnpublishVolume 正是 volume 卸载阶段所分别对
 
 到这里一个完整的csi插件就开发完成，大体都是这些流程，只要实现对应的rpc接口逻辑就好。
 
-
-
 参考：
 
-https://kingjcy.github.io/post/cloud/paas/base/kubernetes/k8s-store-csi/
+[https://kingjcy.github.io/post/cloud/paas/base/kubernetes/k8s-store-csi/](https://kingjcy.github.io/post/cloud/paas/base/kubernetes/k8s-store-csi/)
 
-https://blog.hdls.me/16672085188369.html
+[https://blog.hdls.me/16672085188369.html](https://blog.hdls.me/16672085188369.html)
 
-
+kubernetes如何通过cinder使用ceph作为后端存储？ https://www.zhihu.com/question/47430510/answer/3007698255 
 
