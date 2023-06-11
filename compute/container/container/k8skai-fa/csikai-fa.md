@@ -22,6 +22,50 @@ StorageClass：StorageClass 是集群级别的资源，由集群管理员创建�
 
 CSI：Container Storage Interface，目的是定义行业标准的“容器存储接口”，使存储供应商（SP）基于 CSI 标准开发的插件可以在不同容器编排（CO）系统中工作，CO 系统包括 Kubernetes、Mesos、Swarm 等。
 
+
+
+### SideCar 组件
+
+#### external-attacher
+
+![](/assets/compute-container-k8s-csi31.png)监听 VolumeAttachment 对象，并调用 CSI driver Controller 服务的`ControllerPublishVolume`和`ControllerUnpublishVolume`接口，用来将 volume 附着到 node 上，或从 node 上删除。
+
+如果存储系统需要 attach/detach 这一步，就需要使用到这个组件，因为 K8s 内部的 Attach/Detach Controller 不会直接调用 CSI driver 的接口。
+
+#### external-provisioner
+
+![](/assets/compute-container-k8s-csi32.png)监听 PVC 对象，并调用 CSI driver Controller 服务的`CreateVolume`和`DeleteVolume`接口，用来提供一个新的 volume。前提是 PVC 中指定的 StorageClass 的 provisioner 字段和 CSI driver Identity 服务的`GetPluginInfo`接口的返回值一样。一旦新的 volume 提供出来，K8s 就会创建对应的 PV。
+
+而如果 PVC 绑定的 PV 的回收策略是 delete，那么 external-provisioner 组件监听到 PVC 的删除后，会调用 CSI driver Controller 服务的`DeleteVolume`接口。一旦 volume 删除成功，该组件也会删除相应的 PV。
+
+该组件还支持从快照创建数据源。如果在 PVC 中指定了 Snapshot CRD 的数据源，那么该组件会通过`SnapshotContent`对象获取有关快照的信息，并将此内容在调用`CreateVolume`接口的时候传给 CSI driver，CSI driver 需要根据数据源快照来创建 volume。
+
+#### external-resizer
+
+![](/assets/compute-container-k8s-csi33.png)监听 PVC 对象，如果用户请求在 PVC 对象上请求更多存储，该组件会调用 CSI driver Controller 服务的`NodeExpandVolume`
+
+接口，用来对 volume 进行扩容。
+
+#### external-snapshotter
+
+![](/assets/compute-container-k8s-csi34.png)该组件需要与 Snapshot Controller 配合使用。Snapshot Controller 会根据集群中创建的 Snapshot 对象创建对应的 VolumeSnapshotContent，而 external-snapshotter 负责监听 VolumeSnapshotContent 对象。当监听到 VolumeSnapshotContent 时，将其对应参数通过`CreateSnapshotRequest`传给 CSI driver Controller 服务，调用其`CreateSnapshot`接口。该组件还负责调用`DeleteSnapshot`、`ListSnapshots`接口。
+
+#### livenessprobe
+
+![](/assets/compute-container-k8s-csi35.png)负责监测 CSI driver 的健康情况，并通过 Liveness Probe 机制汇报给 k8s，当监测到 CSI driver 有异常时负责重启 pod。
+
+#### node-driver-registrar
+
+![](/assets/compute-container-k8s-csi36.png)通过直接调用 CSI driver Node 服务的`NodeGetInfo`接口，将 CSI driver 的信息通过 kubelet 的插件注册机制在对应节点的 kubelet 上进行注册。
+
+#### external-health-monitor-controller
+
+![](/assets/compute-container-k8s-csi38.png)通过调用 CSI driver Controller 服务的`ListVolumes`或者`ControllerGetVolume`接口，来检查 CSI volume 的健康情况，并上报在 PVC 的 event 中。
+
+#### external-health-monitor-agent
+
+![](/assets/compute-container-k8s-csi39.png)通过调用 CSI driver Node 服务的`NodeGetVolumeStats`接口，来检查 CSI volume 的健康情况，并上报在 pod 的 event 中。
+
 # 2.存储原理
 
 以csi-hostpath插件为例，演示部署CSI插件、用户使用CSI插件提供的存储资源。
@@ -162,8 +206,6 @@ Volume 被创建后进入 CREATED 状态，此时 Volume 仅在存储系统中�
 从这个图我们可以看出一个存储卷的供应分别调用了Controller Plugin的CreateVolume、ControllerPublishVolume及Node Plugin的NodeStageVolume、NodePublishVolume这4个gRPC接口，存储卷的销毁分别调用了Node Plugin的NodeUnpublishVolume、NodeUnstageVolume及Controller的ControllerUnpublishVolume、DeleteVolume这4个gRPC接口。
 
 到此，csi的设计架构流程应该是很清晰的了，下面我们详细的看看其原理。
-
-
 
 看到这里，应该清晰有哪些协助组件，和csidriver如何通信来实现可持久卷，下面是具体都有哪些grpc服务。
 
