@@ -54,19 +54,21 @@ $ operator-sdk add api --api-version=o0w0o.cn/v1 --kind App
 
 然后在项目中会发现多了几个文件，其中有一个`.../app-operator/pkg/apis/o0w0o/v1/app_types.go`，其中帮你创建好了 App 的资源定义：
 
-    type AppSpec struct {
-    }
+```go
+type AppSpec struct {
+}
 
-    type AppStatus struct {
-    }
+type AppStatus struct {
+}
 
-    type App struct {
-    	metav1.TypeMeta   `json:",inline"`
-    	metav1.ObjectMeta `json:"metadata,omitempty"`
+type App struct {
+    metav1.TypeMeta   `json:",inline"`
+    metav1.ObjectMeta `json:"metadata,omitempty"`
 
-    	Spec   AppSpec   `json:"spec,omitempty"`
-    	Status AppStatus `json:"status,omitempty"`
-    }
+    Spec   AppSpec   `json:"spec,omitempty"`
+    Status AppStatus `json:"status,omitempty"`
+}
+```
 
 而你需要做的是定义`AppSpec`和`AppStatus`，分别是描述资源的属性和状态。定义好了之后只需要执行下面这条命令，即可在 CRD Yaml 中自动生成你定义的字段。
 
@@ -89,12 +91,12 @@ INFO[0000] Controller generation complete.
 其中，`add_app.go`是用来将 controller 注册进 manager 中的，相当于帮你生成了一个 K8s 的控制器。  
 而`app_controller.go`则是真正定义 controller 的地方。在这个文件里，有两个标注了`TODO(User)`的地方，顾名思义，只有这两个地方需要用户自己写。
 
-```
+```go
 func add(mgr manager.Manager, r reconcile.Reconciler) error {
     ... 
-	// TODO(user): Modify this to be the types you create that are owned by the primary resource
+    // TODO(user): Modify this to be the types you create that are owned by the primary resource
     ...
-	return nil
+    return nil
 }
 
 // TODO(user): Modify this Reconcile function to implement your Controller logic.  This example creates
