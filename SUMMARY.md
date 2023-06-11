@@ -73,6 +73,7 @@
         * [hostpath实例](compute/container/container/k8skai-fa/csikai-fa/hostpathshi-li.md)
       * [K8S源码](compute/container/container/k8skai-fa/k8syuan-ma.md)
         * [kubelet](compute/container/container/k8skai-fa/k8syuan-ma/kubelet.md)
+      * [使用 Operator Framework 全家桶构建并维护 operator](compute/container/container/k8skai-fa/shi-yong-operator-framework-quan-jiatong-gou-jian-bing-wei-hu-operator.md)
 * [第二部 网络](network.md)
   * [网络基础理论](network/basic/basic.md)
     * [TCP/IP网络模型](network/physicalnet/physicalnet/tcpipwang-luo-mo-xing.md)
@@ -198,6 +199,4 @@
       * [存储加密模式XTS](ops/install/an-quan/dui-cheng-jia-mi/cun-chu-jia-mi-mo-shi-xts.md)
     * [HTTPS](ops/install/an-quan/https.md)
     * [证书认证](ops/install/an-quan/zheng-shu-ren-zheng.md)
-
-
 
