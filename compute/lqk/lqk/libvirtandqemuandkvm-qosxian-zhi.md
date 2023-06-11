@@ -2,118 +2,255 @@
 
 libvirt提供了一系列tune的方式，来实现对虚拟机的qos精细控制。下面介绍cpu、内存、磁盘io、网络带宽的qos控制方式。
 
-  
-
-
 **一. cpu**
 
-| 限制cpu带宽，主要时通过cputune中的quota参数来控制，设置了cpu的quota后就可以限制cpu访问物理CPU的时间片段。libvirt的虚拟机配置如下： |
-| :--- |
-| &lt;domain type='kvm' id='6'&gt;  ....&lt;cputune&gt;&lt;vcpupin vcpu="0" cpuset="1-4,^2"/&gt;&lt;vcpupin vcpu="1" cpuset="0,1"/&gt;&lt;vcpupin vcpu="2" cpuset="2,3"/&gt;&lt;vcpupin vcpu="3" cpuset="0,4"/&gt;&lt;emulatorpin cpuset="1-3"/&gt;&lt;iothreadpin iothread="1" cpuset="5,6"/&gt;&lt;iothreadpin iothread="2" cpuset="7,8"/&gt;&lt;shares&gt;2048&lt;/shares&gt;&lt;period&gt;1000000&lt;/period&gt;&lt;quota&gt;-1&lt;/quota&gt;&lt;emulator\_period&gt;1000000&lt;/emulator\_period&gt;&lt;emulator\_quota&gt;-1&lt;/emulator\_quota&gt;&lt;iothread\_period&gt;1000000&lt;/iothread\_period&gt;&lt;iothread\_quota&gt;-1&lt;/iothread\_quota&gt;&lt;vcpusched vcpus='0-4,^3' scheduler='fifo' priority='1'/&gt;&lt;iothreadsched iothreads='2' scheduler='batch'/&gt;&lt;/cputune&gt;  ....&lt;/domain&gt; |
-| \# virsh schedinfo demo |
+限制cpu带宽，主要时通过cputune中的quota参数来控制，设置了cpu的quota后就可以限制cpu访问物理CPU的时间片段。
 
-  
+libvirt的虚拟机配置如下：
+
+```
+<domain type='kvm' id='6'>
+  ....
+  <cputune>
+    <vcpupin vcpu="0" cpuset="1-4,^2"/>
+    <vcpupin vcpu="1" cpuset="0,1"/>
+    <vcpupin vcpu="2" cpuset="2,3"/>
+    <vcpupin vcpu="3" cpuset="0,4"/>
+    <emulatorpin cpuset="1-3"/>
+    <iothreadpin iothread="1" cpuset="5,6"/>
+    <iothreadpin iothread="2" cpuset="7,8"/>
+    <shares>2048</shares>
+    <period>1000000</period>
+    <quota>-1</quota>
+    <emulator_period>1000000</emulator_period>
+    <emulator_quota>-1</emulator_quota>
+    <iothread_period>1000000</iothread_period>
+    <iothread_quota>-1</iothread_quota>
+    <vcpusched vcpus='0-4,^3' scheduler='fifo' priority='1'/>
+    <iothreadsched iothreads='2' scheduler='batch'/>
+  </cputune>
+  ....
+</domain>
+# virsh schedinfo demo
+```
 
 
-| 设置cpu亲和性。设置了cpu的亲和性可以使得虚拟机的cpu固定在某些物理cpu上，从而实现对cpu使用的控制和隔离。libvirt虚拟机的配置方式如下： |
-| :--- |
-| &lt;vcpu placement='static' cpuset='0-1'&gt;2&lt;/vcpu&gt;&lt;cputune&gt;&lt;vcpupin vcpu='0' cpuset='0'/&gt;&lt;vcpupin vcpu='1' cpuset='1'/&gt;&lt;/cputune&gt; |
-| 查看信息：\# virsh vcpuinfo instance-0000000d（可查看到CPU Affinity信息） |
+设置cpu亲和性。设置了cpu的亲和性可以使得虚拟机的cpu固定在某些物理cpu上，从而实现对cpu使用的控制和隔离。
+libvirt虚拟机的配置方式如下：
 
-  
+```
+<vcpu placement='static' cpuset='0-1'>2</vcpu>
+<cputune>
+        <vcpupin vcpu='0' cpuset='0'/>
+        <vcpupin vcpu='1' cpuset='1'/>
+</cputune>
+```
+查看信息：
 
 
-| 演示虚拟机cpu亲和性绑定 |
-| :--- |
-| **1.通过下面命令找到虚拟机进程所有的线程\# ps -efL**例如：root     22314     1 22314  0    3 18:21 ?        00:00:00 /usr/libexec/qemu-kvm -name win7 -S -machine pc-i440fx-rhel7.0.0,accel=kvm,usb=off -cpu qemu64,hv\_time,hv\_relaxed,hv\_vapic,hv\_spinlocks=0root     22314     1 22324  0    3 18:21 ?        00:00:02 /usr/libexec/qemu-kvm -name win7 -S -machine pc-i440fx-rhel7.0.0,accel=kvm,usb=off -cpu qemu64,hv\_time,hv\_relaxed,hv\_vapic,hv\_spinlocks=0root     22314     1 22370  0    3 18:21 ?        00:00:00 /usr/libexec/qemu-kvm -name win7 -S -machine pc-i440fx-rhel7.0.0,accel=kvm,usb=off -cpu qemu64,hv\_time,hv\_relaxed,hv\_vapic,hv\_spinlocks=0这里虚拟机win7的线程为22314  22324  22370**2.查看各个线程的绑定情况\# taskset -p 22314**pid 22314's current affinity mask: f\# taskset -p 22324 **pid 22324's current affinity mask: 2**\# taskset -p 22370**pid 22370's current affinity mask: f可以看出22314和22370是没做绑定。22324被绑定到了1号cpu上，说明如下：**22314和22370绑定到了**0123四个cpu上（f即1111，代表绑定到了0123四个cpu上）；22324绑定到了1号cpu上（2即0010，代表绑定到了1号cpu上）。这里主机上一共有0123这4个cpu，所以绑定到0123四个cpu上也就是没有绑定，所以这里22314和22370是没做绑定的。** **3.查看虚拟机运行时的cpu是否真的被绑住了：\# watch -n 1 -d 'ps  -eLo pid,tid,pcpu,psr\| grep 22314'Every 1.0s: ps  -eLo pid,tid,pcpu,psr\| grep 22314                                                                                                                           Wed Nov  9 18:58:17 2016** **22314 22314  0.0   022314 22324  0.2   122314 22370  0.0   1** 这里会看到**22324一致在1上不动，22314和22370会随机的在各个cpu上跑。（左后一列代表在哪个cpu上。虚拟机很忙时效果会很明显）（说明：命令中最后为什么grep 22314，这个22314是刚才ps -eLf的第二列。）** |
+```
+# virsh vcpuinfo instance-0000000d
+```
 
-**  
-**
 
-  
+（可查看到CPU Affinity信息）
+
+
+
+演示虚拟机cpu亲和性绑定 
+
+
+```
+1.通过下面命令找到虚拟机进程所有的线程
+# ps -efL
+例如：
+root     22314     1 22314  0    3 18:21 ?        00:00:00 /usr/libexec/qemu-kvm -name win7 -S -machine pc-i440fx-rhel7.0.0,accel=kvm,usb=off -cpu qemu64,hv_time,hv_relaxed,hv_vapic,hv_spinlocks=0
+root     22314     1 22324  0    3 18:21 ?        00:00:02 /usr/libexec/qemu-kvm -name win7 -S -machine pc-i440fx-rhel7.0.0,accel=kvm,usb=off -cpu qemu64,hv_time,hv_relaxed,hv_vapic,hv_spinlocks=0
+root     22314     1 22370  0    3 18:21 ?        00:00:00 /usr/libexec/qemu-kvm -name win7 -S -machine pc-i440fx-rhel7.0.0,accel=kvm,usb=off -cpu qemu64,hv_time,hv_relaxed,hv_vapic,hv_spinlocks=0
+这里虚拟机win7的线程为22314  22324  22370
+2.查看各个线程的绑定情况
+# taskset -p 22314
+pid 22314's current affinity mask: f
+# taskset -p 22324 
+pid 22324's current affinity mask: 2
+# taskset -p 22370
+pid 22370's current affinity mask: f
+可以看出22314和22370是没做绑定。22324被绑定到了1号cpu上，说明如下：
+22314和22370绑定到了0123四个cpu上（f即1111，代表绑定到了0123四个cpu上）；22324绑定到了1号cpu上（2即0010，代表绑定到了1号cpu上）。这里主机上一共有0123这4个cpu，所以绑定到0123四个cpu上也就是没有绑定，所以这里22314和22370是没做绑定的。
+
+3.查看虚拟机运行时的cpu是否真的被绑住了：
+# watch -n 1 -d 'ps  -eLo pid,tid,pcpu,psr| grep 22314'
+Every 1.0s: ps  -eLo pid,tid,pcpu,psr| grep 22314                                                                                                                           Wed Nov  9 18:58:17 2016
+
+22314 22314  0.0   0
+22314 22324  0.2   1
+22314 22370  0.0   1
+
+这里会看到22324一致在1上不动，22314和22370会随机的在各个cpu上跑。（左后一列代表在哪个cpu上。虚拟机很忙时效果会很明显）
+（说明：命令中最后为什么grep 22314，这个22314是刚才ps -eLf的第二列。）
+```
+
 
 
 **二. 内存**
+内存\_qos。设置了内存的qos可以限制虚拟机在物理host山申请内存的大小。libvirt虚拟机的配置方式如下：
 
-| 内存\_qos。设置了内存的qos可以限制虚拟机在物理host山申请内存的大小。libvirt虚拟机的配置方式如下： |
-| :--- |
-| &lt;domain&gt;  ...&lt;memtune&gt;&lt;hard\_limit unit='G'&gt;1&lt;/hard\_limit&gt;&lt;soft\_limit unit='M'&gt;128&lt;/soft\_limit&gt;&lt;swap\_hard\_limit unit='G'&gt;2&lt;/swap\_hard\_limit&gt;&lt;min\_guarantee unit='byte'&gt;67108864&lt;/min\_guarantee&gt;&lt;/memtune&gt;  ...&lt;/domain&gt; |
-| 参数说明：hard\_limit：限制虚拟机在host上使用的最大物理内存。min\_guarantee：最小保证的内存 查看信息：\# virsh memtune instance-00000005 说明：可以通过virsh memtune动态调整上述参数 |
+
+```
+<domain>
+  ...
+  <memtune>
+    <hard_limit unit='G'>1</hard_limit>
+    <soft_limit unit='M'>128</soft_limit>
+    <swap_hard_limit unit='G'>2</swap_hard_limit>
+    <min_guarantee unit='byte'>67108864</min_guarantee>
+  </memtune>
+  ...
+</domain>
+```
+
+
+```
+参数说明：
+hard_limit：限制虚拟机在host上使用的最大物理内存。
+min_guarantee：最小保证的内存
+
+查看信息：
+# virsh memtune instance-00000005
+
+说明：
+可以通过virsh memtune动态调整上述参数
+```
+
+
+
 
 另外还可以通过cgroup来实现对虚拟机的内存限制：
 
 **1.如何通过cgroup做所有虚拟机总内存限制**
 
-\# cat /sys/fs/cgroup/memory/machine/memory.limit\_in\_bytes
+\# cat /sys/fs/cgroup/memory/machine/memory.limit\_in\_bytes 
 
 9223372036854771712
 
 这里machine是libvrit的默认根cgroup组名。修改/sys/fs/cgroup/memory/machine/memory.limit\_in\_bytes的数值就可以限制所有libvirt创建的虚拟机的使用总内存。
 
-  
+**2.如何通过cgroup做部分虚拟机的总内存限制**
+
+创建一个名为openstack的自定义cgroup ：
 
 
-**2.如何**
+```
+#!/bin/bash
 
-**通过cgroup**
+cd /sys/fs/cgroup
+for i in blkio cpu,cpuacct cpuset devices freezer memory net_cls perf_event
+  do
+    mkdir $i/machine/openstack.partition
+  done
+for i in cpuset.cpus  cpuset.mems
+  do
+    cat cpuset/machine/$i > cpuset/machine/openstack.partition/$i
+  done
+```
 
-**做部分虚拟机的总内存限制**
+在虚拟机的xml文件中使用：
 
-| 创建一个名为openstack的自定义cgroup ： |
-| :--- |
-| \#!/bin/bash cd /sys/fs/cgroupfor i in blkio cpu,cpuacct cpuset devices freezer memory net\_cls perf\_event  do    mkdir $i/machine/openstack.partition  donefor i in cpuset.cpus  cpuset.mems  do    cat cpuset/machine/$i &gt; cpuset/machine/openstack.partition/$i  done |
-| 在虚拟机的xml文件中使用： |
-| &lt;domain type='kvm' id='6'&gt;  ....&lt;resource&gt;&lt;partition&gt;/machine/openstack.partition&lt;/partition&gt;&lt;/resource&gt;  ....&lt;/domain&gt; |
 
-修改/sys/fs/cgroup/memory/machine/openstack.partition/memory.limit\_in\_bytes的数值，就可以限制通过
+```
+<domain type='kvm' id='6'>
+  ....
+  <resource>
+    <partition>/machine/openstack.partition</partition>
+  </resource>
+  ....
+</domain>
+```
 
-openstack.partition
+
+
+修改/sys/fs/cgroup/memory/machine/openstack.partition/memory.limit\_in\_bytes的数值，就可以限制通过openstack.partition
 
 创建的虚拟机的使用总内存
 
-  
-
-
-3.
-
-**如何**
-
-**通过cgroup**
-
-**做某个虚拟机的内存限制**
+3.**如何通过cgroup做某个虚拟机的内存限制**
 
 （同在虚拟机的xml文件中的memtune中配置hard\_limit）
 
-echo 100000000 
-
-&gt;
-
- /sys/fs/cgroup/memory/machine/openstack.partition/instance-00000005.libvirt-qemu/memory.limit\_in\_bytes
+echo 100000000&gt;/sys/fs/cgroup/memory/machine/openstack.partition/instance-00000005.libvirt-qemu/memory.limit\_in\_bytes
 
 就可以限制虚拟机instance-00000005的实际使用host的物理内存最大为100M。
 
-  
-
-
 **三. 磁盘**
 
-| 磁盘\_qos。设置磁盘的qos可以实现对磁盘的读写速率的限制，单位可以时iops或者字节。libvirt虚拟机的配置方式如下： |
-| :--- |
-| &lt;domain type='kvm' id='6'&gt;  ....&lt;devices&gt;    ....&lt;disk type='network' device='disk'&gt;&lt;driver name='qemu' type='raw' cache='writeback' discard='unmap'/&gt;&lt;source protocol='rbd' name='images/1a956ba7-25fe-49f1-9513-7adb8928036c'&gt;&lt;host name='192.168.107.50' port='6789'/&gt;&lt;host name='192.168.107.51' port='6789'/&gt;&lt;host name='192.168.107.52' port='6789'/&gt;&lt;host name='192.168.107.53' port='6789'/&gt;&lt;/source&gt;&lt;target dev='vda' bus='virtio'/&gt;&lt;iotune&gt;&lt;read\_bytes\_sec&gt;20480&lt;/read\_bytes\_sec&gt;&lt;write\_bytes\_sec&gt;10240&lt;/write\_bytes\_sec&gt;&lt;/iotune&gt;&lt;boot order='1'/&gt;&lt;address type='pci' domain='0x0000' bus='0x00' slot='0x0a' function='0x0'/&gt;&lt;/disk&gt;    ....&lt;/devices&gt;  ....&lt;/domain&gt; |
-| &lt;disk type='network' device='disk'&gt;&lt;driver name='qemu' type='raw' cache='writeback' discard='unmap'/&gt;&lt;source protocol='rbd' name='images/1a956ba7-25fe-49f1-9513-7adb8928036c'&gt;&lt;host name='192.168.107.50' port='6789'/&gt;&lt;host name='192.168.107.51' port='6789'/&gt;&lt;host name='192.168.107.52' port='6789'/&gt;&lt;host name='192.168.107.53' port='6789'/&gt;&lt;/source&gt;&lt;target dev='vda' bus='virtio'/&gt;&lt;iotune&gt;&lt;read\_iops\_sec&gt;20480&lt;/read\_iops\_sec&gt;&lt;write\_iops\_sec&gt;10240&lt;/write\_iops\_sec&gt;&lt;/iotune&gt;&lt;boot order='1'/&gt;&lt;address type='pci' domain='0x0000' bus='0x00' slot='0x0a' function='0x0'/&gt;&lt;/disk&gt; |
-| \# virsh blkiotune demo |
+磁盘\_qos。设置磁盘的qos可以实现对磁盘的读写速率的限制，单位可以时iops或者字节。
 
-  
+libvirt虚拟机的配置方式如下：  
 
+
+```
+<domain type='kvm' id='6'>
+  ....
+  <devices>
+    ....
+    <disk type='network' device='disk'>
+      <driver name='qemu' type='raw' cache='writeback' discard='unmap'/>
+      <source protocol='rbd' name='images/1a956ba7-25fe-49f1-9513-7adb8928036c'>
+        <host name='192.168.107.50' port='6789'/>
+        <host name='192.168.107.51' port='6789'/>
+        <host name='192.168.107.52' port='6789'/>
+        <host name='192.168.107.53' port='6789'/>
+      </source>
+      <target dev='vda' bus='virtio'/>
+      <iotune>
+        <read_bytes_sec>20480</read_bytes_sec>
+        <write_bytes_sec>10240</write_bytes_sec>
+      </iotune>
+      <boot order='1'/>
+      <address type='pci' domain='0x0000' bus='0x00' slot='0x0a' function='0x0'/>
+    </disk>
+    ....
+  </devices>
+  ....
+</domain>
+    <disk type='network' device='disk'>
+      <driver name='qemu' type='raw' cache='writeback' discard='unmap'/>
+      <source protocol='rbd' name='images/1a956ba7-25fe-49f1-9513-7adb8928036c'>
+        <host name='192.168.107.50' port='6789'/>
+        <host name='192.168.107.51' port='6789'/>
+        <host name='192.168.107.52' port='6789'/>
+        <host name='192.168.107.53' port='6789'/>
+      </source>
+      <target dev='vda' bus='virtio'/>
+      <iotune>
+        <read_iops_sec>20480</read_iops_sec>
+        <write_iops_sec>10240</write_iops_sec>
+      </iotune>
+      <boot order='1'/>
+      <address type='pci' domain='0x0000' bus='0x00' slot='0x0a' function='0x0'/>
+    </disk>
+# virsh blkiotune demo
+```
 
 **四. 网卡**
 
 | 网卡\_qos。设置网卡的qos可以限制网卡的io速率。libvirt虚拟机的配置方式如下： |
 | :--- |
-| &lt;interface type='bridge'&gt;&lt;mac address='fa:16:3e:8f:6a:c9'/&gt;&lt;source bridge='brq5233ef6c-62'/&gt;&lt;bandwidth&gt;&lt;inbound average='2048'/&gt;&lt;outbound average='1024'/&gt;&lt;/bandwidth&gt;&lt;target dev='tap9573c869-24'/&gt;&lt;model type='virtio'/&gt;&lt;address type='pci' domain='0x0000' bus='0x00' slot='0x03' function='0x0'/&gt;&lt;/interface&gt; |
 
-  
 
+```
+    <interface type='bridge'>
+      <mac address='fa:16:3e:8f:6a:c9'/>
+      <source bridge='brq5233ef6c-62'/>
+      <bandwidth>
+        <inbound average='2048'/>
+        <outbound average='1024'/>
+      </bandwidth>
+      <target dev='tap9573c869-24'/>
+      <model type='virtio'/>
+      <address type='pci' domain='0x0000' bus='0x00' slot='0x03' function='0x0'/>
+    </interface>
+```
 
 # QOS实现算法
 
