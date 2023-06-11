@@ -69,6 +69,7 @@
       * client-go
       * kubebuilder
       * [CSI开发](compute/container/container/k8skai-fa/csikai-fa.md)
+        * [CSI源码解析](compute/container/container/k8skai-fa/csikai-fa/csiyuan-ma-jie-xi.md)
 * [第二部 网络](network.md)
   * [网络基础理论](network/basic/basic.md)
     * [TCP/IP网络模型](network/physicalnet/physicalnet/tcpipwang-luo-mo-xing.md)
