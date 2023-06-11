@@ -28,7 +28,7 @@ csi-driver-host-path 是社区实现的一个 CSI 插件的示例，它以 hostp
 
 首先肯定是定一个结构体包含plugin启动的所需信息
 
-```
+```go
 type hostPath struct {
     driver *csicommon.CSIDriver
 
@@ -53,7 +53,7 @@ type hostPath struct {
 
 然后就是调用这个结构体的run方法，该方法中调用csicommon的公共方法启动socket监听
 
-```
+```go
 func (hp *hostPath) Run(driverName, nodeID, endpoint string) {
     glog.Infof("Driver: %v ", driverName)
     glog.Infof("Version: %s", vendorVersion)
@@ -84,7 +84,7 @@ func (hp *hostPath) Run(driverName, nodeID, endpoint string) {
 
 start来启动grpc服务来给对应的客户端进行调用
 
-```
+```go
 func (s *nonBlockingGRPCServer) serve(endpoint string, ids csi.IdentityServer, cs csi.ControllerServer, ns csi.NodeServer) {
 
     proto, addr, err := parseEndpoint(endpoint)
@@ -131,7 +131,7 @@ func (s *nonBlockingGRPCServer) serve(endpoint string, ids csi.IdentityServer, c
 
 然后就是对应接口的实现，先看CSI Identity 用于认证driver的身份信息，上面提到的 kubernetes 外部组件调用，返回 CSI driver 的身份信息和健康状态。
 
-```
+```go
 func NewIdentityServer(name, version string) *identityServer {
     return &identityServer{
         name:    name,
@@ -186,7 +186,7 @@ func (ids *identityServer) GetPluginCapabilities(ctx context.Context, req *csi.G
 
 再来看看CSI Controller 主要实现 Volume 管理流程当中的 “Provision” 和 “Attach” 阶段。”Provision” 阶段是指创建和删除 Volume 的流程，而 “Attach” 阶段是指把存储卷附着在某个 Node 或脱离某个 Node 的流程。只有块存储类型的 CSI 插件才需要 “Attach” 功能。
 
-```
+```go
 func NewControllerServer(ephemeral bool) *controllerServer {
     if ephemeral {
         return &controllerServer{caps: getControllerServiceCapabilities(nil)}
@@ -395,7 +395,7 @@ ControllerPublishVolume其实就是调用对应的存储的api将某个块存储
 
 最后再来看看CSI Node 部分主要负责 Volume 管理流程当中的 “Mount” 阶段，即把 Volume 挂载至 Pod 容器，或者从 Pod 中卸载 Volume 。在宿主机 Node 上需要执行的操作都包含在这个部分。
 
-```
+```go
 func NewNodeServer(nodeId string, ephemeral bool) *nodeServer {
     return &nodeServer{
         nodeID:    nodeId,
@@ -636,5 +636,5 @@ NodeUnstageVolume 和 NodeUnpublishVolume 正是 volume 卸载阶段所分别对
 
 [https://blog.hdls.me/16672085188369.html](https://blog.hdls.me/16672085188369.html)
 
-kubernetes如何通过cinder使用ceph作为后端存储？ https://www.zhihu.com/question/47430510/answer/3007698255 
+kubernetes如何通过cinder使用ceph作为后端存储？ [https://www.zhihu.com/question/47430510/answer/3007698255](https://www.zhihu.com/question/47430510/answer/3007698255)
 
