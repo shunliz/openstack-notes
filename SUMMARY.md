@@ -29,6 +29,7 @@
       * [VDPA](compute/lqk/lqk/virtio/vdpa.md)
       * [智能网卡](compute/lqk/lqk/virtio/zhi-neng-wang-qia.md)
       * [virtio-blk&vhost-blk](compute/lqk/lqk/virtio/virtio-blkandvhost-blk.md)
+    * [Libvirt&Qemu&KVM QOS限制](compute/lqk/lqk/libvirtandqemuandkvm-qosxian-zhi.md)
   * [Nova](compute/nova/nova.md)
     * [虚拟机初始配置（key,password,script）](compute/nova/nova/xu-ni-ji-chu-shi-pei-zhi-ff08-key-password-script.md)
     * [热迁移](compute/nova/nova/re-qian-yi.md)
