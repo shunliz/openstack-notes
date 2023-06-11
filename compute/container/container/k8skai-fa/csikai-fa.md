@@ -26,7 +26,29 @@ CSI：Container Storage Interface，目的是定义行业标准的“容器存�
 
 以csi-hostpath插件为例，演示部署CSI插件、用户使用CSI插件提供的存储资源。
 
+## 开启csi {#开启csi}
 
+设置Kubernetes服务启动参数，为kube-apiserver、kubecontroller-manager和kubelet服务的启动参数添加。
+
+```
+[root@k8smaster01 ~]# vi /etc/kubernetes/manifests/kube-apiserver.yaml
+……
+    - --allow-privileged=true
+    - --feature-gates=CSIPersistentVolume=true
+    - --runtime-config=storage.k8s.io/v1alpha1=true
+……
+[root@k8smaster01 ~]# vi /etc/kubernetes/manifests/kube-controller-manager.yaml
+……
+    - --feature-gates=CSIPersistentVolume=true
+……
+[root@k8smaster01 ~]# vi /usr/lib/systemd/system/kubelet.service.d/10-kubeadm.conf
+# Note: This dropin only works with kubeadm and kubelet v1.11+
+[Service]
+Environment="KUBELET_KUBECONFIG_ARGS=--bootstrap-kubeconfig=/etc/kubernetes/bootstrap-kubelet.conf --kubeconfig=/etc/kubernetes/kubelet.conf --feature-gates=CSIPersistentVolume=true"
+……
+[root@k8smaster01 ~]# systemctl daemon-reload
+[root@k8smaster01 ~]# systemctl restart kubelet.service
+```
 
 Kubernetes 默认情况下就提供了主流的存储卷接入方案，我们可以执行命令 kubectl explain pod.spec.volumes 查看到支持的各种存储卷，另外也提供了插件机制，允许其他类型的存储服务接入到 Kubernetes 系统中来，在 Kubernetes 中就对应 In-Tree 和 Out-Of-Tree 两种方式，In-Tree 就是在 Kubernetes 源码内部实现的，和 Kubernetes 一起发布、管理的，但是更新迭代慢、灵活性比较差，Out-Of-Tree 是独立于 Kubernetes 的，目前主要有 CSI 和 FlexVolume 两种机制，开发者可以根据自己的存储类型实现不同的存储插件接入到 Kubernetes 中去，其中 CSI 是现在也是以后主流的方式。
 
@@ -34,7 +56,7 @@ Kubernetes 默认情况下就提供了主流的存储卷接入方案，我们可
 
 # 3.存储架构和csi架构
 
-k8s的存储结构图：![](/assets/compute-container-k8sdev-csi1.png)
+k8s的存储结构图：![](/assets/compute-container-k8s-csi21.png)![](/assets/compute-container-k8sdev-csi1.png)
 
 * PV Controller：负责 PV/PVC 的绑定，并根据需求进行数据卷的 Provision/Delete 操作
 * AD Controller：负责存储设备的 Attach/Detach 操作，将设备挂载到目标节点
