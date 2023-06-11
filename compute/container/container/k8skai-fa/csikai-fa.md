@@ -91,26 +91,40 @@ Kubernetes CSI 存储体系主要由两部分组成：
 
 * **右边一个StatefulSet或Deployment的pod**，可以说是csi controller，提供存储服务视角对存储资源和存储卷进行管理和操作。在Kubernetes中建议将其部署为单实例Pod，可以使用StatefulSet或Deployment控制器进行部署，设置副本数量为1，保证为一种存储插件只运行一个控制器实例。
 
-用户实现的 CSI 插件，也就是CSI Driver存储驱动容器（正常和下面的CSI 插件是同一个程序，也可以分开做一个控制插件，一个操作插件）
+  * 用户实现的 CSI 插件，也就是CSI Driver存储驱动容器（正常和下面的CSI 插件是同一个程序，也可以分开做一个控制插件，一个操作插件）
 
-与Master（kube-controller-manager）通信的辅助sidecar容器。
+  * 与Master（kube-controller-manager）通信的辅助sidecar容器。
 
-1. External Attacher：Kubernetes 提供的 sidecar 容器，它监听 VolumeAttachment 和 PersistentVolume 对象的变化情况，并调用 CSI 插件的 ControllerPublishVolume 和 ControllerUnpublishVolume 等 API 将 Volume 挂载或卸载到指定的 Node 上，也就是对应的 Attach/Detach 操作，因为 K8s 的 PV 控制器无法直接调用 Volume Plugins 的相关函数，故由 External Attacher 通过 gRPC 来调用。（官网提供）
-2. External Provisioner：Kubernetes 提供的 sidecar 容器，它监听 PersistentVolumeClaim 对象的变化情况，并调用 CSI 插件的 ControllerPublish 和 ControllerUnpublish 等 API 管理 Volume，也就是Provision/Delete 操作，因为 K8s 的 PV 控制器无法直接调用 Volume Plugins 的相关函数，故由 External Provioner 通过 gRPC 来调用。（官网提供）
+    * External Attacher：Kubernetes 提供的 sidecar 容器，它监听 VolumeAttachment 和 PersistentVolume 对象的变化情况，并调用 CSI 插件的 ControllerPublishVolume 和 ControllerUnpublishVolume 等 API 将 Volume 挂载或卸载到指定的 Node 上，也就是对应的 Attach/Detach 操作，因为 K8s 的 PV 控制器无法直接调用 Volume Plugins 的相关函数，故由 External Attacher 通过 gRPC 来调用。（官网提供）
+    * External Provisioner：Kubernetes 提供的 sidecar 容器，它监听 PersistentVolumeClaim 对象的变化情况，并调用 CSI 插件的 ControllerPublish 和 ControllerUnpublish 等 API 管理 Volume，也就是Provision/Delete 操作，因为 K8s 的 PV 控制器无法直接调用 Volume Plugins 的相关函数，故由 External Provioner 通过 gRPC 来调用。（官网提供）
 
-这两个容器通过本地Socket（Unix DomainSocket，UDS），并使用gPRC协议进行通信。
+  * 这两个容器通过本地Socket（Unix DomainSocket，UDS），并使用gPRC协议进行通信。
 
-sidecar容器通过Socket调用CSI Driver容器的CSI接口，CSI Driver容器负责具体的存储卷操作。
+  * sidecar容器通过Socket调用CSI Driver容器的CSI接口，CSI Driver容器负责具体的存储卷操作。
 
 * **左边一个Daemonset的pod**：对主机（Node）上的Volume进行管理和操作。在Kubernetes中建议将其部署为DaemonSet，在每个Node上都运行一个Pod，以便 Kubelet 可以调用，它包含 2 个容器：
 
-* 用户实现的 CSI 插件，也就是CSI Driver存储驱动容器，主要功能是接收kubelet的调用，需要实现一系列与Node相关的CSI接口，例如NodePublishVolume接口（用于将Volume挂载到容器内的目标路径）、NodeUnpublishVolume接口（用于从容器中卸载Volume）等。
+  * 用户实现的 CSI 插件，也就是CSI Driver存储驱动容器，主要功能是接收kubelet的调用，需要实现一系列与Node相关的CSI接口，例如NodePublishVolume接口（用于将Volume挂载到容器内的目标路径）、NodeUnpublishVolume接口（用于从容器中卸载Volume）等。
 
-* node-driver-registrar：从宿主中暴露/var/lib/kubelet/plugins\_registry，挂载在容器的/registration，容器通过这个UDS向kubelet注册csi的UDS
+  * Driver Registrar：注册 CSI 插件到 kubelet 中，并初始化 NodeId（即给 Node 对象增加一个 Annotation csi.volume.kubernetes.io/nodeid）（官网提供）
 
-* livenessprobe：可选
+  * node-driver-registrar容器与kubelet通过Node主机的一个hostPath目录下的unixsocket进行通信。CSI Driver容器与kubelet通过Node主机的另一个hostPath目录下的unixsocket进行通信，同时需要将kubelet的工作目录（默认为/var/lib/kubelet）挂载给CSIDriver容器，用于为Pod进行Volume的管理操作（包括mount、umount等）。
 
-更详细的每个组件具体做什么，见参考\[7\]
+  * livenessprobe：可选
+
+所以重点就是用户自己实现的插件逻辑，官方已经支持实现了很多的插件，我们在开发的时候可以参考。
+
+上面简单的说了组件，以及相关的部署，下面我们通过一个交互图来了解如何实现out-of-tree的csi volume的。
+
+右边的就是插件程序，由csi定义的三个部分组成，中间就是扩展的控制器，用于注册插件程序，联通集群和插件程序的交互的桥梁，左边就是我们的集群需要使用的组件，我们详细看一下。
+
+* Driver Registrar 组件，负责将插件注册到 kubelet 里面（这可以类比为，将可执行文件放在插件目录下）。而在具体实现上，Driver Registrar 需要请求 CSI 插件的 Identity 服务来获取插件信息。
+* External Provisioner 组件，负责的正是 Provision 阶段。在具体实现上，External Provisioner 监听（Watch）了 APIServer 里的 PVC 对象。当一个 PVC 被创建时，它就会调用 CSI Controller 的 CreateVolume 方法，为你创建对应 PV。
+* External Attacher 组件，负责的正是“Attach 阶段”。在具体实现上，它监听了 APIServer 里  VolumeAttachment 对象的变化。VolumeAttachment 对象是 Kubernetes 确认一个 Volume 可以进入“Attach 阶段”的重要标志。一旦出现了 VolumeAttachment 对象，External Attacher 就会调用 CSI Controller 服务的 ControllerPublish 方法，完成它所对应的 Volume 的 Attach 阶段。
+* Volume 的“Mount 阶段”，并不属于 External Components 的职责。当 kubelet 的 VolumeManagerReconciler 控制循环检查到它需要执行 Mount 操作的时候，会通过 pkg/volume/csi 包，直接调用 CSI Node 服务完成 Volume 的“Mount 阶段”。
+  到这里我们就可以清晰的看到组件的作用，并且部署使用deployment和daemonset的含义，我们还可以通过网上的一个时序图来看看创建一个pod，各个组件之间的交互，更加详细的讲解了apiserver中的控制器是如何进行逻辑控制的。
+
+![](/assets/compute-container-k8s-csi22.png)
 
 看到这里，应该清晰有哪些协助组件，和csidriver如何通信来实现可持久卷，下面是具体都有哪些grpc服务。
 
