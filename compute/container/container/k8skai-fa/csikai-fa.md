@@ -8,6 +8,8 @@
 
 # 1.名词解释
 
+CSI是Container Storage Interface的简称，旨在能为容器编排引擎和存储系统间建立一套标准的存储调用接口，实现解耦，通过该接口能为容器编排引擎提供存储服务。
+
 in-tree：代码逻辑在 K8s 官方仓库中；
 
 out-of-tree：代码逻辑在 K8s 官方仓库之外，实现与 K8s 代码的解耦；
@@ -21,6 +23,10 @@ StorageClass：StorageClass 是集群级别的资源，由集群管理员创建�
 CSI：Container Storage Interface，目的是定义行业标准的“容器存储接口”，使存储供应商（SP）基于 CSI 标准开发的插件可以在不同容器编排（CO）系统中工作，CO 系统包括 Kubernetes、Mesos、Swarm 等。
 
 # 2.存储原理
+
+以csi-hostpath插件为例，演示部署CSI插件、用户使用CSI插件提供的存储资源。
+
+
 
 Kubernetes 默认情况下就提供了主流的存储卷接入方案，我们可以执行命令 kubectl explain pod.spec.volumes 查看到支持的各种存储卷，另外也提供了插件机制，允许其他类型的存储服务接入到 Kubernetes 系统中来，在 Kubernetes 中就对应 In-Tree 和 Out-Of-Tree 两种方式，In-Tree 就是在 Kubernetes 源码内部实现的，和 Kubernetes 一起发布、管理的，但是更新迭代慢、灵活性比较差，Out-Of-Tree 是独立于 Kubernetes 的，目前主要有 CSI 和 FlexVolume 两种机制，开发者可以根据自己的存储类型实现不同的存储插件接入到 Kubernetes 中去，其中 CSI 是现在也是以后主流的方式。
 
@@ -46,6 +52,7 @@ Kubernetes CSI 存储体系主要由两部分组成：
 * Driver registra：用于将插件注册到 kubelet 的 sidecar 容器，并将驱动程序自定义的 NodeId 添加到节点的 Annotations 上，通过与 CSI 上面的 Identity 服务进行通信调用 CSI 的 GetNodeId 方法来完成该操作。
 
 * External provisioner：用于 watch Kubernetes 的 PVC 对象并调用 CSI 的 CreateVolume 和 DeleteVolume 操作。
+
 * External attacher：用于 Attach/Detach 阶段，通过 watch Kubernetes 的 VolumeAttachment 对象并调用 CSI 的 ControllerPublish 和 ControllerUnpublish 操作来完成对应的 Volume 的 Attach/Detach。而 Volume 的 Mount/Unmount 阶段并不属于外部组件，当真正需要执行 Mount 操作的时候，kubelet 会去直接调用下面的 CSI Node 服务来完成 Volume 的 Mount/UnMount 操作。
 
 * **CSI 存储插件**: 这部分正是开发者需要实现的 CSI 插件部分，都是通过 gRPC 实现的服务，一般会用一个二进制文件对外提供服务，主要包含三部分：CSI Identity、CSI Controller、CSI Node。
@@ -53,6 +60,7 @@ Kubernetes CSI 存储体系主要由两部分组成：
 * CSI Identity — 主要用于负责对外暴露这个插件本身的信息，确保插件的健康状态。
 
 * CSI Controller - 主要实现 Volume 管理流程当中的 Provision 和 Attach 阶段，Provision 阶段是指创建和删除 Volume 的流程，而 Attach 阶段是指把存储卷附着在某个节点或脱离某个节点的流程，另外只有块存储类型的 CSI 插件才需要 Attach 功能。
+
 * CSI Node — 负责控制 Kubernetes 节点上的 Volume 操作。其中 Volume 的挂载被分成了 NodeStageVolume 和 NodePublishVolume 两个阶段。NodeStageVolume 接口主要是针对块存储类型的 CSI 插件而提供的，块设备在 “Attach” 阶段被附着在 Node 上后，需要挂载至 Pod 对应目录上，但因为块设备在 linux 上只能 mount 一次，而在 kubernetes volume 的使用场景中，一个 volume 可能被挂载进同一个 Node 上的多个 Pod 实例中，所以这里提供了 NodeStageVolume 这个接口，使用这个接口把块设备格式化后先挂载至 Node 上的一个临时全局目录，然后再调用 NodePublishVolume 使用 linux 中的 bind mount 技术把这个全局目录挂载进 Pod 中对应的目录上。
 
 ![](/assets/compute-container-k8s-csi3.png)
@@ -77,6 +85,7 @@ sidecar容器通过Socket调用CSI Driver容器的CSI接口，CSI Driver容器�
 * 用户实现的 CSI 插件，也就是CSI Driver存储驱动容器，主要功能是接收kubelet的调用，需要实现一系列与Node相关的CSI接口，例如NodePublishVolume接口（用于将Volume挂载到容器内的目标路径）、NodeUnpublishVolume接口（用于从容器中卸载Volume）等。
 
 * node-driver-registrar：从宿主中暴露/var/lib/kubelet/plugins\_registry，挂载在容器的/registration，容器通过这个UDS向kubelet注册csi的UDS
+
 * livenessprobe：可选
 
 更详细的每个组件具体做什么，见参考\[7\]
@@ -213,27 +222,23 @@ pod创建过程中调用存储的相关流程
 
 原文链接：[https://blog.csdn.net/willinux20130812/article/details/120411540](https://blog.csdn.net/willinux20130812/article/details/120411540)
 
-
-
 # 6.参考
 
-\[1\] https://www.qikqiak.com/k8strain/storage/csi/
+\[1\] [https://www.qikqiak.com/k8strain/storage/csi/](https://www.qikqiak.com/k8strain/storage/csi/)
 
-\[2\] https://www.infoq.cn/article/NIdj0c5AYN9VBZJvXfsA?utm\_source=related\_read\_bottom&utm\_medium=article
+\[2\] [https://www.infoq.cn/article/NIdj0c5AYN9VBZJvXfsA?utm\_source=related\_read\_bottom&utm\_medium=article](https://www.infoq.cn/article/NIdj0c5AYN9VBZJvXfsA?utm_source=related_read_bottom&utm_medium=article)
 
-\[3\] https://zhuanlan.zhihu.com/p/146321241
+\[3\] [https://zhuanlan.zhihu.com/p/146321241](https://zhuanlan.zhihu.com/p/146321241)
 
-\[4\] https://kingjcy.github.io/post/cloud/paas/base/kubernetes/k8s-store-csi/
+\[4\] [https://kingjcy.github.io/post/cloud/paas/base/kubernetes/k8s-store-csi/](https://kingjcy.github.io/post/cloud/paas/base/kubernetes/k8s-store-csi/)
 
-\[5\] https://github.com/kubernetes/community/blob/master/contributors/design-proposals/storage/container-storage-interface.md
+\[5\] [https://github.com/kubernetes/community/blob/master/contributors/design-proposals/storage/container-storage-interface.md](https://github.com/kubernetes/community/blob/master/contributors/design-proposals/storage/container-storage-interface.md)
 
-\[6\] https://kubernetes-csi.github.io/docs/csi-driver-object.html
+\[6\] [https://kubernetes-csi.github.io/docs/csi-driver-object.html](https://kubernetes-csi.github.io/docs/csi-driver-object.html)
 
-\[7\] https://blog.hdls.me/16255765577465.html
+\[7\] [https://blog.hdls.me/16255765577465.html](https://blog.hdls.me/16255765577465.html)
 
-\[8\] https://github.com/container-storage-interface/spec/blob/master/spec.md
+\[8\] [https://github.com/container-storage-interface/spec/blob/master/spec.md](https://github.com/container-storage-interface/spec/blob/master/spec.md)
 
-\[9\] https://mritd.com/2020/08/19/how-to-write-a-csi-driver-for-kubernetes/
-
-
+\[9\] [https://mritd.com/2020/08/19/how-to-write-a-csi-driver-for-kubernetes/](https://mritd.com/2020/08/19/how-to-write-a-csi-driver-for-kubernetes/)
 

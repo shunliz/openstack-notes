@@ -46,7 +46,7 @@
       * [Cluster-API](compute/container/container/cluster-api.md)
       * [Kubesphere](compute/container/container/kubesphere.md)
       * [helm&tiller](compute/container/container/helmandtiller.md)
-      * cilium
+      * [cilium](compute/container/container/cilium.md)
       * gpu
       * [istio](compute/container/container/istio.md)
         * [请求路由](compute/container/container/istio/qing-qiu-lu-you.md)
