@@ -18,7 +18,6 @@ Operator-sdk 帮助我们一键生成 operator 的框架，留出部分函数让
 
 ```
 brew install operator-sdk
-
 ```
 
 Linux 系统可以通过二进制源文件安装：
@@ -51,71 +50,38 @@ Operator-sdk 主要会帮你生成 CRD 文件和其 controller 框架。
 ```
 $ operator-sdk add api --api-version=<自定义资源的 api version> --kind <自定义资源的 kind>
 $ operator-sdk add api --api-version=o0w0o.cn/v1 --kind App
-
 ```
 
 然后在项目中会发现多了几个文件，其中有一个`.../app-operator/pkg/apis/o0w0o/v1/app_types.go`，其中帮你创建好了 App 的资源定义：
 
-    type
-     AppSpec 
-    struct
-     {
+    type AppSpec struct {
     }
 
-
-    type
-     AppStatus 
-    struct
-     {
+    type AppStatus struct {
     }
 
+    type App struct {
+    	metav1.TypeMeta   `json:",inline"`
+    	metav1.ObjectMeta `json:"metadata,omitempty"`
 
-    type
-     App 
-    struct
-     {
-    	metav1.TypeMeta   
-    `json:",inline"`
-
-    	metav1.ObjectMeta 
-    `json:"metadata,omitempty"`
-
-
-    	Spec   AppSpec   
-    `json:"spec,omitempty"`
-
-    	Status AppStatus 
-    `json:"status,omitempty"`
-
+    	Spec   AppSpec   `json:"spec,omitempty"`
+    	Status AppStatus `json:"status,omitempty"`
     }
-
 
 而你需要做的是定义`AppSpec`和`AppStatus`，分别是描述资源的属性和状态。定义好了之后只需要执行下面这条命令，即可在 CRD Yaml 中自动生成你定义的字段。
 
 ```
 $ operator-sdk generate k8s
-
 ```
 
 定义好 CR 之后，我们需要告诉 K8s 创建这个资源的时候需要做什么，也就是需要构建 controller。Operator-sdk 可以一键生成 controller 的框架：
 
 ```
 $ operator-sdk add controller --api-version=o0w0o.cn/v1 --kind=App
-INFO[
-0000
-] Generating controller version app.o0w0o.cn/v1 
-for
- kind App.
-INFO[
-0000
-] Created pkg/controller/app/app_controller.go
-INFO[
-0000
-] Created pkg/controller/add_app.go
-INFO[
-0000
-] Controller generation complete.
-
+INFO[0000] Generating controller version app.o0w0o.cn/v1 for kind App.
+INFO[0000] Created pkg/controller/app/app_controller.go
+INFO[0000] Created pkg/controller/add_app.go
+INFO[0000] Controller generation complete.
 ```
 
 看日志可以知道，Operator 帮我们创建了两个文件。
@@ -124,26 +90,17 @@ INFO[
 而`app_controller.go`则是真正定义 controller 的地方。在这个文件里，有两个标注了`TODO(User)`的地方，顾名思义，只有这两个地方需要用户自己写。
 
 ```
-func
- add(mgr manager.Manager, r reconcile.Reconciler) error {
+func add(mgr manager.Manager, r reconcile.Reconciler) error {
     ... 
-	
-// TODO(user): Modify this to be the types you create that are owned by the primary resource
-
+	// TODO(user): Modify this to be the types you create that are owned by the primary resource
     ...
-	
-return
-nil
-
+	return nil
 }
-
 
 // TODO(user): Modify this Reconcile function to implement your Controller logic.  This example creates
-func
- (r *ReconcileApp) Reconcile(request reconcile.Request) (reconcile.Result, error) {
+func (r *ReconcileApp) Reconcile(request reconcile.Request) (reconcile.Result, error) {
     ...
 }
-
 ```
 
 首先我们要知道，operator 的工作模式是基于事件的，监听到特定的事件后，触发对应的操作。那就不难理解，第一个 TODO 就是定义需要监听哪些资源；第二个 TODO 就是定义监听到这些资源的事件后，需要做哪些操作。
@@ -154,26 +111,15 @@ Operator 的部署 Yaml 都是 Operator-sdk 帮你生成好的。在完成 Opera
 
 ```
 // 创建 RBAC 相关
-$ kubectl create 
--f
- deploy/service_account.yaml
-$ kubectl create 
--f
- deploy/role.yaml
-$ kubectl create 
--f
- deploy/role_binding.yaml
+$ kubectl create -f deploy/service_account.yaml
+$ kubectl create -f deploy/role.yaml
+$ kubectl create -f deploy/role_binding.yaml
 
 // 部署 operator CRD
-$ kubectl apply 
--f
- deploy/crds/app_v1_app_crd.yaml
+$ kubectl apply -f deploy/crds/app_v1_app_crd.yaml
 
 // 部署 operator
-$ kubectl create 
--f
- deploy/operator.yaml
-
+$ kubectl create -f deploy/operator.yaml
 ```
 
 ## Operator Lifecycle Manager
@@ -212,17 +158,15 @@ OLM 定义了两个 operator 来维护自定义 operator 的生命周期，分�
 
 ```
 operator-sdk olm-catalog gen-csv --csv-version xx.yy.zz
-
 ```
 
 需要同时生成 CRD 的话，在上面的命令后面加上：
 
 ```
 --update-crds
-
 ```
 
-在本地测试 operator 是否合法：﻿[https://github.com/operator-framework/community-operators/blob/master/docs/testing-operators.md\#manual﻿-testing-on-kubernetes﻿﻿](https://github.com/operator-framework/community-operators/blob/master/docs/testing-operators.md#manual%EF%BB%BF-testing-on-kubernetes%EF%BB%BF%EF%BB%BF)
+在本地测试 operator 是否合法：﻿[https://github.com/operator-framework/community-operators/blob/master/docs/testing-operators.md\#manual﻿-testing-on-kubernetes﻿﻿](https://github.com/operator-framework/community-operators/blob/master/docs/testing-operators.md#manual﻿-testing-on-kubernetes﻿﻿)
 
 最后在 GitHub 上 upstream-community-operators 的子文件夹中提 pr 上传自己的 operator 的 csv 及 package 的 yaml 文件。
 
