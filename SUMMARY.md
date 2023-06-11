@@ -66,7 +66,7 @@
       * [Kubevela](compute/container/container/kubevela.md)
       * [OpenKruise](compute/container/container/openkruise.md)
     * [K8S开发](compute/container/container/k8skai-fa.md)
-      * client-go
+      * [client-go](compute/container/container/k8skai-fa/client-go.md)
       * [kubebuilder](compute/container/container/k8skai-fa/kubebuilder.md)
       * [CSI开发](compute/container/container/k8skai-fa/csikai-fa.md)
         * [CSI源码解析](compute/container/container/k8skai-fa/csikai-fa/csiyuan-ma-jie-xi.md)
@@ -74,6 +74,7 @@
       * [K8S源码](compute/container/container/k8skai-fa/k8syuan-ma.md)
         * [kubelet](compute/container/container/k8skai-fa/k8syuan-ma/kubelet.md)
       * [使用 Operator Framework 全家桶构建并维护 operator](compute/container/container/k8skai-fa/shi-yong-operator-framework-quan-jiatong-gou-jian-bing-wei-hu-operator.md)
+      * [CNI开发](compute/container/container/k8skai-fa/cnikai-fa.md)
 * [第二部 网络](network.md)
   * [网络基础理论](network/basic/basic.md)
     * [TCP/IP网络模型](network/physicalnet/physicalnet/tcpipwang-luo-mo-xing.md)
