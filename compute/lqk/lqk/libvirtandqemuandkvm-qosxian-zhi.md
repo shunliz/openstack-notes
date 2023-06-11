@@ -34,8 +34,7 @@ libvirt的虚拟机配置如下：
 # virsh schedinfo demo
 ```
 
-
-设置cpu亲和性。设置了cpu的亲和性可以使得虚拟机的cpu固定在某些物理cpu上，从而实现对cpu使用的控制和隔离。
+设置cpu亲和性。设置了cpu的亲和性可以使得虚拟机的cpu固定在某些物理cpu上，从而实现对cpu使用的控制和隔离。  
 libvirt虚拟机的配置方式如下：
 
 ```
@@ -45,20 +44,16 @@ libvirt虚拟机的配置方式如下：
         <vcpupin vcpu='1' cpuset='1'/>
 </cputune>
 ```
-查看信息：
 
+查看信息：
 
 ```
 # virsh vcpuinfo instance-0000000d
 ```
 
-
 （可查看到CPU Affinity信息）
 
-
-
-演示虚拟机cpu亲和性绑定 
-
+演示虚拟机cpu亲和性绑定
 
 ```
 1.通过下面命令找到虚拟机进程所有的线程
@@ -90,11 +85,8 @@ Every 1.0s: ps  -eLo pid,tid,pcpu,psr| grep 22314                               
 （说明：命令中最后为什么grep 22314，这个22314是刚才ps -eLf的第二列。）
 ```
 
-
-
-**二. 内存**
+**二. 内存**  
 内存\_qos。设置了内存的qos可以限制虚拟机在物理host山申请内存的大小。libvirt虚拟机的配置方式如下：
-
 
 ```
 <domain>
@@ -109,7 +101,6 @@ Every 1.0s: ps  -eLo pid,tid,pcpu,psr| grep 22314                               
 </domain>
 ```
 
-
 ```
 参数说明：
 hard_limit：限制虚拟机在host上使用的最大物理内存。
@@ -122,14 +113,11 @@ min_guarantee：最小保证的内存
 可以通过virsh memtune动态调整上述参数
 ```
 
-
-
-
 另外还可以通过cgroup来实现对虚拟机的内存限制：
 
 **1.如何通过cgroup做所有虚拟机总内存限制**
 
-\# cat /sys/fs/cgroup/memory/machine/memory.limit\_in\_bytes 
+\# cat /sys/fs/cgroup/memory/machine/memory.limit\_in\_bytes
 
 9223372036854771712
 
@@ -138,7 +126,6 @@ min_guarantee：最小保证的内存
 **2.如何通过cgroup做部分虚拟机的总内存限制**
 
 创建一个名为openstack的自定义cgroup ：
-
 
 ```
 #!/bin/bash
@@ -156,7 +143,6 @@ for i in cpuset.cpus  cpuset.mems
 
 在虚拟机的xml文件中使用：
 
-
 ```
 <domain type='kvm' id='6'>
   ....
@@ -166,8 +152,6 @@ for i in cpuset.cpus  cpuset.mems
   ....
 </domain>
 ```
-
-
 
 修改/sys/fs/cgroup/memory/machine/openstack.partition/memory.limit\_in\_bytes的数值，就可以限制通过openstack.partition
 
@@ -183,10 +167,37 @@ echo 100000000&gt;/sys/fs/cgroup/memory/machine/openstack.partition/instance-000
 
 **三. 磁盘**
 
+**blkiotune方式**
+
+bokiotune是通过Blkio cgroup方式实现IO限制
+
+```
+<domain>
+  ...
+  <blkiotune>
+    <weight>800</weight>
+    <device>
+      <path>/dev/sda</path>
+      <weight>1000</weight>
+    </device>
+    <device>
+      <path>/dev/sdb</path>
+      <weight>500</weight>
+      <read_bytes_sec>10000</read_bytes_sec>
+      <write_bytes_sec>10000</write_bytes_sec>
+      <read_iops_sec>20000</read_iops_sec>
+      <write_iops_sec>20000</write_iops_sec>
+    </device>
+  </blkiotune>
+  ...
+</domain>
+```
+
+**iotune方式**
+
 磁盘\_qos。设置磁盘的qos可以实现对磁盘的读写速率的限制，单位可以时iops或者字节。
 
-libvirt虚拟机的配置方式如下：  
-
+libvirt虚拟机的配置方式如下：
 
 ```
 <domain type='kvm' id='6'>
