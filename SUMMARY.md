@@ -67,7 +67,7 @@
       * [OpenKruise](compute/container/container/openkruise.md)
     * [K8S开发](compute/container/container/k8skai-fa.md)
       * client-go
-      * kubebuilder
+      * [kubebuilder](compute/container/container/k8skai-fa/kubebuilder.md)
       * [CSI开发](compute/container/container/k8skai-fa/csikai-fa.md)
         * [CSI源码解析](compute/container/container/k8skai-fa/csikai-fa/csiyuan-ma-jie-xi.md)
         * [hostpath实例](compute/container/container/k8skai-fa/csikai-fa/hostpathshi-li.md)
