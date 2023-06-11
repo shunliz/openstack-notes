@@ -4,14 +4,14 @@
 
 根据存储流程，首先调度后，pv控制器来处理pv和pvc的关系，pv控制器在组件kube-controller-manager中，我们先来看看pv控制器，首先看到pv控制器在kube-controller-manager的注册。
 
-```
+```go
 controllers["persistentvolume-binder"] = startPersistentVolumeBinderController
 controllers["persistentvolume-expander"] = startVolumeExpandController
 ```
 
 分别支持原生的存储和扩展的存储，我们来看对待的初始化函数。
 
-```
+```go
 func startPersistentVolumeBinderController(ctx ControllerContext) (http.Handler, bool, error) {
     plugins, err := ProbeControllerVolumePlugins(ctx.Cloud, ctx.ComponentConfig.PersistentVolumeBinderController.VolumeConfiguration)
     if err != nil {
@@ -48,7 +48,7 @@ func startPersistentVolumeBinderController(ctx ControllerContext) (http.Handler,
 
 创建各种params最后创建结构体PersistentVolumeController
 
-```
+```go
 // NewController creates a new PersistentVolume controller
 func NewController(p ControllerParameters) (*PersistentVolumeController, error) {
     eventRecorder := p.EventRecorder
@@ -81,17 +81,16 @@ func NewController(p ControllerParameters) (*PersistentVolumeController, error) 
 
 然后初始化volumes的插件，包括hostpath nfs csi等等
 
-```
+```go
 // Prober is nil because PV is not aware of Flexvolume.
 if err := controller.volumePluginMgr.InitPlugins(p.VolumePlugins, nil /* prober */, controller); err != nil {
     return nil, fmt.Errorf("Could not initialize volume plugins for PersistentVolume Controller: %v", err)
 }
-
 ```
 
 然后添加volume informer机制
 
-```
+```go
 p.VolumeInformer.Informer().AddEventHandler(
     cache.ResourceEventHandlerFuncs{
         AddFunc:    func(obj interface{}) { controller.enqueueWork(controller.volumeQueue, obj) },
@@ -105,7 +104,7 @@ controller.volumeListerSynced = p.VolumeInformer.Informer().HasSynced
 
 然后添加claim informer机制
 
-```
+```go
 p.ClaimInformer.Informer().AddEventHandler(
     cache.ResourceEventHandlerFuncs{
         AddFunc:    func(obj interface{}) { controller.enqueueWork(controller.claimQueue, obj) },
@@ -119,7 +118,7 @@ controller.claimListerSynced = p.ClaimInformer.Informer().HasSynced
 
 最后添加 storageclas pod node资源 informer机制
 
-```
+```go
 controller.classLister = p.ClassInformer.Lister()
 controller.classListerSynced = p.ClassInformer.Informer().HasSynced
 controller.podLister = p.PodInformer.Lister()
@@ -127,12 +126,11 @@ controller.podIndexer = p.PodInformer.Informer().GetIndexer()
 controller.podListerSynced = p.PodInformer.Informer().HasSynced
 controller.NodeLister = p.NodeInformer.Lister()
 controller.NodeListerSynced = p.NodeInformer.Informer().HasSynced
-
 ```
 
 到此NewController调用就结束了，下面调用这个PersistentVolumeController的run函数运行
 
-```
+```go
 // Run starts all of this controller's control loops
 func (ctrl *PersistentVolumeController) Run(stopCh <-chan struct{}) {
     defer utilruntime.HandleCrash()
@@ -166,7 +164,7 @@ func (ctrl *PersistentVolumeController) Run(stopCh <-chan struct{}) {
 
 我们来看看对应的函数，先看resysc
 
-```
+```go
 // resync supplements short resync period of shared informers - we don't want
 // all consumers of PV/PVC shared informer to have a short resync period,
 // therefore we do our own.
@@ -195,7 +193,7 @@ func (ctrl *PersistentVolumeController) resync() {
 
 可见就是获取pvcs，pvs，最后放到对应的队列中处理。我们再来看看volumeManager
 
-```
+```go
 // volumeWorker processes items from volumeQueue. It must run only once,
 // syncVolume is not assured to be reentrant.
 func (ctrl *PersistentVolumeController) volumeWorker() {
@@ -303,7 +301,7 @@ CSI 插件的三部分 CSI Identity , CSI Controller , CSI Node 可放在同一�
 
 对应的rpc定义可以看源码，简单的看一下对应的定义
 
-```
+```go
 service Identity {
   rpc GetPluginInfo(GetPluginInfoRequest)
     returns (GetPluginInfoResponse) {}
