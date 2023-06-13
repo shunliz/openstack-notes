@@ -64,7 +64,7 @@ func cmdDel(args *skel.CmdArgs) error {
 
 ```
 func main() {
-	skel.PluginMain(cmdAdd, cmdCheck, cmdDel, version.All, bv.BuildString("host-local"))
+    skel.PluginMain(cmdAdd, cmdCheck, cmdDel, version.All, bv.BuildString("host-local"))
 }
 ```
 
@@ -78,38 +78,38 @@ func main() {
 
 ```
 func main() {
-	...
-	netconf, err := libcni.LoadConfList(netdir, os.Args[2])
     ...
-	netns := os.Args[3]
-	netns, err = filepath.Abs(netns)
+    netconf, err := libcni.LoadConfList(netdir, os.Args[2])
     ...
-	// Generate the containerid by hashing the netns path
-	s := sha512.Sum512([]byte(netns))
-	containerID := fmt.Sprintf("cnitool-%x", s[:10])
-	cninet := libcni.NewCNIConfig(filepath.SplitList(os.Getenv(EnvCNIPath)), nil)
+    netns := os.Args[3]
+    netns, err = filepath.Abs(netns)
+    ...
+    // Generate the containerid by hashing the netns path
+    s := sha512.Sum512([]byte(netns))
+    containerID := fmt.Sprintf("cnitool-%x", s[:10])
+    cninet := libcni.NewCNIConfig(filepath.SplitList(os.Getenv(EnvCNIPath)), nil)
 
-	rt := &libcni.RuntimeConf{
-		ContainerID:    containerID,
-		NetNS:          netns,
-		IfName:         ifName,
-		Args:           cniArgs,
-		CapabilityArgs: capabilityArgs,
-	}
+    rt := &libcni.RuntimeConf{
+        ContainerID:    containerID,
+        NetNS:          netns,
+        IfName:         ifName,
+        Args:           cniArgs,
+        CapabilityArgs: capabilityArgs,
+    }
 
-	switch os.Args[1] {
-	case CmdAdd:
-		result, err := cninet.AddNetworkList(context.TODO(), netconf, rt)
-		if result != nil {
-			_ = result.Print()
-		}
-		exit(err)
-	case CmdCheck:
-		err := cninet.CheckNetworkList(context.TODO(), netconf, rt)
-		exit(err)
-	case CmdDel:
-		exit(cninet.DelNetworkList(context.TODO(), netconf, rt))
-	}
+    switch os.Args[1] {
+    case CmdAdd:
+        result, err := cninet.AddNetworkList(context.TODO(), netconf, rt)
+        if result != nil {
+            _ = result.Print()
+        }
+        exit(err)
+    case CmdCheck:
+        err := cninet.CheckNetworkList(context.TODO(), netconf, rt)
+        exit(err)
+    case CmdDel:
+        exit(cninet.DelNetworkList(context.TODO(), netconf, rt))
+    }
 }
 ```
 
@@ -120,16 +120,16 @@ func main() {
 ```
 // AddNetworkList executes a sequence of plugins with the ADD command
 func (c *CNIConfig) AddNetworkList(ctx context.Context, list *NetworkConfigList, rt *RuntimeConf) (types.Result, error) {
-	var err error
-	var result types.Result
-	for _, net := range list.Plugins {
-		result, err = c.addNetwork(ctx, list.Name, list.CNIVersion, net, result, rt)
-		if err != nil {
-			return nil, err
-		}
-	}
+    var err error
+    var result types.Result
+    for _, net := range list.Plugins {
+        result, err = c.addNetwork(ctx, list.Name, list.CNIVersion, net, result, rt)
+        if err != nil {
+            return nil, err
+        }
+    }
     ...
-	return result, nil
+    return result, nil
 }
 ```
 
@@ -137,13 +137,13 @@ func (c *CNIConfig) AddNetworkList(ctx context.Context, list *NetworkConfigList,
 
 ```
 func (c *CNIConfig) addNetwork(ctx context.Context, name, cniVersion string, net *NetworkConfig, prevResult types.Result, rt *RuntimeConf) (types.Result, error) {
-	c.ensureExec()
-	pluginPath, err := c.exec.FindInPath(net.Network.Type, c.Path)
+    c.ensureExec()
+    pluginPath, err := c.exec.FindInPath(net.Network.Type, c.Path)
     ...
 
-	newConf, err := buildOneConfig(name, cniVersion, net, prevResult, rt)
+    newConf, err := buildOneConfig(name, cniVersion, net, prevResult, rt)
     ...
-	return invoke.ExecPluginWithResult(ctx, pluginPath, newConf.Bytes, c.args("ADD", rt), c.exec)
+    return invoke.ExecPluginWithResult(ctx, pluginPath, newConf.Bytes, c.args("ADD", rt), c.exec)
 }
 ```
 
@@ -157,21 +157,21 @@ func (c *CNIConfig) addNetwork(ctx context.Context, name, cniVersion string, net
 
 ```
 func (e *RawExec) ExecPlugin(ctx context.Context, pluginPath string, stdinData []byte, environ []string) ([]byte, error) {
-	stdout := &bytes.Buffer{}
-	stderr := &bytes.Buffer{}
-	c := exec.CommandContext(ctx, pluginPath)
-	c.Env = environ
-	c.Stdin = bytes.NewBuffer(stdinData)
-	c.Stdout = stdout
-	c.Stderr = stderr
+    stdout := &bytes.Buffer{}
+    stderr := &bytes.Buffer{}
+    c := exec.CommandContext(ctx, pluginPath)
+    c.Env = environ
+    c.Stdin = bytes.NewBuffer(stdinData)
+    c.Stdout = stdout
+    c.Stderr = stderr
 
-	// Retry the command on "text file busy" errors
-	for i := 0; i <= 5; i++ {
-		err := c.Run()
+    // Retry the command on "text file busy" errors
+    for i := 0; i <= 5; i++ {
+        err := c.Run()
         ...
-		// All other errors except than the busy text file
-		return nil, e.pluginErr(err, stdout.Bytes(), stderr.Bytes())
-	}
+        // All other errors except than the busy text file
+        return nil, e.pluginErr(err, stdout.Bytes(), stderr.Bytes())
+    }
     ...
 }
 ```
@@ -188,21 +188,21 @@ func (e *RawExec) ExecPlugin(ctx context.Context, pluginPath string, stdinData [
 
 kubelet 在创建 pod 的时候，会调用 CNI 插件为 pod 创建网络环境。源码如下，可以看到 kubelet 在 SetUpPod 函数（pkg/kubelet/dockershim/network/cni/cni.go）中调用了 plugin.addToNetwork 函数：
 
-```
+```go
 func (plugin *cniNetworkPlugin) SetUpPod(namespace string, name string, id kubecontainer.ContainerID, annotations, options map[string]string) error {
-	if err := plugin.checkInitialized(); err != nil {
-		return err
-	}
-	netnsPath, err := plugin.host.GetNetNS(id.ID)
+    if err := plugin.checkInitialized(); err != nil {
+        return err
+    }
+    netnsPath, err := plugin.host.GetNetNS(id.ID)
     ...
-	if plugin.loNetwork != nil {
-		if _, err = plugin.addToNetwork(cniTimeoutCtx, plugin.loNetwork, name, namespace, id, netnsPath, annotations, options); err != nil {
-			return err
-		}
-	}
+    if plugin.loNetwork != nil {
+        if _, err = plugin.addToNetwork(cniTimeoutCtx, plugin.loNetwork, name, namespace, id, netnsPath, annotations, options); err != nil {
+            return err
+        }
+    }
 
-	_, err = plugin.addToNetwork(cniTimeoutCtx, plugin.getDefaultNetwork(), name, namespace, id, netnsPath, annotations, options)
-	return err
+    _, err = plugin.addToNetwork(cniTimeoutCtx, plugin.getDefaultNetwork(), name, namespace, id, netnsPath, annotations, options)
+    return err
 }
 ```
 
@@ -210,15 +210,15 @@ func (plugin *cniNetworkPlugin) SetUpPod(namespace string, name string, id kubec
 
 ```
 func (plugin *cniNetworkPlugin) addToNetwork(ctx context.Context, network *cniNetwork, podName string, podNamespace string, podSandboxID kubecontainer.ContainerID, podNetnsPath string, annotations, options map[string]string) (cnitypes.Result, error) {
-	rt, err := plugin.buildCNIRuntimeConf(podName, podNamespace, podSandboxID, podNetnsPath, annotations, options)
+    rt, err := plugin.buildCNIRuntimeConf(podName, podNamespace, podSandboxID, podNetnsPath, annotations, options)
     ...
 
-	pdesc := podDesc(podNamespace, podName, podSandboxID)
-	netConf, cniNet := network.NetworkConfig, network.CNIConfig
+    pdesc := podDesc(podNamespace, podName, podSandboxID)
+    netConf, cniNet := network.NetworkConfig, network.CNIConfig
     ...
-	res, err := cniNet.AddNetworkList(ctx, netConf, rt)
+    res, err := cniNet.AddNetworkList(ctx, netConf, rt)
     ...
-	return res, nil
+    return res, nil
 }
 ```
 
@@ -248,26 +248,26 @@ bridge     firewall  host-device  ipvlan      macvlan   ptp      static  village
 $ mkdir -p /etc/cni/net.d
 $ cat >/etc/cni/net.d/10-hdlsnet.conf <<EOF
 {
-	"cniVersion": "0.2.0",
-	"name": "hdls-net",
-	"type": "bridge",
-	"bridge": "cni0",
-	"isGateway": true,
-	"ipMasq": true,
-	"ipam": {
-		"type": "host-local",
-		"subnet": "10.22.0.0/16",
-		"routes": [
-			{ "dst": "0.0.0.0/0" }
-		]
-	}
+    "cniVersion": "0.2.0",
+    "name": "hdls-net",
+    "type": "bridge",
+    "bridge": "cni0",
+    "isGateway": true,
+    "ipMasq": true,
+    "ipam": {
+        "type": "host-local",
+        "subnet": "10.22.0.0/16",
+        "routes": [
+            { "dst": "0.0.0.0/0" }
+        ]
+    }
 }
 EOF
 $ cat >/etc/cni/net.d/99-loopback.conf <<EOF
 {
-	"cniVersion": "0.2.0",
-	"name": "lo",
-	"type": "loopback"
+    "cniVersion": "0.2.0",
+    "name": "lo",
+    "type": "loopback"
 }
 EOF
 ```
@@ -276,7 +276,6 @@ EOF
 
 ```
 $ ip netns add hdls
-
 ```
 
 #### 执行 cnitool 的 add
@@ -344,7 +343,6 @@ $ ip l
     link/ether 76:32:56:61:e4:f5 brd ff:ff:ff:ff:ff:ff
 5: veth3e674876@if3: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc noqueue master cni0 state UP mode DEFAULT group default
     link/ether 62:b3:06:15:f9:39 brd ff:ff:ff:ff:ff:ff link-netnsid 0
-    
 ```
 
 ## Village Net
@@ -373,13 +371,9 @@ $ ip l
 
 ![](/assets/compute-container-k8s-cni6.png)
 
-
-
 ipam 的主要任务是基于配置从两个网段中个分配出一个可用 IP，main 插件是基于两个网段的 IP 创建出 bridge、veth、macvlan 设备，并进行配置。
 
 ## 最后
 
 Village Net 的实现还是比较简单，甚至还需要部分手动操作，比如 bridge 的路由部分。但是功能上基本达到预期，而且对 cni 的坑完整的梳理了一遍
-
-
 
