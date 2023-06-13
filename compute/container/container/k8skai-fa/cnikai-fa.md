@@ -76,7 +76,7 @@ func main() {
 
 先来看下 cnitool 的执行逻辑：
 
-```
+```go
 func main() {
     ...
     netconf, err := libcni.LoadConfList(netdir, os.Args[2])
@@ -117,7 +117,7 @@ func main() {
 
 接下来看下接口 AddNetworkList 的实现：
 
-```
+```go
 // AddNetworkList executes a sequence of plugins with the ADD command
 func (c *CNIConfig) AddNetworkList(ctx context.Context, list *NetworkConfigList, rt *RuntimeConf) (types.Result, error) {
     var err error
@@ -135,7 +135,7 @@ func (c *CNIConfig) AddNetworkList(ctx context.Context, list *NetworkConfigList,
 
 显然，该函数的作用就是按顺序执行各个 Plugin 的 addNetwork 操作。再看下 addNetwork 函数：
 
-```
+```go
 func (c *CNIConfig) addNetwork(ctx context.Context, name, cniVersion string, net *NetworkConfig, prevResult types.Result, rt *RuntimeConf) (types.Result, error) {
     c.ensureExec()
     pluginPath, err := c.exec.FindInPath(net.Network.Type, c.Path)
@@ -155,7 +155,7 @@ func (c *CNIConfig) addNetwork(ctx context.Context, name, cniVersion string, net
 
 事实上，invoke.ExecPluginWithResult 仅仅是一个包装函数，里面调用了一下 exec.ExecPlugin 就返回了，这里我们看一下 exec.ExecPlugin 的实现：
 
-```
+```go
 func (e *RawExec) ExecPlugin(ctx context.Context, pluginPath string, stdinData []byte, environ []string) ([]byte, error) {
     stdout := &bytes.Buffer{}
     stderr := &bytes.Buffer{}
