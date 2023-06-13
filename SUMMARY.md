@@ -65,6 +65,7 @@
       * [microk8s](compute/container/container/microk8s.md)
       * [Kubevela](compute/container/container/kubevela.md)
       * [OpenKruise](compute/container/container/openkruise.md)
+      * [coreDNS](compute/container/container/coredns.md)
     * [K8S开发](compute/container/container/k8skai-fa.md)
       * [client-go](compute/container/container/k8skai-fa/client-go.md)
       * [kubebuilder](compute/container/container/k8skai-fa/kubebuilder.md)
