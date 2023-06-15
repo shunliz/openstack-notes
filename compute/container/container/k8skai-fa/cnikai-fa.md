@@ -46,7 +46,7 @@ Main 插件主要用来创建具体的网络设备的二进制文件。官方提
 
 CNI Plugin 的仓库在：[https://github.com/containernetworking/plugins](https://github.com/containernetworking/plugins)。在里面可以看到每种类型 Plugin 的具体实现。每个 Plugin 都需要实现以下三个方法，再在 main 中注册一下。
 
-```
+```go
 func cmdCheck(args *skel.CmdArgs) error {
     ...
 }
