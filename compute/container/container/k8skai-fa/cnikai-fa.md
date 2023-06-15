@@ -208,7 +208,7 @@ func (plugin *cniNetworkPlugin) SetUpPod(namespace string, name string, id kubec
 
 再来看看 addToNetwork 函数，该函数首先会去构建 pod 的运行时信息，再读取 CNI 插件的网络配置信息，即 /etc/cni/net.d 目录下的配置文件。组装好 plugin 需要的参数后调用 cni 的接口 cniNet.AddNetworkList。源码如下：
 
-```
+```go
 func (plugin *cniNetworkPlugin) addToNetwork(ctx context.Context, network *cniNetwork, podName string, podNamespace string, podSandboxID kubecontainer.ContainerID, podNetnsPath string, annotations, options map[string]string) (cnitypes.Result, error) {
     rt, err := plugin.buildCNIRuntimeConf(podName, podNamespace, podSandboxID, podNetnsPath, annotations, options)
     ...
