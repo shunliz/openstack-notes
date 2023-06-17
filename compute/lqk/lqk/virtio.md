@@ -1,3 +1,5 @@
+# ![](/assets/compute-lqk-virtio21.png)
+
 # ![](/assets/compute-lqkv-virtio1.png)Virtio协议架构![](/assets/compute-lqkv-virtio2.png)Virtio技术演进![](/assets/compute-lqkv-virtio4.png)**1.virtio-net驱动与设备:**最原始的virtio网络
 
 **Virtio网络设备是一种虚拟的以太网卡**，支持多队列的网络包收发。熟悉virtio的读者应该知道，在virtio的架构中有
@@ -75,8 +77,6 @@ DPDK社区一直致力于加速数据中心的网络数据平面，而virtio网�
 《[关于英特尔® 以太网服务器适配器中 SR-IOV 的常见问题解答](https://www.intel.cn/content/www/cn/zh/support/articles/000005722/network-and-i-o/ethernet-products.html)》
 
 需要注意的是，vDPA框架中利用到的硬件必须至少支持virtio ring的标准，否则可想而知，硬件是无法与前端进行正确通信的。另外，原先软件交换机提供的交换功能，也转而在硬件中实现。
-
-
 
 ![](/assets/compute-lqk-virtio-virtio41.png)
 
