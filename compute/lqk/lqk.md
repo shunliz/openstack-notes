@@ -372,9 +372,7 @@ cpu->kvm_fd, 0);
 run_ret = ioctl(cpu->kvm_fd, KVM_RUN, 0);
 ```
 
-###   KVM运行过程中存在三种模式：
-
-
+### KVM运行过程中存在三种模式：
 
 客户模式（Guest Mode），运行GuestOS，执行Guest非IO操作指令。
 
@@ -382,11 +380,11 @@ run_ret = ioctl(cpu->kvm_fd, KVM_RUN, 0);
 
 内核模式（Kernel Mode），运行KVM内核，实现模式的切换（VM Exit/VM Entry），执行特权与敏感指令。
 
-        KVM运行的基本如下图所示：
+```
+    KVM运行的基本如下图所示：
+```
 
 ![](/assets/compute-lqk-kvmarch1.png)流程描述：
-
-
 
 1. 运行在用户态的Qemu-kvm通过ioctl系统调用操作/dev/kvm字符设备，创建VM和VCPU；
 2. 内核KVM模块负责相关数据结构的创建即初始化，然后返回用户态；
@@ -399,9 +397,40 @@ run_ret = ioctl(cpu->kvm_fd, KVM_RUN, 0);
 9. 如果不是，则由VMM自行处理；
 10. 处理完成后，重新VM-entry进入到Guest OS运行；
 
+### ![](/assets/compute-lqk-kvm21.png)
+
+1. kvm\_arch\_create\_vm\(\)初始化kvm结构体；
+2. hardware\_enable\_all\(\)，针对每一个CPU，调用kvm\_x86\_ops中硬件相关的函数进行硬件使能，主要设置相关寄存器和标记，使CPU进入虚拟化相关模式中\(如Intel VMX\)；
+3. 初始化memslots结构体信息；
+4. 初始化BUS总线结构体信息；
+5. 初始化事件通知信息和内存管理相关结构体信息；
+6. 将新创建的虚拟机加入KVM的虚拟机列表；
 
 
-### 
+
+![](/assets/compute-lqk-kvm22.png)
+
+1. kvm\_arch\_vcpu\_create\(\)创建kvm\_vcpu结构体，具体实现跟架构相关，直接调用kvm\_x86\_ops中的create\_cpu方法执行，主要完成相关寄存器和CPUID的初始化，为调度运行做准备；
+2. kvm\_arch\_vcpu\_setup\(\)初始化kvm\_vcpu结构体；
+3. 判断当前VCPU数量是否达到上限，如果是，则销毁刚创建的实例；
+4. 判断当前VCPU是否已经加入了某个KVM主机，如果是，则销毁刚创建的实例；
+5. create\_vcpu\_fd\(\)创建vcpu\_fd；
+6. 将创建的kvm\_vcpu结构体加入kvm的VCPU数组中；
+7. 增加online vcpu数量；
+8. 释放锁，结束；
+
+![](/assets/compute-lqk-kvm23.png)
+
+1. Sigprocmask\(\)屏蔽信号，防止在此过程中受到信号的干扰；
+2. 设置当前VCPU状态为KVM\_MP\_STATE\_UNINITIALIZED；
+3. 配置APIC和mmio相关信息；
+4. 将VCPU中保存的上下文信息写入指定位置；
+5. 然后的工作交由\_\_vcpu\_run完成；
+6. \_\_vcpu\_run最终调用vcpu\_enter\_guest，该函数实现了进入Guest，并执行Guest OS具体指令的操作；   
+7. vcpu\_enter\_guest最终调用kvm\_x86\_ops中的run函数运行。对应于Intel平台，该函数为vmx\_vcpu\_run\(设置Guest CR3和其他寄存器、EPT/影子页表相关设置、汇编代码VMLAUNCH切换到非根模式，执行Guest目标代码\)；
+8. Guest代码执行到敏感指令或因其他原因\(比如中断/异常\)，VM-Exit退出非根模式，返回到vcpu\_enter\_guest函数继续执行；
+9. vcpu\_enter\_guest函数中会判断VM-Exit原因，并进行相应处理；
+10. 处理完成后VM-Entry到Guest重新执行Guest代码，或重新等待下次调度；
 
 ### 内存虚拟化
 
