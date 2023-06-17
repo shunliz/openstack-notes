@@ -173,11 +173,11 @@
     * [Cinder卷的加密](storage/cinder/cinder/cinderjuan-de-jia-mi.md)
     * [cinder-lvm](storage/cinder/cinder/cinder-lvm.md)
   * [Ceph](storage/ceph/ceph.md)
-    * rbd
-    * cephfs
-    * radosgw
+    * [rbd](storage/ceph/ceph/rbd.md)
+    * [cephfs](storage/ceph/ceph/cephfs.md)
+    * [radosgw](storage/ceph/ceph/radosgw.md)
     * [ceph rbd灾备方案](storage/ceph/ceph/cephzai-bei-fang-an.md)
-      * ceph rbd mirror
+      * [ceph rbd mirror](storage/ceph/ceph/cephzai-bei-fang-an/ceph-rbd-mirror.md)
     * [crush](storage/ceph/ceph/crush.md)
     * [ceph调优](storage/ceph/ceph/cephdiao-you.md)
     * [ceph-cache-tier](storage/ceph/ceph/ceph-cache-tier.md)
