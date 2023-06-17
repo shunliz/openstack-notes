@@ -24,7 +24,7 @@
     * [内存虚拟化](compute/lqk/lqk/nei-cun-xu-ni-hua.md)
     * [Qemu](compute/lqk/lqk/qemu.md)
       * [TCG](compute/lqk/lqk/tcg.md)
-    * qemu kvm运行过程
+    * [qemu kvm运行过程](compute/lqk/lqk/qemu-kvmyun-xing-guo-cheng.md)
     * [VirtIO](compute/lqk/lqk/virtio.md)
       * [VDPA](compute/lqk/lqk/virtio/vdpa.md)
       * [智能网卡](compute/lqk/lqk/virtio/zhi-neng-wang-qia.md)

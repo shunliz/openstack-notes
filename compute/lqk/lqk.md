@@ -344,7 +344,6 @@ int main(int argc, char **argv) {
     free(vcpu);
     free(kvm_state);
 }
-
 ```
 
 ```
@@ -371,9 +370,38 @@ cpu->kvm_run = mmap(NULL, mmap_size, PROT_READ | PROT_WRITE, MAP_SHARED,
 cpu->kvm_fd, 0);
 // ### 7. 循环在vCPU上运行虚拟机，内存中已经有了vm的镜像，可以运行guest os
 run_ret = ioctl(cpu->kvm_fd, KVM_RUN, 0);
-
-
 ```
+
+###   KVM运行过程中存在三种模式：
+
+
+
+客户模式（Guest Mode），运行GuestOS，执行Guest非IO操作指令。
+
+用户模式（User Mode），运行QEMU，实现IO模拟与管理。
+
+内核模式（Kernel Mode），运行KVM内核，实现模式的切换（VM Exit/VM Entry），执行特权与敏感指令。
+
+        KVM运行的基本如下图所示：
+
+![](/assets/compute-lqk-kvmarch1.png)流程描述：
+
+
+
+1. 运行在用户态的Qemu-kvm通过ioctl系统调用操作/dev/kvm字符设备，创建VM和VCPU；
+2. 内核KVM模块负责相关数据结构的创建即初始化，然后返回用户态；
+3. Qemu-kvm通过ioctl调用运行VCPU，即调度相应的VM运行；
+4. 内核进行相关处理后，执行VMLAUNCH指令，通过VM-Entry进入Guest OS运行，Guest OS运行于非根模式下；
+5. Guest OS执行相应的虚拟机代码，非敏感指令可直接在物理CPU上运行；
+6. 当Guest OS中执行到敏感指令、发生外部中断、或Guest OS发生内部异常时，将产生VM-Exit，并将相关信息记录到VMCS结构中；
+7. VM-Exit使CPU退回到根模式下，由VMM读取VMCS结构判断VM-Exit的原因；
+8. 如是IO操作或是其他外设指令，则返回到用户态Qemu-kvm\(即根模式下的Ring3\)，由Qemu-kvm完成对相关指令的模拟；
+9. 如果不是，则由VMM自行处理；
+10. 处理完成后，重新VM-entry进入到Guest OS运行；
+
+
+
+### 
 
 ### 内存虚拟化
 
@@ -383,6 +411,5 @@ QEMU初始化时调用KVM接口告知KVM，虚拟机所需要的物理内存，�
 
 在CPU支持EPT（拓展页表）后，CPU会自动完成虚拟机物理地址到宿主机物理地址的转换。虚拟机第一次访问内存的时候会陷入KVM，KVM逐渐建立起EPT页面。这样后续的虚拟机的虚拟CPU访问虚拟机虚拟内存地址时，会先被转换为虚拟机物理地址，接着查找EPT表，获取宿主机物理地址
 
-  
 ![](/assets/compute-libqemukvm-qkvm1.png)![](/assets/compute-libqemukvm-qkvm2.png)
 

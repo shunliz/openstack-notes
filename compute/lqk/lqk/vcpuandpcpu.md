@@ -1,4 +1,4 @@
-### [vCPU](https://ashiamd.github.io/docsify-notes/#/study/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F%E5%92%8C%E7%A1%AC%E4%BB%B6/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F%E7%B3%BB%E7%BB%9F%E5%9B%9E%E9%A1%BE?id=_141-vcpu) {#_141-vcpu}
+### [vCPU](https://ashiamd.github.io/docsify-notes/#/study/操作系统和硬件/操作系统系统回顾?id=_141-vcpu) {#_141-vcpu}
 
 * **一个Socket套接字对应一个CPU。**
 
@@ -18,11 +18,11 @@
 
 ---
 
-#### [1.**物理CPU与VCPU的关系梳理**](https://ashiamd.github.io/docsify-notes/#/study/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F%E5%92%8C%E7%A1%AC%E4%BB%B6/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F%E7%B3%BB%E7%BB%9F%E5%9B%9E%E9%A1%BE?id=_1-%e7%89%a9%e7%90%86cpu%e4%b8%8evcpu%e7%9a%84%e5%85%b3%e7%b3%bb%e6%a2%b3%e7%90%86) {#_1-物理cpu与vcpu的关系梳理}
+#### [1.**物理CPU与VCPU的关系梳理**](https://ashiamd.github.io/docsify-notes/#/study/操作系统和硬件/操作系统系统回顾?id=_1-物理cpu与vcpu的关系梳理) {#_1-物理cpu与vcpu的关系梳理}
 
 > [物理CPU与VCPU的关系梳理](https://support.huawei.com/enterprise/zh/knowledge/EKB1000080054)
 
-##### [1.**系统可用的VCPU\*\***总数计算\*\*](https://ashiamd.github.io/docsify-notes/#/study/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F%E5%92%8C%E7%A1%AC%E4%BB%B6/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F%E7%B3%BB%E7%BB%9F%E5%9B%9E%E9%A1%BE?id=_1-%e7%b3%bb%e7%bb%9f%e5%8f%af%e7%94%a8%e7%9a%84vcpu%e6%80%bb%e6%95%b0%e8%ae%a1%e7%ae%97) {#_1-系统可用的vcpu总数计算}
+##### [1.**系统可用的VCPU\*\***总数计算\*\*](https://ashiamd.github.io/docsify-notes/#/study/操作系统和硬件/操作系统系统回顾?id=_1-系统可用的vcpu总数计算) {#_1-系统可用的vcpu总数计算}
 
 * **系统可用的vCPU总数\(逻辑处理器\) = Socket数（CPU个数）x Core数（内核）x Thread数（超线程）**
 
@@ -35,7 +35,7 @@
 * **在不做VCPU预留的条件下，系统可以创建或运行VM的VCPU总数可远远大于实际可提供的VCPU数目**
   。
 
-##### [2. 虚拟机VCPU的分配与调度](https://ashiamd.github.io/docsify-notes/#/study/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F%E5%92%8C%E7%A1%AC%E4%BB%B6/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F%E7%B3%BB%E7%BB%9F%E5%9B%9E%E9%A1%BE?id=_2-%e8%99%9a%e6%8b%9f%e6%9c%bavcpu%e7%9a%84%e5%88%86%e9%85%8d%e4%b8%8e%e8%b0%83%e5%ba%a6) {#_2-虚拟机vcpu的分配与调度}
+##### [2. 虚拟机VCPU的分配与调度](https://ashiamd.github.io/docsify-notes/#/study/操作系统和硬件/操作系统系统回顾?id=_2-虚拟机vcpu的分配与调度) {#_2-虚拟机vcpu的分配与调度}
 
 ​**对虚拟机来说，不直接感知物理CPU，虚拟机的计算单元通过vCPU对象来呈现。虚拟机只看到VMM呈现给它的vCPU**。在VMM中，每个vCPU对应一个VMCS（Virtual-Machine Control Structure）结构，当VCPU被从物理CPU上切换下来的时候，其运行上下文会被保存在其对应的VMCS结构中；当VCPU被切换到PCPU上运行时，其运行上下文会从对应的VMCS结构中导入到物理CPU上。通过这种方式，实现各vCPU之间的独立运行。
 
@@ -43,7 +43,7 @@
 
 ![](/assets/compute-libvirtqemukvm-vcpuandpcpu2.png)
 
-##### [3. CPU QoS说明](https://ashiamd.github.io/docsify-notes/#/study/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F%E5%92%8C%E7%A1%AC%E4%BB%B6/%E6%93%8D%E4%BD%9C%E7%B3%BB%E7%BB%9F%E7%B3%BB%E7%BB%9F%E5%9B%9E%E9%A1%BE?id=_3-cpu-qos%e8%af%b4%e6%98%8e) {#_3-cpu-qos说明}
+##### [3. CPU QoS说明](https://ashiamd.github.io/docsify-notes/#/study/操作系统和硬件/操作系统系统回顾?id=_3-cpu-qos说明) {#_3-cpu-qos说明}
 
 ​ Hypervisor层根据**分时复用**的原理实现对VCPU的调度，**CPU QoS的原理是定期给各VCPU分配运行时间片，并对各VCPU运行的时间进行记账，对于消耗完时间片的虚拟CPU将被限制运行，直到获得时间片**。以此控制虚拟机获得物理计算资源的比例。以上分配时间片和记账的时间周期很短，对虚拟机用户来说会感觉一直在运行。
 
@@ -65,5 +65,5 @@
 |  | B | 2000 | 0 | 800MHz | 800-100=700MHz |
 |  | C | 4000 | 0 | 1600MHz | 1600-200=1400MHz |
 
-
+![](/assets/compute-lqk-vcpu21.png)
 
