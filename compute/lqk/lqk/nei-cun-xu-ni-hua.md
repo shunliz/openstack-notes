@@ -54,7 +54,7 @@ page table是每个进程独有的，是软件实现的，是存储在main memor
 
 如果这个操作系统是运行在虚拟机上的，那么这只是一个中间的物理地址（Intermediate Phyical Address - IPA），需要经过VMM/hypervisor的转换，才能得到最终的物理地址（Host Phyical Address -**HPA**）。从VMM的角度，guest VM中的虚拟地址就成了**GVA**\(Guest Virtual Address\)，IPA就成了**GPA**\(Guest Phyical Address\)。
 
-![](/assets/compute-libvirtkvmqemu-memconvert3.png)
+![](/assets/compute-libvirtkvmqemu-memconvert3.png)![](/assets/compute-lqk-memory21.png)
 
 可见，如果使用VMM，并且guest VM中的程序使用虚拟地址（如果guest VM中运行的是不支持虚拟地址的RTOS，则在虚拟机层面不需要地址转换），那么就需要两次地址转换。
 
@@ -124,15 +124,13 @@ GVA-&gt;GPA的转换依然是通过查找gPT页表完成的，而GPA-&gt;HPA的�
 
 不管是影子页表还是EPT/NPT的优化都能看得出，[虚拟化](https://so.csdn.net/so/search?q=虚拟化&spm=1001.2101.3001.7020)中的地址转换所依托的还是虚拟内存中的地址转换方式。相比于影子页表硬件层面的EPT/NPT技术显然更胜一筹，速度更快，开销更少，由于虚拟化本身的属性，它所依托的还是真实的物理机，所以要理解这一部分还是需要先了解OS内存管理中的地址转换是如何进行的。
 
-
-
 ## 参考资料
 
-https://zhuanlan.zhihu.com/p/69828213
+[https://zhuanlan.zhihu.com/p/69828213](https://zhuanlan.zhihu.com/p/69828213)
 
-https://zhuanlan.zhihu.com/p/66971714
+[https://zhuanlan.zhihu.com/p/66971714](https://zhuanlan.zhihu.com/p/66971714)
 
-https://www.vmware.com/pdf/Perf\_ESX\_Intel-EPT-eval.pdf
+[https://www.vmware.com/pdf/Perf\_ESX\_Intel-EPT-eval.pdf](https://www.vmware.com/pdf/Perf_ESX_Intel-EPT-eval.pdf)
 
-http://developer.amd.com/wordpress/media/2012/10/NPT-WP-1%201-final-TM.pdf
+[http://developer.amd.com/wordpress/media/2012/10/NPT-WP-1 1-final-TM.pdf](http://developer.amd.com/wordpress/media/2012/10/NPT-WP-1 1-final-TM.pdf)
 
