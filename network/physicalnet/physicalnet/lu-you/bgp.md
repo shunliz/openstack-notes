@@ -207,7 +207,7 @@ Route-refresh Msg 用于要求 BGP Peer 重新发送指定地址族的 Routes，
 
 1. **AGGREGATOR（聚合站点）**：可以包含在产生聚合路由的 Update Msg 中，通过携带发送 Update Msg 的 Router 的 BGP-ID，以此来告知进行了路由聚合通告的 Router 的标识。是 ATOMIC\_AGGREGATE 属性的补充。ATOMIC\_AGGREGATE 是一种路由信息丢失的警告，AGGREGATOR 属性补充了路由信息在哪里丢失，即它包含了发起路由聚合的 AS 号码和形成聚合路由的 BGP 发布者的 IP 地址。在进行路由聚合时，当对于聚合的路由信息同添加 ATOMIC\_AGGREGATE 属性的同时，会添加 AGGREGATOR 属性。
 
-2. **Community（共同体）**：在 RFC1997 和 RFC1998 中定义，用于对 Routes 进行分组管理。通常在制定路由策略时会对一系列的 IP Prefix 进行控制，例如：对从某个 AS 来的 Routes 进行特殊处理等。基于这样的原因，可以通过在 Update Msg 中携带 Community 属性来进行相关的路由策略管理。例如：ISP 可以为某个特定的用户分配一个 Community 属性值，此后该 ISP 就可以基于 Community 值来设置专门的  LOCAL\_PREF 或者 MED 等属性来完成路由策略的控制。团体属性用来简化路由策略的应用和降低维护管理的难度，没有物理上的边界，与其所在的 AS 无关。公认的团体属性有：
+2. **Community（共同体）**：在 RFC1997 和 RFC1998 中定义，用于对 Routes 进行分组管理。通常在制定路由策略时会对一系列的 IP Prefix 进行控制，例如：对从某个 AS 来的 Routes 进行特殊处理等。基于这样的原因，可以通过在 Update Msg 中携带 Community 属性来进行相关的路由策略管理。例如：ISP 可以为某个特定的用户分配一个 Community 属性值，此后该 ISP 就可以基于 Community 值来设置专门的  LOCAL\_PREF 或者 MED 等属性来完成路由策略的控制。团体属性用来简化路由策略的应用和降低维护管理的难度，没有物理上的边界，与其所在的 AS 无关。公认的团体属性有：
 
 3. 1. INTERNET：缺省情况下，所有的路由都属于 Internet 团体。具有此属性的路由可以被通告给所有的 BGP 对等体。
    2. NO\_EXPORT：具有此属性的路由在收到后，不能被发布到本地 AS 之外。如果使用了联盟，则不能被发布到联盟之外，但可以发布给联盟中的其他子 AS。
@@ -224,11 +224,290 @@ Route-refresh Msg 用于要求 BGP Peer 重新发送指定地址族的 Routes，
 
 1. **ORIGINATOR\_ID**：用于标识路由反射器，为了防止引入路由反射器之后出现环路，增加 ORIGINATOR\_ID 这个属性来标识，反射器在发布路由时加入 ORIGINATOR\_ID，当反射器收到的路由信息中的 ORIGINATOR\_ID 就是自己的 ROUTER\_ID 时，就可以发现路由环路的出现，将该路由丢弃，不再转发。
 
-1. **CLUSTER\_ID**：用于标识路由反射器组，用来防止环路，在路由经过路由反射器时路由反射器会将自己的 CLUSTER\_ID 添加到路由携带的 CLUSTER\_LIST 中，当路由反射器发现接收的路由的 CLUSTER\_LIST 中包含有自己的 CLUSTER\_ID，则将该路由丢弃，不再转发。
+2. **CLUSTER\_ID**：用于标识路由反射器组，用来防止环路，在路由经过路由反射器时路由反射器会将自己的 CLUSTER\_ID 添加到路由携带的 CLUSTER\_LIST 中，当路由反射器发现接收的路由的 CLUSTER\_LIST 中包含有自己的 CLUSTER\_ID，则将该路由丢弃，不再转发。
 
 ### 路由选择原则
 
+![](/assets/network-basic-route-bgp31.png)
+
+如上图所示，在一个 Internet 中具有 6 个 AS。如果此时 AS1 需要向 AS3 路由一个 IP 数据包，那么它有两种不同的路径：
+
+1. AS2 → AS3
+2. AS6 → AS5 → AS4 → AS3
+
+在这个简化的示例中，路由选择显然倾向于路径 1，它是最快、最高效的路由。然而在实际现网中，则基于 Path Attribute 的影响，BGP Router 进行具体的路由选择时，通常遵守下述规则：
+
+1. **权重**
+   ：首选 Weight 值最高的。
+2. **本地优先级**
+   ：如果 Weight 相同，选择 local-preference 最高的。
+3. **本地始发**
+   ：如果 local-preference 相同，选择本地发出的 Route（Next-hop=0.0.0.0），优于从 Peer 学习到的。
+4. **AS 路径长度**
+   ：如果没有当前路由器通告的路由，选择 AS-path 最短的。
+5. **源地属性（Origin）**
+   ：如果 AS-path 相同，选择 Origin 最优的（IGP 
+   &gt;
+    EGP 
+   &gt;
+    不完全）。
+6. **MED**
+   ：如果 Origin 相同，选择 MED 最低的。
+7. **E-BGP over IBGP**
+   ：如果 MED 相同，则 E-BGP 优于 I-BGP。
+8. **E-BGP 到达顺序**
+   ：若都是 E-BGP，选择优先到达的。
+9. **I-BGP 下一跳开销**
+   ：若都是 I-BGP，选择下一跳最近的。
+10. **集群列表（Cluster list）**
+    ：优先选择最短的 cluster-list，仅适用于 RR（路由反射器）客户端。
+11. **Router ID**
+    ：首选 BGP 邻居的 Router-id 最小的。
+12. **对等体 IP 地址最小长度**
+    ：如果 Router-id 相同，选择邻居 IP 地址最小的。
+
+## BGP RR（Route-Reflectors，路由反射器）
+
+在 BGP RR（Route-Reflectors，路由反射器）标准被提出之前，采用的是 BGP Full Mesh 组网拓扑，即：每一个 BGP Speaker 都需要和其他 BGP Speaker 建立 BGP Session。这样全网中 BGP Session 的总数就是 N^2，如果 BGP Cluster 的规模超过了 100 台，就会对设备造成非常大的配置和处理压力。因此 Tony Bates 和 Ravi Chandra 在 1996 年 6 月提出了《RFC1966: Route Reflector》标准。
+
+BGP RR 通过指定少量的（一个或多个）高性能 BGP Speaker 作为 RR，由它们与网络中其他 BGP Router 建立 BGP Session，并负责将 Routes 信息反射给所有建立连接的 Peers。每个 BGP Router 只要成为了 RR 的 Peer 之后，即可获得全网的 Routes 信息，以此来有效减轻 Cluster 的配置压力。目前 BGP RR 已经被广泛应用在 I-BGP 和 E-BGP 场景中，例如：Kubernetes Calico CNI 等。
+
+![](/assets/network-basic-route-bgp32.png)为了保证 RR 方案的简洁性和支持平滑升级，RR 标准引入了一些新的概念。比如，当一个 BGP Speaker 被配置为 RR 后，它会将 BGP 邻居分为 2 类：
+
+1. **Client Peer**
+2. **Non-Client Peer**
+
+并且在宣告路由时遵循以下规则：
+
+1. 当收到一个来自 Non-Client Peer 的 I-BGP Update Msg 后，该 Route 将会反射到所有的 Client Peer。
+2. 当收到一个来自 Client Peer 的 I-BGP Update Msg 后，该 Route 将会反射到所有的 Client Peer 和 Non-Client Peer。
+3. 当收到一个来自 E-BGP Update Msg 后，该 Route 将会反射到所有的 Client 和 Non-Client Peer。
+
+## BGP MP（Multi-protocols Extensions，多协议扩展）
+
+最初的 BGPv1 只能管理 IPv4 协议和单播路由，后来为了让 BGP 支持更多的协议类型（e.g. IPv6）和路由类型（e.g. 多播），在《RFC 4760: Multiprotocol Extensions for BGP-4》中定义了 BGP MP 标准。支持 MP 的 BGP Router 又称为 MP-BGP Router（多协议 BGP 路由器）。
+
+BGP MP 的实现思路是，在 Update Msg 的 TLV 编码格式的基础上，对 NLRI 字段进行扩展，添加了协议类型字段和子网前缀字段，用来描述不同协议类型和路由类型信息。同时，为了区分 NLRI 中的多种协议类型和路由类型，还分别引入了 AFI（Address Family Identifier，地址族标识）和 SAFI（Subsequent Address Family Identifier，子地址族标识）的概念。  
 
 
+通过这样的方式，BGP MP 的可扩展性得到了极大的增强，使得 BGP 已经不仅仅是一个单纯的动态路由协议，而是可以被设计用于支持一些新型的应用场景，例如：IPv6 单播地址族、MPLS VPN 地址族、EVPN VxLAN 地址族等等。
 
+更具体的，MP-BGP 支持了以下多种协议类型：
+
+* **IPv4 地址族**
+  ：用于路由 IPv4 地址，是 BGP 的最原始地址族。
+* **IPv6 地址族**
+  ：用于路由 IPv6 地址。
+* **VPNv4 地址族**
+  ：用于 MPLS VPN 的 IPv4 路由。
+* **VPNv6 地址族**
+  ：用于 MPLS VPN 的 IPv6 路由。
+* **L2VPN EVPN 地址族**
+  ：用于 EVPN 的路由。
+* **IPv4 Flow Label 地址族**
+  ：用于标识 IPv4 Flow 的标签路由。
+* **IPv6 Flow Label 地址族**
+  ：用于标识 IPv6 Flow 的标签路由。
+
+以及支持了下列多种路由类型：
+
+* **Unicast（单播路由类型）**
+  ：表示路由信息的目的地址只有一个。
+* **Multicast（多播路由类型）**
+  ：表示路由信息的目的地址有多个。
+* **Flow（流路由类型）**
+  ：它是一种带有源地址和目的地址的路由类型，用于 MPLS 标签转发流量工程。
+
+## BGP Link-state
+
+BGP-LS（BGP Link-state）是一种网络拓扑信息提取技术，用于汇总跨域（Area）或跨 AS 间的若干个 IGP 网络拓扑信息并上报给集中控制器。
+
+BGP-LS 最初在 RFC 7752 中被定义，是一个可选的、非必需传递的 BGP 扩展。扩展了 BGP 使其可以携带与 SR 和性能参数相关的附加信息。BGP-LS 标准包含两部分：
+
+1. BGP NLRI
+2. BGP Path Attribute
+
+在 BGP-LS 诞生之前，路由器可以通过使用 IGP 路由协议（e.g. OSPF、IS-IS）来收集网络的拓扑信息。这种拓扑信息提取方式，存在以下几点不足：
+
+1. IGP 协议将各个 Area 的拓扑信息单独上送给上层控制器，在跨 IGP Area 的场景中，控制器无法得到完整的拓扑信息，所以也无法计算出跨 Area 的端到端最优路径；
+2. 要求控制器支持 IGP 协议及其算法；
+3. 控制器需要支持不同的 IGP 协议，导致控制器对拓扑信息的分析处理过程比较复杂。
+
+BGP-LS 就是为了解决上述问题而诞生的。通过 BGP-LS，会把 IGP 协议发现的拓扑信息都汇总到 BGP 协议并上报给控制器。利用 BGP 协议强大的选路和算路能力，具有了以下几点优势：
+
+1. BGP 协议可以汇总跨 IGP AS 域的拓扑信息，直接将完整的拓扑信息上送给控制器，有利于路径选择和计算；
+2. 不要求控制器实现 IGP 协议及其算法；
+3. 控制器仅仅需要支持 IGP 协议即可。
+
+### BGP-LS Route Msg
+
+BGP-LS 实现了 3 中 Routes，分别用来携带 Nodes、Links 和 Prefix（路由前缀）信息。3 种 Routes 相互配合，共同完成拓扑信息的提取。
+
+#### Node Route
+
+Node Route 用于记录网络拓扑中的节点信息。
+
+Route 格式示例：
+
+```
+[NODE][ISIS-LEVEL-1][IDENTIFIER0][LOCAL[as100][bgp-ls-identifier11.1.1.2][ospf-area-id0.0.0.0][igp-router-id0000.0000.0001.00]]
+
+
+```
+
+Route 字段含义：
+
+1. **NODE**
+   ：标识此 BGP-LS Route 是 Node Route 类型。
+2. **ISIS-LEVEL-1**
+   ：标识收集拓扑信息的 IGP 协议类型为 ISIS。
+3. **IDENTIFIER0**
+   ：该 IGP 协议类型中的 Node Routes 的唯一标识。
+4. **LOCAL**
+   ：标识该 Node Route 为 Local Node 的信息。
+5. **AS**
+   ：标识 BGP-LS 的 AS Number。
+6. **bgp-ls-identifier**
+   ：标识 BGP-LS 的区域。
+7. **ospf-area-id**
+   ：标识 OSPF 的区域。
+8. **igp-router-id**
+   ：IGP 协议的 Router ID，由收集拓扑信息的 IGP 协议产生。
+
+#### Link Route
+
+Link Route 用于记录两台设备之间的链路信息。
+
+Route 格式示例：
+
+```
+[LINK][ISIS-LEVEL-1][IDENTIFIER0][LOCAL[as255.255][bgp-ls-identifier192.168.102.4][ospf-area-id0.0.0.0][igp-router-id0000.0000.0002.01]][REMOTE[as255.255][bgp-ls-identifier192.168.102.4][ospf-area-id0.0.0.0][igp-router-id0000.0000.0002.00]][LINK[
+if
+-address0.0.0.0][peer-address0.0.0.0][
+if
+-address::][peer-address::][mt-id0]]
+
+
+```
+
+Route 字段含义：
+
+1. **LINK**
+   ：标识此 BGP-LS Route 是 Link Route 类型。
+2. **ISIS-LEVEL-1**
+   ：标识收集拓扑信息的 IGP 协议类型为 ISIS。
+3. **IDENTIFIER0**
+   ：该 IGP 协议类型中的 Node Routes 的唯一标识。
+4. **LOCAL**
+   ：标识该 Node Route 为 Local Node 的信息。
+5. **AS**
+   ：标识 BGP-LS 的 AS Number。
+6. **bgp-ls-identifier**
+   ：标识 BGP-LS 的区域。
+7. **ospf-area-id**
+   ：标识 OSPF 的区域。
+8. **igp-router-id**
+   ：IGP 协议的 Router ID，由收集拓扑信息的 IGP 协议产生。
+9. **REMOTE**
+   ：标识该 Route 的对端节点的信息。
+10. **if-address**
+    ：Local 接口地址。
+11. **peer-address**
+    ：Remote 接口地址。
+12. **mt-id**
+    ：在 IGP 协议中用于标识接口所绑定的拓扑。
+
+#### Prefix Route
+
+Prefix Route 用于记录 IP 可达的网段信息。
+
+Route 格式示例：
+
+```
+[IPV4-PREFIX][ISIS-LEVEL-1][IDENTIFIER0][LOCAL[as100][bgp-ls-identifier192.168.102.3][ospf-area-id0.0.0.0][igp-router-id0000.0000.0001.00]][PREFIX[mt-id0][ospf-route-type0][prefix192.168.102.0/24]]
+
+
+```
+
+Route 字段含义：
+
+1. **IPV4-PREFIX**
+   ：标识此 BGP-LS Route 是 Prefix Route 类型，并且是 IPv4 Prefix Route，此外还支持 IPV6-PREFIX。注意，路由器不能本地产生 IPv6 地址前缀路由，但可以处理来自其他厂商的 IPv6 地址前缀路由。
+2. **ISIS-LEVEL-1**
+   ：标识收集拓扑信息的 IGP 协议类型为 ISIS。
+3. **IDENTIFIER0**
+   ：该 IGP 协议类型中的 Node Routes 的唯一标识。
+4. **LOCAL**
+   ：标识该 Node Route 为 Local Node 的信息。
+5. **AS**
+   ：标识 BGP-LS 的 AS Number。
+6. **bgp-ls-identifier**
+   ：标识 BGP-LS 的区域。
+7. **ospf-area-id**
+   ：标识 OSPF 的区域。
+8. **igp-router-id**
+   ：IGP 协议的 Router ID，由收集拓扑信息的 IGP 协议产生。
+9. **PREFIX**
+   ：标识一条 IGP Route。
+10. **mt-id**
+    ：在 IGP 协议中用于标识接口所绑定的拓扑。
+11. **ospf-route-type**
+    ：标识 OSPF 的路由类型。
+12. 1. Intra-Area；
+    2. Inter-Area；
+    3. External 1；
+    4. External 2；
+    5. NSSA 1；
+    6. NSSA 2。
+13. **prefix**
+    ：标识 IGP Route 的前缀地址。
+
+### BGP-LS 应用示例
+
+#### IGP Area 内的网络拓扑信息提取
+
+如下图所示。A、B、C、D 之间通过 IS-IS 协议实现 IP 可达，并且同属于 Area10，都是 Level-2 设备。
+
+在这种情况下，只需要 A、B、C 和 D 中的任何一台网络设备部署 BGP-LS feature（特性）并与控制器建立了 BGP-LS 邻居关系便可提取出整个网络的拓扑信息。
+
+在 HA 场景中，会选择两台或以上的设备来实施。由于网络拓扑信息是相同的，所以它们之间可以互为备份。
+
+![](/assets/network-basic-route-bgp34.png)
+
+#### IGP Area 间的网络拓扑信息提取
+
+如下图所示。A、B、C、D 之间通过 IS-IS 协议实现 IP 可达。其中，A、B 和 C 属于 Area10，D 属于 Area20。A、B 是 Level-1 设备，C 是 Level-1-2 设备，D 是 Level-2 设备。
+
+虽然网络拓扑跨越了 Area10 和 Area20 这 2 个域，但 BGP-LS 支持提取整个网络的拓扑信息，所以依旧只需要一台网络设备部署了 BGP-LS feature 并与控制器建立 BGP-LS 邻居关系便可。
+
+同样，HA 场景中，可以使用 2 台及以上的设备进行实施，它们互为备份。
+
+![](/assets/network-basic-route-bgp35.png)
+
+#### EGP AS 间拓扑信息提取典型组网 1
+
+如下图所示。A 和 B 同属 AS 100，两者之间建立 IGP IS-IS 邻居关系，并且 A 作为 AS 100 内部的一台非 BGP 设备。B 和 C 之间建立 EBGP 连接。
+
+在这种情况下，由于（未使能 BGP-LS 的）BGP 协议本身不能提取网络拓扑信息，所以在 AS 100 内的设备和在 AS 200 内的设备上收集的拓扑信息不同（都只能收集各自 AS 域的拓扑信息），所以此时要求至少 AS 100 和 AS 200 两个 AS 中都至少有一台设备使能 BGP-LS 特性并都与控制器建立 BGP-LS 邻居关系。
+
+每个 AS 中有两台或以上设备与控制器相连则可以保证 HA。
+
+![](/assets/network-basic-route-bgp36.png)  
+EGP AS 间拓扑信息提取典型组网 2
+
+若网络中存在两台控制器，分别与两个 AS 中的设备相连，如下图所示，此时若想两台控制器上都能收集到整个网络的拓扑信息，则需要两台控制器之间建立 BGP-LS 邻居关系或与控制器相连的 B 和 C 之间建立 BGP-LS 邻居关系。
+
+此时，为了减少与控制器连接的数量，可以选择一台（或几台）设备作为 BGP-LS 反射器，需要与控制器建立 BGP-LS 邻居的设备都与反射器建立邻居关系。
+
+![](/assets/network-basic-route-bgp37.png)
+
+#### BGP-LS 在 SR TE 中的应用
+
+在 SR TE 应用场景中，需要在数据库中储存 Node、Link、Prefix、SR Policy、Ingress/Egress Node（端节点）等一系列数据，用于 SDN Controller 进行路径计算和验证。
+
+在 RFC4655 中，提出了 SR-PCE（SDN 控制器）组件，它具有整个网络的拓扑和链路状态信息数据库的全局视图。SR-PCE 通过 BGP-LS 获取所需要的信息（Node、Link、Prefix、SR Policy 等），以构建其 SRTE 数据库，以此计算出 SRTE 所需的域间路径。
+
+每个 Area 的 Edge Router 都需要与 SR-PCE 建立 BGP-LS 对等互连，提供网络拓扑信息和链路状态信息，包括：IGP 度量、TE 度量、管理组、SRLG 等。
+
+每个 Area 的本地信息通常来自 IGP（也可以是 BGP）协议，IGP 将本地信息汇总到 BGP-LS，然后通过 BGP NRLI（网络层可达性信息）传递给 SR-PCE。
 
