@@ -15,8 +15,6 @@ Internet 上的每个 AS 都具有一个 ASN（AS Number）作为唯一标识，
 
 如下图所示，每个在 Internet 上提供网络服务的 AS（例如：运营商、大学、政企网络等）都需要拥有自己的 AS Number。在 BGP 协议出现之前，这些 AS 就像是一座座孤岛，与外界隔离。IETF 第 12 次会议的目的就是为了将这些大量的这些 AS 连接起来，其主要成果就是 BGP 协议。
 
-
-
 ![](/assets/network-basic-route-bgp2.png)
 
 在会议结束后，由 Len Bosack、Kirk Lougheed 和 Yakov Rekhter 等人在餐巾纸上完成了 BGP 协议的设计草稿，为了解决 2 个 AS 之间的互联互通问题，其最初的设计也比较简单，归纳为以下 5 个想法：
@@ -43,12 +41,9 @@ Internet 上的每个 AS 都具有一个 ASN（AS Number）作为唯一标识，
 10. 支持 BGPSEC 安全协议；
 11. 等等。
 
-  
 虽然 BGP 最初定位于 EGP 场景，将 AS 作为距离度量单位，并通过强大的路由控制手段（例如：路由策略、路由过滤）来计算出 AS 之间的最佳路径。后来，随着 BGP 优秀的可扩展性也逐渐完善了在 IGP 场景中的应用，支持将 AS 内部的 Routers 作为距离度量单位，支持在一个大规模的 AS 内的所有 Router 之间发现、通告和计算 Routes。
 
 区别于 OSPF、ISIS 等 Link State 类型路由协议，BGP 在大规模的 IGP 场景中能够基于强大的路由控制特性提供更好的网络稳定性（路由计算准确性高、路由收敛速度快）。举例来说，在大规模 IGP 组网中，任何路由节点发生故障时，OSPF 和 ISIS 都会引发整网的链路状态信息的泛洪和 LSDB 信息更新，然后在此基础上完成路由收敛。而 BGP 则只需要在特定的路有节点间通告路由，并通过增量同步的方式刷新路由信息，同时还具有路由域分区独立，故障域可控等优势。
-
-
 
 ## BGP Router 和 Routes
 
@@ -74,7 +69,7 @@ BGP 组网的核心就是 BGP Router，实现了 BGP 协议标准。能够对外
 
 6. **Adj-RIB-Out**：最终 BGP Router 根据 Adj-RIB-Out 的结果向其它 Peers 发送 Update Msg。
 
-另外，如果 BGP Router 收到的一条 Route 的 Path Attribute 中包含了自己的 AS Number，那么 Router 就会判定为这是一条自己发出的  Route，就会将这条 Route 丢弃掉。
+另外，如果 BGP Router 收到的一条 Route 的 Path Attribute 中包含了自己的 AS Number，那么 Router 就会判定为这是一条自己发出的  Route，就会将这条 Route 丢弃掉。
 
 ![](/assets/network-basic-route-bgp6.png)
 
@@ -134,8 +129,6 @@ Update Msg 是最关键的 BGP Msg 类型之一，BGP Routers 的 NLRI（Network
 * **NLRI**
   ：BGP Router 使用 NLRI 中的 IP Prefixes（网络前缀）信息来完成路由分发。
 
-
-
 两个 AS 的 BGP Router 之间通过 Update Msg 交换各自的网络信息，包括：IP Prefix、子网掩码和其他网络相关信息。
 
 ![](/assets/network-basic-route-bgp21.png)
@@ -181,8 +174,6 @@ Route-refresh Msg 用于要求 BGP Peer 重新发送指定地址族的 Routes，
 
 更具体的状态机流程如下图所示。
 
-
-
 # ![](/assets/network-basic-route-bgp23.png)BGP Path Attributes 与路由选择
 
 这里单独展开 BGP Update Msg 中的 Path Attributes 与 BGP Router 进行路由选择之间的关系。总体而言，BGP Path Attributes 可以分为以下 4 大类型。
@@ -205,6 +196,39 @@ Route-refresh Msg 用于要求 BGP Peer 重新发送指定地址族的 Routes，
 是所有的 BGP Router 都能够识别该属性，但可以不出现在 Update Msg 中。包括：
 
 1. **LOCAL\_PREF（Local Preference，本地优先级）**：Update Msg 可以携带这个属性并将其发给 I-BGP 邻居，用于 AS 内部的 BGP Router 作为参考，具有较高的 LOCAL\_PREF 值的 Routes 将在路由选择过程中被优先考虑。仅在 I-BGP 对等体之间交换，不通告给其他 AS。当 BGP 的路由器通过不同的 IBGP 对等体得到目的地址相同但下一跳不同的多条路由时，将优先选择 LOCAL\_PREF 属性值较高的路由。如下图所示，Router B 和 Router C 发给 Router D 的关于 8.0.0.0 的路由携带不同的 LOCAL\_PREF 值，从而引导从 AS 20 到 AS 10 的流量将选择 Router C 作为出口。
+
+![](/assets/network-basic-route-bgp25.png)
+
+**ATOMIC\_AGGREGATE（原子聚合）**：当 BGP Router 进行路由聚合时，由于会产生一条新的聚合路由，因此精细路由所携带的 AS-path 属性将会在聚合时被丢失。用来通告路由接收者，该路由是经过聚合的。有时 BGP 发布者会收到两条重叠的路由，其中一条路由包含的地址是另一条路由的子集。一般情况下 BGP 发布者会优选更精细的路由（前者），但是在对外发布时，如果它选择发布更粗略的那条路由（后者），这时需要附加上 ATOMIC\_AGGREGATE 属性，以知会对等体。它实际上是一种警告，因为发布更粗略的路由意味着更精细的路由信息在发布过程中丢失了。在进行路由聚合时，对于聚合的路由信息会添加 ATOMIC\_AGGREGATE 属性。
+
+### 可选传递属性（Optional transitive）
+
+不要求所有 BGP Router 都能识别，但即使不能识别也会传递该属性。包括：
+
+1. **AGGREGATOR（聚合站点）**：可以包含在产生聚合路由的 Update Msg 中，通过携带发送 Update Msg 的 Router 的 BGP-ID，以此来告知进行了路由聚合通告的 Router 的标识。是 ATOMIC\_AGGREGATE 属性的补充。ATOMIC\_AGGREGATE 是一种路由信息丢失的警告，AGGREGATOR 属性补充了路由信息在哪里丢失，即它包含了发起路由聚合的 AS 号码和形成聚合路由的 BGP 发布者的 IP 地址。在进行路由聚合时，当对于聚合的路由信息同添加 ATOMIC\_AGGREGATE 属性的同时，会添加 AGGREGATOR 属性。
+
+2. **Community（共同体）**：在 RFC1997 和 RFC1998 中定义，用于对 Routes 进行分组管理。通常在制定路由策略时会对一系列的 IP Prefix 进行控制，例如：对从某个 AS 来的 Routes 进行特殊处理等。基于这样的原因，可以通过在 Update Msg 中携带 Community 属性来进行相关的路由策略管理。例如：ISP 可以为某个特定的用户分配一个 Community 属性值，此后该 ISP 就可以基于 Community 值来设置专门的  LOCAL\_PREF 或者 MED 等属性来完成路由策略的控制。团体属性用来简化路由策略的应用和降低维护管理的难度，没有物理上的边界，与其所在的 AS 无关。公认的团体属性有：
+
+3. 1. INTERNET：缺省情况下，所有的路由都属于 Internet 团体。具有此属性的路由可以被通告给所有的 BGP 对等体。
+   2. NO\_EXPORT：具有此属性的路由在收到后，不能被发布到本地 AS 之外。如果使用了联盟，则不能被发布到联盟之外，但可以发布给联盟中的其他子 AS。
+   3. O\_ADVERTISE：具有此属性的路由被接收后，不能被通告给任何其他的 BGP 对等体。
+   4. NO\_EXPORT\_SUBCONFED：具有此属性的路由被接收后，不能被发布到本地 AS 之外，也不能发布到联盟中的其他子 AS。
+
+### 可选非传递属性（Optional non-transitive）
+
+不要求所有 BGP Router 都能识别，不识别该属性就会丢弃该 Msg。包括：
+
+1. **MED（Multi-exit-discriminator，多出口鉴别器）**：用来区分同一个邻接 AS 的多个接口，用于在具有多个出口的 AS 之间选择最优路径，MED 值越小，路径的开销就越小，该路径将被优先选择。MED 只在 EBGP 发布的路由中产生，接收者可以向它的 IBGP 邻居转发，但不允许向它的 EBGP 对等体转发。假设一个 AS 和邻接 AS 有多个接口相连，通过发布不同的 MED 给对端，就可以控制进入网络的流量从 MED 值最小的那个接口进来。通常情况下，BGP 只比较来自同一个 AS 的路由的 MED 属性值。如下图所示，Router B 和 Router C 发给 Router A 的关于 9.0.0.0 的路由携带不同的 MED 属性，从而引导从 AS 10 到 AS 20 的目的地址为 9.0.0.0 网段的流量将选择 Router B 作为入口。
+
+![](/assets/network-basic-route-bgp26.png)
+
+1. **ORIGINATOR\_ID**：用于标识路由反射器，为了防止引入路由反射器之后出现环路，增加 ORIGINATOR\_ID 这个属性来标识，反射器在发布路由时加入 ORIGINATOR\_ID，当反射器收到的路由信息中的 ORIGINATOR\_ID 就是自己的 ROUTER\_ID 时，就可以发现路由环路的出现，将该路由丢弃，不再转发。
+
+1. **CLUSTER\_ID**：用于标识路由反射器组，用来防止环路，在路由经过路由反射器时路由反射器会将自己的 CLUSTER\_ID 添加到路由携带的 CLUSTER\_LIST 中，当路由反射器发现接收的路由的 CLUSTER\_LIST 中包含有自己的 CLUSTER\_ID，则将该路由丢弃，不再转发。
+
+### 路由选择原则
+
+
 
 
 
