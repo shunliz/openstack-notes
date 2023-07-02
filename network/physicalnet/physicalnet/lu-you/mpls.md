@@ -20,7 +20,7 @@ MPLS 需要在原有的 IGP 动态路由协议之上叠加 LDP（Label Distribut
 
 1. **Segment**
    ：任意两个 SR Nodes（SR 路由器）之间的一段 Network Path（网络路径）。整个 SR 网络的拓扑被分成了多个不同的 Segments，并用 SID（Segment Identifier）来唯一标识。
-2. **Segment  ID（SID）**
+2. **Segment  ID（SID）**
    ：Segment 的唯一标识。
 3. * 在 SR-MPLS 中，每个 Segment 都被分配一个 MPLS Label 作为 SID；
    * 在 SRv6 中，每个 Segment 都使用一个特殊的 IPv6 地址作为 SID。
@@ -30,9 +30,6 @@ MPLS 需要在原有的 IGP 动态路由协议之上叠加 LDP（Label Distribut
    ：一个区域中的 SR Nodes 的集合。
 
 ![](/assets/network-basic-route-mpls4.png)
-
-  
-
 
 同时，在 SR 技术设计之初，就已经考虑在 MPLS 和 IPv6 双 Data Plane 支持。
 
@@ -53,10 +50,129 @@ SR-MPLS 的 Data Plane 依旧是 MPLS，但 Control Plane 则使用扩展了 SR 
 
 ![](/assets/network-basic-route-mpls8.png)
 
+### SR-MPLS 的基本转发原理
+
+![](/assets/network-basic-route-mpls9.png)SR-MPLS 将网络中的 Node （目标节点）和 Adjacency（邻接节点）定义为一个个 Segments，并为每个 Segment 分配唯一的 SID。通过 Node SID 和 Adjacency SID 组成的 Segment List 来描述一条 E2E 转发路径。然后由 Ingress Node 将 Segment List 封装到 Packet 的 MPLS Label Stack 中，最终按照 MPLS Data Plane 的转发机制逐跳转发。
+
+而用于在 Node 和 Adjacency 中分配各自的 Segment ID 的 Control Plane 则由 IGP 协议来充当，支持 IS-IS、OSPF、I-BGP 等路由协议类型。其中：
+
+* 每个 IGP Node Segment 对应的 Node SID 都是由电信运营商通过手工预先配置的，然后再由 IGP 对外进行宣告和收敛，全局可见，全局有效。
+* 而 IGP Adjacency Segment 对应的 Adjacency SID 是一个 Local Segment，只在局部具有意义，仅仅用于标识 IGP 网络中的某个邻接关系。Adjacency SID 同样适用 IGP 协议对外宣告和收敛，全局可见，但仅本地有效。
+
+![](/assets/network-basic-route-mpls10.png)
+
+### SR-MPLS BE 转发原理
+
+SR-MPLS BE（Best Effort）的实现基于 Node SID 结合 IGP 使用的 SPF 算法来计算出最短转发路径。例如：NodeZ 连接了 Destination Network（目标网络），该 Network 的 Node SID 是 68。通过 IGP 收敛之后，整个 IGP Domain 内所有的 Nodes 从 NodeZ 学习到 Destination Network 的 Node SID，之后所有的 Nodes 都会使用 SPF 算法得出一条这个 Destination Network 的最短路径。
+
+![](/assets/network-basic-route-mpls11.png)
+
+基于 SR-MPLS BE 技术建立的转发路径实际是一种 LSP（标签转发路径），只是这种 LSP 不存在 Tunnel  接口，称为 SR LSP。
+
+SR LSP 的创建过程和数据转发与 MPLS LSP 类似，而 SR LSP 数据转发和 MPLS LSP 完全相同，包含标签栈压入（Push）、标签栈交换（Swap）和标签弹出（Pop）等动作，也可以支持倒数第二跳弹出特性 PHP（Penultimate Hop Popping），MPLS QoS 等特性。
+
+![](/assets/network-basic-route-mpls13.png)
+
+
+
+SR LSP 建立关键步骤：
+
+1. **手工配置**
+   ：Router 上配置 Node SID 和 SRGB，通过 IGP 报文宣告收敛。
+2. **标签分配**
+   ：各 Router 根据解析收到的 IGP 报文和自己的 SRGB 计算 Label 值，公式是：标签值 = 自己 SRGB 起始值 + Node SID 值；再根据下一跳节点发布的 SRGB 计算出标签值，公式是：出标签值 = 下一跳 SRGB 起始值 + Node SID 值。
+3. **路径计算**
+   ：各 Router 根据 IGP 收集到的拓扑，使用相同的 SPF 算法，计算标签转发路径，生成转发表项。
+
+![](/assets/network-basic-route-mpls14.png)
+
+### SR-MPLS TE 转发原理
+
+SR-MPLS TE 是一种新型的 TE 隧道技术，称为 SR-MPLS TE Tunnel，支持 MPLS TE 隧道的相关属性，同时支持使用 BFD 检测故障。
+
+![](/assets/network-basic-route-mpls15.png)
+
+SR-MPLS TE 隧道可以通过 SDN 自动建立，也可以手工建立。通常由 SDN Controller 来构建。Controller 通过 BGP-LS 来收集网络信息，并根据 Policy（业务的需求）来计算出一条显示的路径。步骤如下：
+
+1. **手工配置**
+   ：Router 上配置 IGP SR，生成链路拓扑和标签信息。
+2. **拓扑和标签信息上报**
+   ：由 BGP-LS 上报给 SDN Controller。
+3. **链路生成**
+   ：由 PCEP 完成标签转发路径计算。
+4. **信息下发**
+   ：隧道属性配置和 LSP 信息分别由 NETCONF 和 PCEP 下发。
+5. **隧道创建**
+   ：PE 根据隧道属性和 LSP 信息自动创建 SR-TE 隧道。
+
+SR-MPLS TE （Traffic Engineering） 有 2 种实现方式：
+
+1. **基于 Adjacency Segment**：Ingress Node 指定严格的显式路径（Strict Explicit）。这种方式可以集中进行路径调整和流量调优，因此可以更好的配合实现 SDN。
+
+![](/assets/network-basic-route-mpls21.png)
+
+2. **基于 Adjacency Segment + Node Segment**
+
+：显式路径与最短路径相结合，称作松散路径（Loose Explicit）。
+
+![](/assets/network-basic-route-mpls22.png)
+
+## SR-MPLS 在数据中心场景中的应用
+
+值得注意的是，相较于越来越流行的 IPv6 技术，MPLS 技术这种通过插入 Label 来 Byapass 掉 IP 转发的方式所带来的直接后果是它丧失了 IP 技术的普适性，需要网络设备支持标签转发功能。基于这一技术原理，在某种程度上限定了 SR-MPLS 只能作为运营商专属的网络技术，一般只在运营商 IP 骨干网或者新建的城域网内采用，在数据中心和企业网中基本没有部署。
+
+但随着可编程网络技术和主机虚拟网络技术的发展（e.g. DPDK、P4、DPU），解决了硬件层面限制，使得 MPLS 和 SR-MPLS 技术在数据中心场景中的应用探索也逐渐多了起来。下文中主要概括性的介绍相关的研究和应用场景。
+
+### MPLS over UDP
+
+MPLS over UDP 协议被应用于数据中心 Overlay 网络。
+
+![](/assets/network-basic-route-mpls23.png)
+
+### SR-MPLS over UDP
+
+SR-MPLS over UDP 协议被应用于跨域多个数据中心的 Overlay 网络中。
+
+![](/assets/network-basic-route-mpsl24.png)主要的 RFC 如下：
+
+* SR-MPLS over IP（Draft）：https://datatracker.ietf.org/doc/html/draft-xu-mpls-sr-over-ip
+* https://support.huawei.com/enterprise/en/doc/EDOC1100125786/4e8bf78b/introduction-of-segment-routing-mpls
+
+SR-MPLS over UDP 的 Use Cases 如下：
+
+* Segment Routing in the Data Center![](/assets/network-basic-route-mpls31.png)
+
+* Routing Between Data Centers![](/assets/network-basic-route-mpls32.png)
+
+* Tunneling SR Across a Non-SR Core![](/assets/network-basic-route-mpls33.png)
+
+* SR in a Mixed Mode IP Network![](/assets/network-basic-route-mpls34.png)
+
+### 基于 UDP srcPort 的负载均衡
+
+通过将 MPLSoUDP 或 SR-MPLSoUDP 中的 UDP srcPort 设置为对 Original Raw Packet 执行 HASH 操作的结果，可以在多个不同的层面带来更好的负载均衡支持。
+
+* **网络层面**
+  ：当 Gateway 设备处理 MPLSoUDP Tunnel 时，可以基于 UDP srcPort 来实施 ECMP 负载均衡。
+
+![](/assets/network-basic-route-mpls41.png)
+
   
 
 
-### SR-MPLS 的基本转发原理
+* **主机 NIC 层面**
+  ：在实施了 NICs Bond 的场景中，可以基于 UDP srcPort 来实施 Bond mode 负载均衡。
 
-![](/assets/network-basic-route-mpls9.png)
+![](/assets/network-basic-route-mpls42.png)
+
+  
+
+
+* **主机 CPU 层面**
+  ：在 DPDK 场景中，可以基于 UDP srcPort 来实现 CPU Cores 的负载均衡。
+
+![](/assets/network-basic-route-mpls44.png)
+
+  
+
 
