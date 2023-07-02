@@ -87,6 +87,7 @@
     * [路由](network/physicalnet/physicalnet/lu-you.md)
       * [BGP](network/physicalnet/physicalnet/lu-you/bgp.md)
       * [OSPF](network/physicalnet/physicalnet/lu-you/ospf.md)
+      * [MPLS](network/physicalnet/physicalnet/lu-you/mpls.md)
     * [TCP](network/physicalnet/physicalnet/tcp.md)
     * [VRRP](network/physicalnet/physicalnet/vrrp.md)
     * [DNS](network/physicalnet/physicalnet/dns.md)
