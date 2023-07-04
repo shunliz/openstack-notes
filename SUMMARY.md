@@ -22,6 +22,7 @@
   * [Libvirt+Qemu+KVM](compute/lqk/lqk.md)
     * [vCPU&pCPU](compute/lqk/lqk/vcpuandpcpu.md)
     * [内存虚拟化](compute/lqk/lqk/nei-cun-xu-ni-hua.md)
+      * [非虚拟化VA到PA翻译](compute/lqk/lqk/nei-cun-xu-ni-hua/fei-xu-ni-hua-va-dao-pa-fan-yi.md)
     * [Qemu](compute/lqk/lqk/qemu.md)
       * [TCG](compute/lqk/lqk/tcg.md)
     * [qemu kvm运行过程](compute/lqk/lqk/qemu-kvmyun-xing-guo-cheng.md)
