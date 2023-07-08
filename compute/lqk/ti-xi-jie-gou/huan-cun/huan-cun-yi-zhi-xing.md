@@ -1,9 +1,6 @@
 本文只讨论硬件的cache一致性机制，所以对软件来说是透明的。
 
-![](https://pic4.zhimg.com/80/v2-64c71b57249012223f52085dea3a369f_720w.webp)
-
-  
-
+![](/assets/compute-arch-cache-consis1.png)
 
 首先来看Cache和内存保持一致性的两种写入方式
 
@@ -13,10 +10,7 @@ CPU把数据写入 Cache 之后，内存与 Cache中 对应的数据就不一致
 
 根据写操作后同步到内存的时机，Cache和内存同步的方法可分为write back和write through。
 
-![](https://pic4.zhimg.com/80/v2-6ca5dfb327d17645c699eff06ac128eb_720w.webp)
-
-  
-
+![](/assets/compute-arch-cache-consis2.png)
 
 **write through**
 
@@ -36,33 +30,9 @@ CPU向cache写入数据时，只是把更新的cache区标记一下（cache line
 
 **单核一致性**
 
-首先我们看一下单处理器情况下Cache和主存之间如何保持一致性。
-
-读Cache:
-
-![](https://pic1.zhimg.com/80/v2-1e3c3289d28d4443b57e420c1a7be2cc_720w.webp)
-
-  
+首先我们看一下单处理器情况下Cache和主存之间如何保持一致性, write-back or write through
 
 
-![](https://pic3.zhimg.com/80/v2-bc0bf2757e61d5f8611353d066dd2a42_720w.webp)
-
-  
-
-
-写Cache:
-
-![](https://pic2.zhimg.com/80/v2-34645164ff0fb332fc85c1a258436061_720w.webp)
-
-  
-
-
-![](https://pic4.zhimg.com/80/v2-f503b1e44ad41c5cc35c5c0d4860a2e3_720w.webp)
-
-  
-
-
-如果是多处理器呢？
 
 **多处理器的一致性问题**
 
@@ -73,9 +43,6 @@ CPU向cache写入数据时，只是把更新的cache区标记一下（cache line
 出现两个处理器读到的内存数据不一致了！
 
 ![](https://pic4.zhimg.com/80/v2-9cddf8fb53fe959ea6a6cce8240d750b_720w.webp)
-
-  
-
 
 那么多处理器如何解决缓存一致性问题呢？
 
@@ -88,9 +55,6 @@ CPU向cache写入数据时，只是把更新的cache区标记一下（cache line
 总线监听（Bus snooping）机制由 Ravishankar 和 Goodman 在 1983 年提出。其工作原理是当一个CPU修改了cache块之后，此更改必须传播到所有拥有该Cache 块副本的Cache上。
 
 ![](https://pic2.zhimg.com/80/v2-9d7e8c4127ea0bd9de0a9de08f4a55f5_720w.webp)
-
-  
-
 
 所有的监听者会监视总线上的所有数据广播。如果总线上出现修改共享Cache块的事件，所有监听者会检查自己的Cache是否缓存有共享Cache块的副本。
 
@@ -112,9 +76,6 @@ CPU向cache写入数据时，只是把更新的cache区标记一下（cache line
 
 ![](https://pic2.zhimg.com/80/v2-9a5848983a479359c68b73e97dcc7ff1_720w.webp)
 
-  
-
-
 **写无效（Write-invalidate）**
 
 这是最常用的监听协议。当处理器写入Cache块时，其他Cache监听到后把自己Cache中的数据副本标记为无效状态。这样处理器只能读取和写入数据的一个副本，其他缓存中的副本都是无效的。
@@ -123,9 +84,6 @@ CPU向cache写入数据时，只是把更新的cache区标记一下（cache line
 
 ![](https://pic4.zhimg.com/80/v2-a4be28792d00941e0c1cf289cb83fdcb_720w.webp)
 
-  
-
-
 下面以最为常用的MESI协议为例子分析写无效协议
 
 **MESI**
@@ -133,31 +91,24 @@ CPU向cache写入数据时，只是把更新的cache区标记一下（cache line
 MESI协议又叫Illinois协议，MESI，"M", "E", "S", "I"这4个字母代表了一个cache line的四种状态，分别是Modified,Exclusive,Shared和Invalid。
 
 * Modified \(M\)
- 
 
 cache line只被当前cache所有，并且是dirty的。
 
 * Exclusive \(E\)
- 
 
 cache line仅存在于当前缓存中，并且是clean的。
 
 * Shared \(S\)
- 
 
 cache line在其他Cache中也存在并且都是clean的。
 
 * Invalid \(I\)
- 
 
 cache line无效，即没有被任何Cache加载。
 
 有一个著名的状态标记图：
 
 ![](https://pic1.zhimg.com/80/v2-923f1168474e7945f014790f041efac4_720w.webp)
-
-  
-
 
 这个状态标记图什么意思呢？
 
@@ -175,17 +126,11 @@ MESI有一个状态机：
 
 ![](https://pic1.zhimg.com/80/v2-82b7637dd37250434df5664a7f7f24b8_720w.webp)
 
-  
-
-
 这个状态机什么意思呢？它显示了一种状态在出现什么Event时转换成哪一种状态，自己状态转换过程中要向总线上广播什么消息\(这些消息会被其他Cache监听到\)
 
 下面的表是对这个状态机的详细说明:
 
 ![](https://pic2.zhimg.com/80/v2-9e99ba5d2b53689390c8bd0b8b847d69_720w.webp)
-
-  
-
 
 举个例子：
 
