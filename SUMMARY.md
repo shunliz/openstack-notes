@@ -21,6 +21,7 @@
     * [PIO和MMIO](compute/lqk/ti-xi-jie-gou/piohe-mmio.md)
     * [缓存](compute/lqk/ti-xi-jie-gou/huan-cun.md)
       * [缓存一致性](compute/lqk/ti-xi-jie-gou/huan-cun/huan-cun-yi-zhi-xing.md)
+    * [CPU](compute/lqk/ti-xi-jie-gou/cpu.md)
   * [Libvirt+Qemu+KVM](compute/lqk/lqk.md)
     * [vCPU&pCPU](compute/lqk/lqk/vcpuandpcpu.md)
     * [内存虚拟化](compute/lqk/lqk/nei-cun-xu-ni-hua.md)
