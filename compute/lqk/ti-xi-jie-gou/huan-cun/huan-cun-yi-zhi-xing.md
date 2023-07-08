@@ -32,20 +32,6 @@ CPU向cache写入数据时，只是把更新的cache区标记一下（cache line
 
 首先我们看一下单处理器情况下Cache和主存之间如何保持一致性, write-back or write through
 
-
-
-**多处理器的一致性问题**
-
-举个例子吧，内存0x48处数据为0x20，处理器0和1都从0x48处读取内存数据到自己的Cache line中。
-
-然后处理器0写Cache把0x48数据更新为0x10，处理器1读0x48自己Cache命中，返回了0x20。
-
-出现两个处理器读到的内存数据不一致了！
-
-![](https://pic4.zhimg.com/80/v2-9cddf8fb53fe959ea6a6cce8240d750b_720w.webp)
-
-那么多处理器如何解决缓存一致性问题呢？
-
 **多处理器的一致性方法**
 
 多处理器一般是采用基于总线监听机制的高速缓存一致性协议。包括写无效和写更新协议。另外还有基于目录的高速缓存一致性机制。
@@ -54,7 +40,7 @@ CPU向cache写入数据时，只是把更新的cache区标记一下（cache line
 
 总线监听（Bus snooping）机制由 Ravishankar 和 Goodman 在 1983 年提出。其工作原理是当一个CPU修改了cache块之后，此更改必须传播到所有拥有该Cache 块副本的Cache上。
 
-![](https://pic2.zhimg.com/80/v2-9d7e8c4127ea0bd9de0a9de08f4a55f5_720w.webp)
+![](/assets/compute-arch-cache-consis3.png)
 
 所有的监听者会监视总线上的所有数据广播。如果总线上出现修改共享Cache块的事件，所有监听者会检查自己的Cache是否缓存有共享Cache块的副本。
 
@@ -74,7 +60,7 @@ CPU向cache写入数据时，只是把更新的cache区标记一下（cache line
 
 当处理器写入Cache块时，其他Cache监听到后把自己Cache中的数据副本进行更新。该方法通过总线向所有缓存广播写入数据。它比写无效协议产生更大的总线流量，所有这种方式不常见。Dragon和firefly属于这一类协议。
 
-![](https://pic2.zhimg.com/80/v2-9a5848983a479359c68b73e97dcc7ff1_720w.webp)
+![](/assets/compute-arch-cache-consis5.png)
 
 **写无效（Write-invalidate）**
 
@@ -82,7 +68,7 @@ CPU向cache写入数据时，只是把更新的cache区标记一下（cache line
 
 写直通无效协议、写一次协议、MSI、MESI、MOSI、MOESI、MESIF都属于写无效这一类协议。
 
-![](https://pic4.zhimg.com/80/v2-a4be28792d00941e0c1cf289cb83fdcb_720w.webp)
+![](/assets/compute-arch-cache-consis6.png)
 
 下面以最为常用的MESI协议为例子分析写无效协议
 
@@ -108,7 +94,7 @@ cache line无效，即没有被任何Cache加载。
 
 有一个著名的状态标记图：
 
-![](https://pic1.zhimg.com/80/v2-923f1168474e7945f014790f041efac4_720w.webp)
+![](/assets/compute-arch-cache-consis7.png)
 
 这个状态标记图什么意思呢？
 
@@ -124,13 +110,13 @@ cache line无效，即没有被任何Cache加载。
 
 MESI有一个状态机：
 
-![](https://pic1.zhimg.com/80/v2-82b7637dd37250434df5664a7f7f24b8_720w.webp)
+![](/assets/compute-arch-cache-consis8.png)
 
 这个状态机什么意思呢？它显示了一种状态在出现什么Event时转换成哪一种状态，自己状态转换过程中要向总线上广播什么消息\(这些消息会被其他Cache监听到\)
 
 下面的表是对这个状态机的详细说明:
 
-![](https://pic2.zhimg.com/80/v2-9e99ba5d2b53689390c8bd0b8b847d69_720w.webp)
+![](/assets/compute-arch-cache-consis9.png)
 
 举个例子：
 
