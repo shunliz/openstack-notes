@@ -23,6 +23,7 @@
       * [缓存一致性](compute/lqk/ti-xi-jie-gou/huan-cun/huan-cun-yi-zhi-xing.md)
     * [CPU](compute/lqk/ti-xi-jie-gou/cpu.md)
       * [Intel Nehalem](compute/lqk/ti-xi-jie-gou/cpu/intel-nehalem.md)
+    * [NUMA](compute/lqk/ti-xi-jie-gou/numa.md)
   * [Libvirt+Qemu+KVM](compute/lqk/lqk.md)
     * [vCPU&pCPU](compute/lqk/lqk/vcpuandpcpu.md)
     * [内存虚拟化](compute/lqk/lqk/nei-cun-xu-ni-hua.md)
