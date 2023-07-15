@@ -241,7 +241,7 @@ AD Cotroller全称Attachment/Detachment 控制器，主要负责创建、删除V
 
 **1. 存储创建**
 
-**流程图    
+**流程图      
 **![](/assets/compute-container-k8s-cephcsi114.png)**流程分析**
 
 （1）用户创建pvc对象；
@@ -258,7 +258,7 @@ AD Cotroller全称Attachment/Detachment 控制器，主要负责创建、删除V
 
 **2. 存储扩容**
 
-**流程图    
+**流程图      
 **![](/assets/compute-container-k8s-cephcsi115.png)
 
 **流程分析**
@@ -291,27 +291,15 @@ kubelet启动参数–enable-controller-attach-detach，该启动参数设置为
 
 （1）用户创建一个挂载了pvc的pod；
 
-
-
 （2）AD controller或volume manager中的reconcile\(\)发现有volume未执行attach操作，于是进行attach操作，即创建VolumeAttachment对象；
-
-
 
 （3）external-attacher组件list/watch VolumeAttachement对象，更新VolumeAttachment.status.attached=true；
 
-
-
 （4）AD controller更新node对象的.Status.VolumesAttached属性值，将该volume记为attached；
-
-
 
 （5）kubelet中的volume manager获取node.Status.VolumesAttached属性值，发现volume已被标记为attached；
 
-
-
 （6）于是volume manager中的reconcile\(\)调用ceph-csi组件的NodeStageVolume与NodePublishVolume完成挂载。
-
-
 
 **4. 解除存储挂载**
 
@@ -321,5 +309,59 @@ kubelet启动参数–enable-controller-attach-detach，该启动参数设置为
 
 ![](/assets/compute-container-k8s-cephcsi118.png)（2）volume manager
 
-![](/assets/compute-container-k8s-cephcsi119.png)
+![](/assets/compute-container-k8s-cephcsi119.png)流程分析
+
+（1）用户删除声明了pvc的pod；
+
+
+
+（2）AD controller或volume manager中的reconcile\(\)发现有volume未执行dettach操作，于是进行dettach操作，即删除VolumeAttachment对象；
+
+
+
+（3）AD controller或volume manager等待VolumeAttachment对象删除成功；
+
+
+
+（4）AD controller更新新node对象的.Status.VolumesAttached属性值，将标记为attached的该volume从属性值中去除；
+
+
+
+（5）kubelet中的volume manager获取node.Status.VolumesAttached属性值，找不到相关的volume信息；
+
+
+
+（6）于是volume manager中的reconcile\(\)调用ceph-csi组件的NodeUnpublishVolume与NodeUnstageVolume完成解除挂载。
+
+
+
+**5. 删除存储**
+
+**流程图**
+
+![](/assets/compute-container-k8s-cephcsi1110.png)流程分析
+
+（1）用户删除pvc对象；
+
+
+
+（2）pv controller发现与pv绑定的pvc对象被删除，于是更新pv的状态为released；
+
+
+
+（3）external-provisioner watch到pv更新事件，并检查pv的状态是否为released，以及回收策略是否为delete；
+
+
+
+（4）接下来external-provisioner组件会调用ceph-csi的DeleteVolume来删除存储；
+
+
+
+（5）ceph-csi组件的DeleteVolume方法，调用ceph集群命令，删除底层存储；
+
+
+
+（6）external-provisioner组件删除pv对象。
+
+
 
