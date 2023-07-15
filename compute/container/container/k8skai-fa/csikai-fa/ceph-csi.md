@@ -241,7 +241,7 @@ AD Cotroller全称Attachment/Detachment 控制器，主要负责创建、删除V
 
 **1. 存储创建**
 
-**流程图  
+**流程图    
 **![](/assets/compute-container-k8s-cephcsi114.png)**流程分析**
 
 （1）用户创建pvc对象；
@@ -258,38 +258,24 @@ AD Cotroller全称Attachment/Detachment 控制器，主要负责创建、删除V
 
 **2. 存储扩容**
 
-**流程图  
+**流程图    
 **![](/assets/compute-container-k8s-cephcsi115.png)
 
 **流程分析**
 
 （1）修改pvc对象，修改申请存储大小（pvc.spec.resources.requests.storage）；
 
-
-
 （2）修改成功后，external-resizer监听到该pvc的update事件，发现pvc.Spec.Resources.Requests.storgage比pvc.Status.Capacity.storgage大，于是调ceph-csi组件进行 controller端扩容；
-
-
 
 （3）ceph-csi组件调用ceph存储，进行底层存储扩容；
 
-
-
 （4）底层存储扩容完成后，external-resizer组件更新pv对象的.Spec.Capacity.storgage的值为扩容后的存储大小；
-
-
 
 （5）kubelet的volume manager在reconcile\(\)调谐过程中发现pv.Spec.Capacity.storage大于pvc.Status.Capacity.storage，于是调ceph-csi组件进行 node端扩容；
 
-
-
 （6）ceph-csi组件对dnode上存储对应的文件系统扩容；
 
-
-
 （7）扩容完成后，kubelet更新pvc.Status.Capacity.storage的值为扩容后的存储大小。
-
-
 
 **3. 存储挂载**
 
@@ -297,13 +283,43 @@ AD Cotroller全称Attachment/Detachment 控制器，主要负责创建、删除V
 
 kubelet启动参数–enable-controller-attach-detach，该启动参数设置为 true 表示启用 Attach/Detach controller进行Attach/Detach 操作，同时禁用 kubelet 执行 Attach/Detach 操作（默认值为 true）。实际上Attach/Detach 操作就是创建/删除VolumeAttachment对象。
 
-
-
 （1）kubelet启动参数–enable-controller-attach-detach=true，Attach/Detach controller进行Attach/Detach 操作
 
 ![](/assets/compute-container-k8s-cephcsi116.png)（2）kubelet启动参数–enable-controller-attach-detach=false，kubelet端volume manager进行Attach/Detach 操作
 
-![](/assets/compute-container-k8s-cephsci117.png)
+![](/assets/compute-container-k8s-cephsci117.png)流程分析
+
+（1）用户创建一个挂载了pvc的pod；
 
 
+
+（2）AD controller或volume manager中的reconcile\(\)发现有volume未执行attach操作，于是进行attach操作，即创建VolumeAttachment对象；
+
+
+
+（3）external-attacher组件list/watch VolumeAttachement对象，更新VolumeAttachment.status.attached=true；
+
+
+
+（4）AD controller更新node对象的.Status.VolumesAttached属性值，将该volume记为attached；
+
+
+
+（5）kubelet中的volume manager获取node.Status.VolumesAttached属性值，发现volume已被标记为attached；
+
+
+
+（6）于是volume manager中的reconcile\(\)调用ceph-csi组件的NodeStageVolume与NodePublishVolume完成挂载。
+
+
+
+**4. 解除存储挂载**
+
+**流程图**
+
+（1）AD controller
+
+![](/assets/compute-container-k8s-cephcsi118.png)（2）volume manager
+
+![](/assets/compute-container-k8s-cephcsi119.png)
 
