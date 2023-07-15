@@ -32,7 +32,7 @@ pv状态迁移
 
 available --&gt; bound --&gt; released
 
-2. **PersistentVolumeClaim**
+1. **PersistentVolumeClaim**
 
 持久存储卷声明，namespace级别资源，代表了用户对于存储卷的使用需求声明。
 
@@ -78,18 +78,13 @@ parameters:
 provisioner: rbd.csi.ceph.com
 reclaimPolicy: Delete
 volumeBindingMode: Immediate
-
 ```
 
 **4. VolumeAttachment**
 
 VolumeAttachment 记录了pv的相关挂载信息，如挂载到哪个node节点，由哪个volume plugin来挂载等。
 
-
-
 AD Controller 创建一个 VolumeAttachment，而 External-attacher 则通过观察该 VolumeAttachment，根据其状态属性来进行存储的挂载和卸载操作。
-
-
 
 示例：
 
@@ -105,18 +100,13 @@ spec:
     persistentVolumeName: pvc-123456
 status:
   attached: true
-
 ```
 
 **5. CSINode**
 
 CSINode 记录了csi plugin的相关信息（如nodeId、driverName、拓扑信息等）。
 
-
-
 当Node Driver Registrar向kubelet注册一个csi plugin后，会创建（或更新）一个CSINode对象，记录csi plugin的相关信息。
-
-
 
 示例：
 
@@ -133,64 +123,43 @@ spec:
   - name: rbd.csi.ceph.com
     nodeID: 192.168.1.10
     topologyKeys: null
-
 ```
 
 **涉及组件与作用**
 
 下面先简单介绍下涉及的组件与作用，后面会有单独详细的介绍各个组件的作用。
 
-
-
 **1. volume plugin**
 
 扩展各种存储类型的卷的管理能力，实现第三方存储的各种操作能力与k8s存储系统的结合。调用第三方存储的接口或命令，从而提供数据卷的创建/删除、attach/detach、mount/umount的具体操作实现，可以认为是第三方存储的代理人。前面分析组件中的对于数据卷的创建/删除、attach/detach、mount/umount操作，全是调用volume plugin来完成。
 
-
-
 后续对volume plugin的详细分析，以通过ceph-csi操作rbd为例进行分析。
 
-
-
 根据源码所在位置，volume plugin分为in-tree与out-of-tree。
-
-
 
 **in-tree**
 
 在k8s源码内部实现，和k8s一起发布、管理，更新迭代慢、灵活性差。
 
-
-
 **out-of-tree**
 
 代码独立于k8s，由存储厂商实现，有csi、flexvolume两种实现。
-
-
 
 **csi plugin**
 
 本次的分析为k8s通过ceph-csi来使用ceph存储，ceph-csi属于csi plugin。csi plugin分为ControllerServer与NodeServer，各负责不同的存储操作。
 
-
-
 **external plugin**
 
 external plugin包括了external-provisioner、external-attacher、external-resizer、external-snapshotter等，external plugin辅助csi plugin组件，共同完成了存储相关操作。external plugin负责watch pvc、volumeAttachment等对象，然后调用volume plugin来完成存储的相关操作。如external-provisioner watch pvc对象，然后调用csi plugin来创建存储，最后创建pv对象；external-attacher watch volumeAttachment对象，然后调用csi plugin来做attach/dettach操作；external-resizer watch pvc对象，然后调用csi plugin来做存储的扩容操作等。
-
-
 
 **Node-Driver-Registrar**
 
 Node-Driver-Registrar组件负责实现csi plugin（NodeServer）的注册，让kubelet感知csi plugin的存在。
 
-
-
 组件部署方式
 
 csi plugin controllerServer与external plugin作为容器，使用deployment部署，多副本可实现高可用；而csi plugin NodeServer与Node-Driver-Registrar作为容器，使用daemonset部署，即每个node节点都有。
-
-
 
 **2. kube-controller-manager**
 
@@ -198,21 +167,13 @@ csi plugin controllerServer与external plugin作为容器，使用deployment部�
 
 负责pv、pvc的绑定与生命周期管理（如创建/删除底层存储，创建/删除pv对象，pv与pvc对象的状态变更）。
 
-
-
 创建/删除底层存储、创建/删除pv对象的操作，由PV controller调用volume plugin（in-tree）来完成。本次分析的是k8s通过ceph-csi来使用ceph存储，volume plugin为ceph-csi，属于out-tree，所以创建/删除底层存储、创建/删除pv对象的操作由external-provisioner来完成。
-
-
 
 **AD controller**
 
 AD Cotroller全称Attachment/Detachment 控制器，主要负责创建、删除VolumeAttachment对象，并调用volume plugin来做存储设备的Attach/Detach操作（将数据卷挂载到特定node节点上/从特定node节点上解除挂载），以及更新node.Status.VolumesAttached等。
 
-
-
 不同的volume plugin的Attach/Detach操作逻辑有所不同，如通过ceph-csi（out-tree volume plugin）来使用ceph存储，则的Attach/Detach操作只是修改VolumeAttachment对象的状态，而不会真正的将数据卷挂载到节点/从节点上解除挂载，真正的节点存储挂载/解除挂载操作由kubelet中volume manager调用rc.operationExecutor.MountVolume/rc.operationExecutor.UnmountDevice方法时，调用ceph-csi来完成，后面会有博文详细做介绍。
-
-
 
 **3. kubelet**
 
@@ -220,11 +181,7 @@ AD Cotroller全称Attachment/Detachment 控制器，主要负责创建、删除V
 
 主要是管理卷的Attach/Detach（与AD controller作用相同，通过kubelet启动参数控制哪个组件来做该操作，后续会详细介绍）、mount/umount等操作。
 
-
-
 本次的分析为k8s通过ceph-csi来使用ceph存储。本次分析中，volume manager的Attach/Detach操作只创建/删除VolumeAttachment对象，而不会真正的将数据卷挂载到节点/从节点上解除挂载；csi-attacer组件也不会做挂载/解除挂载操作，只是更新VolumeAttachment对象，真正的节点挂载/解除挂载操作由kubelet中volume manager调用rc.operationExecutor.MountVolume/rc.operationExecutor.UnmountDevice方法时，调用ceph-csi来完成，后面会有博文详细做介绍。
-
-
 
 **kubernetes创建与挂载volume（in-tree volume plugin）**
 
@@ -249,8 +206,6 @@ AD Cotroller全称Attachment/Detachment 控制器，主要负责创建、删除V
 （10）（11）attach操作完成后，volume manager watch到pod声明的volume没有进行mount操作，将调用volume plugin来做mount操作。
 
 （12）volume plugin进行mount操作，将node节点上的第（9）步得到的/dev/vdb设备挂载到指定目录。
-
-
 
 **kubernetes创建与挂载volume（out-of-tree volume plugin）**
 
@@ -278,55 +233,77 @@ AD Cotroller全称Attachment/Detachment 控制器，主要负责创建、删除V
 
 （13）csi-mounter调用csi-plugin NodeServer进行mount操作，将node节点上的第（10）步得到的/dev/vdb设备挂载到指定目录。
 
-
-
 **kubernetes存储相关操作流程具体分析（out-of-tree volume plugin，以ceph-csi为例）**
 
 下面来看下kubernetes通过out-of-tree volume plugin来创建/删除、挂载/解除挂载volume的流程。
 
-
-
 下面先对每个操作的整体流程进行分析，后面会对涉及的每个组件进行源码分析。
-
-
 
 **1. 存储创建**
 
-**流程图**![](/assets/compute-container-k8s-cephcsi114.png)**流程分析**
+**流程图  
+**![](/assets/compute-container-k8s-cephcsi114.png)**流程分析**
 
 （1）用户创建pvc对象；
 
-
-
 （2）pv controller监听pvc对象，寻找现存的合适的pv对象，与pvc对象绑定。当找不到现存合适的pv对象时，将更新pvc对象，添加annotation：volume.beta.kubernetes.io/storage-provisioner，让external-provisioner组件开始开始创建存储与pv对象的操作；当找到时，将pvc与pv绑定，结束操作。
-
-
 
 （3）external-provisioner组件监听到pvc的新增事件，判断pvc的annotation：volume.beta.kubernetes.io/storage-provisioner的值，即判断是否是自己来负责做创建操作，是则调用ceph-csi组件进行存储的创建；
 
-
-
 （4）ceph-csi组件调用ceph创建底层存储；
-
-
 
 （5）底层存储创建完成后，external-provisioner根据存储信息，拼接pv对象，创建pv对象；
 
-
-
 （6）pv controller监听pvc对象，寻找合适的pv对象，与pvc对象绑定。
-
-
 
 **2. 存储扩容**
 
-**流程图**
+**流程图  
+**![](/assets/compute-container-k8s-cephcsi115.png)
+
+**流程分析**
+
+（1）修改pvc对象，修改申请存储大小（pvc.spec.resources.requests.storage）；
 
 
 
+（2）修改成功后，external-resizer监听到该pvc的update事件，发现pvc.Spec.Resources.Requests.storgage比pvc.Status.Capacity.storgage大，于是调ceph-csi组件进行 controller端扩容；
 
 
 
+（3）ceph-csi组件调用ceph存储，进行底层存储扩容；
+
+
+
+（4）底层存储扩容完成后，external-resizer组件更新pv对象的.Spec.Capacity.storgage的值为扩容后的存储大小；
+
+
+
+（5）kubelet的volume manager在reconcile\(\)调谐过程中发现pv.Spec.Capacity.storage大于pvc.Status.Capacity.storage，于是调ceph-csi组件进行 node端扩容；
+
+
+
+（6）ceph-csi组件对dnode上存储对应的文件系统扩容；
+
+
+
+（7）扩容完成后，kubelet更新pvc.Status.Capacity.storage的值为扩容后的存储大小。
+
+
+
+**3. 存储挂载**
+
+**流程图**
+
+kubelet启动参数–enable-controller-attach-detach，该启动参数设置为 true 表示启用 Attach/Detach controller进行Attach/Detach 操作，同时禁用 kubelet 执行 Attach/Detach 操作（默认值为 true）。实际上Attach/Detach 操作就是创建/删除VolumeAttachment对象。
+
+
+
+（1）kubelet启动参数–enable-controller-attach-detach=true，Attach/Detach controller进行Attach/Detach 操作
+
+![](/assets/compute-container-k8s-cephcsi116.png)（2）kubelet启动参数–enable-controller-attach-detach=false，kubelet端volume manager进行Attach/Detach 操作
+
+![](/assets/compute-container-k8s-cephsci117.png)
 
 
 
