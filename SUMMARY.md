@@ -78,6 +78,7 @@
       * [CSI开发](compute/container/container/k8skai-fa/csikai-fa.md)
         * [CSI源码解析](compute/container/container/k8skai-fa/csikai-fa/csiyuan-ma-jie-xi.md)
         * [hostpath实例](compute/container/container/k8skai-fa/csikai-fa/hostpathshi-li.md)
+        * [ceph-csi](compute/container/container/k8skai-fa/csikai-fa/ceph-csi.md)
       * [K8S源码](compute/container/container/k8skai-fa/k8syuan-ma.md)
         * [kubelet](compute/container/container/k8skai-fa/k8syuan-ma/kubelet.md)
       * [使用 Operator Framework 全家桶构建并维护 operator](compute/container/container/k8skai-fa/shi-yong-operator-framework-quan-jiatong-gou-jian-bing-wei-hu-operator.md)
