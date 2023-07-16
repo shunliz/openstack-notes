@@ -86,6 +86,7 @@
           * [ceph-csi源码分析5](compute/container/container/k8skai-fa/csikai-fa/ceph-csi/ceph-csiyuan-ma-fen-xi-5.md)
           * [ceph-csi源码分析6](compute/container/container/k8skai-fa/csikai-fa/ceph-csi/ceph-csiyuan-ma-fen-xi-6.md)
           * [ceph-csi源码分析7](compute/container/container/k8skai-fa/csikai-fa/ceph-csi/ceph-csiyuan-ma-fen-xi-7.md)
+          * [ceph-csi源码分析8](compute/container/container/k8skai-fa/csikai-fa/ceph-csi/ceph-csiyuan-ma-fen-xi-8.md)
       * [K8S源码](compute/container/container/k8skai-fa/k8syuan-ma.md)
         * [kubelet](compute/container/container/k8skai-fa/k8syuan-ma/kubelet.md)
       * [使用 Operator Framework 全家桶构建并维护 operator](compute/container/container/k8skai-fa/shi-yong-operator-framework-quan-jiatong-gou-jian-bing-wei-hu-operator.md)
