@@ -13,6 +13,7 @@
     * [DPU](compute/lqk/ji-suan-ying-jian/dpu.md)
     * [FPGA](compute/lqk/ji-suan-ying-jian/fpga.md)
     * IOMMU
+    * [APIC&PIC](compute/lqk/ji-suan-ying-jian/apicandpic.md)
   * [体系结构](compute/lqk/ti-xi-jie-gou.md)
     * [SMP](compute/lqk/ti-xi-jie-gou/smp.md)
     * MIMD
