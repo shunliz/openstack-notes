@@ -209,6 +209,7 @@
     * [crush](storage/ceph/ceph/crush.md)
     * [ceph调优](storage/ceph/ceph/cephdiao-you.md)
       * [ceph OSD优化](storage/ceph/ceph/cephdiao-you/ceph-osdyou-hua.md)
+      * [ceph参数优化2](storage/ceph/ceph/cephdiao-you/cephcan-shu-you-hua-2.md)
     * [ceph-cache-tier](storage/ceph/ceph/ceph-cache-tier.md)
     * [Ceph集群中的逻辑结构](storage/ceph/ceph/cephji-qun-zhong-de-luo-ji-jie-gou.md)
     * [krbd代码加载逻辑](storage/ceph/ceph/krbddai-ma-jia-zai-luo-ji.md)
