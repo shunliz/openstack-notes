@@ -217,6 +217,7 @@
     * [PG读写流程](storage/ceph/ceph/pgdu-xie-liu-cheng.md)
     * [bluestore](storage/ceph/ceph/bluestore.md)
     * [ceph QOS](storage/ceph/ceph/ceph-qos.md)
+    * [ceph网络通信](storage/ceph/ceph/cephwang-luo-tong-xin.md)
 * [第四部 其它](ops.md)
   * [安装部署](ops/install/install.md)
     * [OpenStack Ansible](ops/install/install/openstack-ansible.md)
