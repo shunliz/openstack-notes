@@ -376,8 +376,6 @@ ID CLASS WEIGHT  TYPE NAME     STATUS REWEIGHT PRI-AFF
 * 每个主机必须具有备用或空设备。
 * OSD在转换过程中处于脱机状态，这意味着新的写入操作将仅写入OSD的一部分。这会增加由于后续故障而导致数据丢失的风险。（但是，如果在转换完成之前出现故障，则可以启动原始FileStore OSD来提供对其原始数据的访问。）
 
-
-
 **BlueStore整体架构如下：**
 
 ![](/assets/storage-ceph-blustore1.png)
@@ -417,6 +415,7 @@ BlueStore的写分为正常写和Deferred写，也有可能2者结合，如下�
 * STATE\_PREPARE：待提交事物TransContext txc刚创建的状态。如果有未提交的aio，则设置状态为AIO\_WAIT，同时提交aio。
 
 * STATE\_AIO\_WAIT：通过osr保序aio。设置状态为IO\_DONE。
+
 * STATE\_IO\_DONE：设置状态为KV\_QUEUED。将事物放入kv\_queue，待线程bstore\_kv\_sync处理。
 * STATE\_KV\_QUEUED：线程bstore\_kv\_sync将kv\_queue中的事物放入kv\_committing，然后再向db提交其中的事物，设置状态为KV\_SUBMITTED，然后sync一次，最后放入kv\_committing\_to\_finalize，待线程bstore\_kv\_final处理。
 * STATE\_KV\_SUBMITTED：线程bstore\_kv\_final从kv\_committing\_to\_finalize取出事物，设置状态为KV\_DONE，将事物放入finisher队列，等待cfin线程回调。
