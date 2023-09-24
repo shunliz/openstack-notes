@@ -8,10 +8,10 @@
 
 相比于目前FileStore，BlueStore拥有无与伦比的优势：
 
-- 充分考虑下一代全SSD以及NVMe SSD闪存阵列的适配。例如将高效索引元数据的引擎由LevelDB替换为RocksDB。
-- 传统的基于POSIX接口的FileStore需要通过操作系统自带的文件系统间接管理磁盘。BlueStore选择绕开文件系统，从而使得I/O路径大大减小。
-- 在设计中将元素据和用户数据严格分离，因此元素据可以单独采用高速固态存储设备，诸如NVMe SSD，以实现性能加速。
-- 与传统机械硬盘相比，SSD普遍采用4k 或者更大的块大小，因此采用位图进行管理可以获得更高的空间收益。
+* 充分考虑下一代全SSD以及NVMe SSD闪存阵列的适配。例如将高效索引元数据的引擎由LevelDB替换为RocksDB。
+* 传统的基于POSIX接口的FileStore需要通过操作系统自带的文件系统间接管理磁盘。BlueStore选择绕开文件系统，从而使得I/O路径大大减小。
+* 在设计中将元素据和用户数据严格分离，因此元素据可以单独采用高速固态存储设备，诸如NVMe SSD，以实现性能加速。
+* 与传统机械硬盘相比，SSD普遍采用4k 或者更大的块大小，因此采用位图进行管理可以获得更高的空间收益。
 
 ## 1 设计理念
 
@@ -43,11 +43,11 @@ LFU算法：最近不经常使用，SDD访问模型。
 
 ARC算法，同时考虑了LRU和LFU的长处，同时使用两个队列对缓存中页面进行管理：
 
-- MRU (Most Recently Used) 队列保存最近访问过的页面
-- MFU（Most Frequently Used）队列保存最近一段时间**至少被访问过两次**的界面。
-- 两个队列的长度是可变的，会根据请求队列的特征自动进行调整，取LRU和LFU共同之所长。
-  - 当系统中请求序列呈现明显的时间局部性，MFU队列长度变为0，从而退化为LRU。
-  - 当系统中请求序列呈现明显的空间局部性，MRU队列长度变为0，从而退化为LFU。
+* MRU \(Most Recently Used\) 队列保存最近访问过的页面
+* MFU（Most Frequently Used）队列保存最近一段时间**至少被访问过两次**的界面。
+* 两个队列的长度是可变的，会根据请求队列的特征自动进行调整，取LRU和LFU共同之所长。
+  * 当系统中请求序列呈现明显的时间局部性，MFU队列长度变为0，从而退化为LRU。
+  * 当系统中请求序列呈现明显的空间局部性，MRU队列长度变为0，从而退化为LFU。
 
 2Q算法：双队列热点算法，一种针对数据库特别是关系数据库系统优化的缓存淘汰算法：
 
@@ -55,8 +55,8 @@ ARC算法，同时考虑了LRU和LFU的长处，同时使用两个队列对缓�
 
 与ARC类似，2Q也使用了多个队列来管理整个缓存空间，分布称为A1in,A1out,AmA1in,A1out,Am。这些队列都是LRU队列，其中A1inA1in与AmAm是真正的缓存队列，A1outA1out是影子队列，i.e.只保存相关页面的管理结构。
 
-- 新的页面一开始总是被加入A1in，当某个页面被频繁访问，2Q认为这些访问是相关的，不会针对该页面执行任何热度提升的操作，直到其被正常淘汰至Aout。这个时间间隔被称为“相关时间间隔”。
-- 当A1out中某个页面被再次访问时，2Q认为这些访问不再相关，此时执行页面热度提升，将其加入Am头部。Am队列中的页面再次被命中时，同样将其加入Am队列头部进行页面热度提升。从Am中淘汰的页面也进入A1out。这个时间间隔被称为“热度保留间隔”。
+* 新的页面一开始总是被加入A1in，当某个页面被频繁访问，2Q认为这些访问是相关的，不会针对该页面执行任何热度提升的操作，直到其被正常淘汰至Aout。这个时间间隔被称为“相关时间间隔”。
+* 当A1out中某个页面被再次访问时，2Q认为这些访问不再相关，此时执行页面热度提升，将其加入Am头部。Am队列中的页面再次被命中时，同样将其加入Am队列头部进行页面热度提升。从Am中淘汰的页面也进入A1out。这个时间间隔被称为“热度保留间隔”。
 
 ## 4 缓存管理
 
@@ -72,8 +72,8 @@ BlueStore中元素据分为两类：Collection和Onode. Collection是PG在BlueSt
 
 诞生于2011年的LevelDB是基于Google的BigTable数据库系统发展而来。然而随着SSD普及，LevelDB无法发挥SSD全部性能，因而诞生了RocksDB。
 
-- RocksDB适合存储小型或者中型键值对；性能随着键值对长度上升下降很快。
-- 性能随CPU核数以及后端存储设备的I/O能力呈线性扩展。
+* RocksDB适合存储小型或者中型键值对；性能随着键值对长度上升下降很快。
+* 性能随CPU核数以及后端存储设备的I/O能力呈线性扩展。
 
 传统的本地文件系统（XFS，ext4，ZFS）等不能与RocksDB完全兼容，因而专门为其量身打造一款本地文件系统——BlueFS。在逻辑空间上分为三个层次
 
@@ -87,29 +87,29 @@ BlueStore中元素据分为两类：Collection和Onode. Collection是PG在BlueSt
 
 （3）超高速（WAL）
 
-WAL(Write Ahead Log)指日志。 可以由NVMe SSD或NVRAM等高速设备充当。
+WAL\(Write Ahead Log\)指日志。 可以由NVMe SSD或NVRAM等高速设备充当。
 
 BlueFS上的磁盘数据包括文件、目录、日志三种类型。其定位文件分为两步：1. 通过`dir_map`找到文件的最底层文件夹 2.通过`file_map`找到对应的文件。其磁盘数据结构如下：
 
-|    成员     |                    含义                    |
-| :---------: | :----------------------------------------: |
-|     ino     |             唯一标识一个fnode              |
-|    size     |                  文件大小                  |
-|    mtime    |            文件上一次被修改时间            |
-| prefer_bdev |          存储该文件优先使用的设备          |
-|   extents   | 磁盘上物理段集合包括{bdev，offset，length} |
+| 成员 | 含义 |
+| :---: | :---: |
+| ino | 唯一标识一个fnode |
+| size | 文件大小 |
+| mtime | 文件上一次被修改时间 |
+| prefer\_bdev | 存储该文件优先使用的设备 |
+| extents | 磁盘上物理段集合包括{bdev，offset，length} |
 
 [![image-20201202001057524](https://durantthorvalds.top/img/image-20201202001057524.png)](https://durantthorvalds.top/img/image-20201202001057524.png)
 
-## 6 ObjectStore(OS)
+## 6 ObjectStore\(OS\)
 
-Ceph是一个指导原则是所有存储的不管是块设备、对象存储、文件存储最后都转化成了底层的对象object，这个object包含3个元素data，xattr，omap。data是保存对象的数据；xattr是保存对象的扩展属性，每个对象文件都可以设置文件的属性，这个属性是一个key/value值对，这类操作的特征是kv对并且与某一个Object关联，但是受到文件系统的限制，key/value对的个数和每个value的大小都进行了限制。如果要设置的对象的key/value不能存储在文件的扩展属性中；还存在另外一种方式保存omap(在Ceph中称为omap)，omap实际上是保存到了key/vaule 值对的RocksDB中，在这里value的值限制要比xattr中好的多。
+Ceph是一个指导原则是所有存储的不管是块设备、对象存储、文件存储最后都转化成了底层的对象object，这个object包含3个元素data，xattr，omap。data是保存对象的数据；xattr是保存对象的扩展属性，每个对象文件都可以设置文件的属性，这个属性是一个key/value值对，这类操作的特征是kv对并且与某一个Object关联，但是受到文件系统的限制，key/value对的个数和每个value的大小都进行了限制。如果要设置的对象的key/value不能存储在文件的扩展属性中；还存在另外一种方式保存omap\(在Ceph中称为omap\)，omap实际上是保存到了key/vaule 值对的RocksDB中，在这里value的值限制要比xattr中好的多。
 
-对于FileStore实现，每个Object在FileStore层会被看成是一个文件，Object的属性(xattr)会利用文件的xattr属性存取，因为有些文件系统(如Ext4)对xattr的长度有限制，因此超出长度的Metadata会被存储在DBObjectMap里。而Object的omap则直接利用DBObjectMap实现。因此，可以看出xattr和omap操作是互通的，在用户角度来说，前者可以看作是受限的长度，后者更宽泛(API没有对这些做出硬性要求)。目前纠删码还不支持omap。
+对于FileStore实现，每个Object在FileStore层会被看成是一个文件，Object的属性\(xattr\)会利用文件的xattr属性存取，因为有些文件系统\(如Ext4\)对xattr的长度有限制，因此超出长度的Metadata会被存储在DBObjectMap里。而Object的omap则直接利用DBObjectMap实现。因此，可以看出xattr和omap操作是互通的，在用户角度来说，前者可以看作是受限的长度，后者更宽泛\(API没有对这些做出硬性要求\)。目前纠删码还不支持omap。
 
 而在BlueStore则没有这种限制。
 
-------
+---
 
 # 部署和操作BlueStore
 
@@ -180,7 +180,7 @@ Ceph是一个指导原则是所有存储的不管是块设备、对象存储、�
    umount /var/lib/ceph/osd/ceph-$IDCopy
    ```
 
-7. 销毁OSD数据。请*格外小心，*因为这会破坏设备的内容；在继续操作之前，请确保不需要设备上的数据（即，群集运行状况良好）。
+7. 销毁OSD数据。请_格外小心，_因为这会破坏设备的内容；在继续操作之前，请确保不需要设备上的数据（即，群集运行状况良好）。
 
    ```
    ceph-volume lvm zap $DEVICECopy
@@ -204,13 +204,13 @@ Ceph是一个指导原则是所有存储的不管是块设备、对象存储、�
 
 优点：
 
-- 简单。
-- 可以逐个设备完成。
-- 不需要备用设备或主机。
+* 简单。
+* 可以逐个设备完成。
+* 不需要备用设备或主机。
 
 缺点：
 
-- 数据通过网络复制了两次：一次复制到集群中的其他OSD（以保持所需的副本数），然后再次返回到重新配置的BlueStore OSD。
+* 数据通过网络复制了两次：一次复制到集群中的其他OSD（以保持所需的副本数），然后再次返回到重新配置的BlueStore OSD。
 
 ### 整个主机更换
 
@@ -278,7 +278,7 @@ ID CLASS WEIGHT  TYPE NAME     STATUS REWEIGHT PRI-AFF
    ceph osd treeCopy
    ```
 
-   您应该看到新主机`$NEWHOST`与它下面的所有的OSD的，但主机应该*不*被嵌套任何其他节点下的层次结构（像）。例如，如果是空主机，则可能会看到以下内容：`root default``newhost`
+   您应该看到新主机`$NEWHOST`与它下面的所有的OSD的，但主机应该_不_被嵌套任何其他节点下的层次结构（像）。例如，如果是空主机，则可能会看到以下内容：```root default``newhost```
 
    ```
    $ bin/ceph osd tree
@@ -325,11 +325,9 @@ ID CLASS WEIGHT  TYPE NAME     STATUS REWEIGHT PRI-AFF
 
 7. 销毁并清除旧的OSD：
 
-   ```
-   for osd in `ceph osd ls-tree $OLDHOST`; do
-       ceph osd purge $osd --yes-i-really-mean-it
-   doneCopy
-   ```
+       for osd in `ceph osd ls-tree $OLDHOST`; do
+           ceph osd purge $osd --yes-i-really-mean-it
+       doneCopy
 
 8. 擦拭旧的OSD设备。这要求您确定要手动擦除哪些设备（请小心！）。对于每个设备：
 
@@ -345,16 +343,16 @@ ID CLASS WEIGHT  TYPE NAME     STATUS REWEIGHT PRI-AFF
 
 优点：
 
-- 数据只能通过网络复制一次。
-- 一次转换整个主机的OSD。
-- 可以并行转换为一次转换多个主机。
-- 每个主机上都不需要备用设备。
+* 数据只能通过网络复制一次。
+* 一次转换整个主机的OSD。
+* 可以并行转换为一次转换多个主机。
+* 每个主机上都不需要备用设备。
 
 缺点：
 
-- 需要备用主机。
-- 整个主机的OSD值将同时迁移数据。这很可能会影响整个群集的性能。
-- 所有迁移的数据仍然在网络上进行了一整跳。
+* 需要备用主机。
+* 整个主机的OSD值将同时迁移数据。这很可能会影响整个群集的性能。
+* 所有迁移的数据仍然在网络上进行了一整跳。
 
 ### 每OSD设备副本
 
@@ -362,18 +360,71 @@ ID CLASS WEIGHT  TYPE NAME     STATUS REWEIGHT PRI-AFF
 
 注意事项：
 
-- 此策略要求准备一个空白的BlueStore OSD，而无需分配该`ceph-volume` 工具不支持的新OSD ID 。更重要的是，*dmcrypt*的设置与OSD身份紧密相关，这意味着该方法不适用于加密的OSD。
-- 设备必须手动分区。
-- 工具未实现！
-- 没有记录！
+* 此策略要求准备一个空白的BlueStore OSD，而无需分配该`ceph-volume` 工具不支持的新OSD ID 。更重要的是，_dmcrypt_的设置与OSD身份紧密相关，这意味着该方法不适用于加密的OSD。
+* 设备必须手动分区。
+* 工具未实现！
+* 没有记录！
 
 优点：
 
-- 在转换期间，很少或没有数据在网络上迁移。
+* 在转换期间，很少或没有数据在网络上迁移。
 
 缺点：
 
-- 工具尚未完全实现。
-- 流程未记录。
-- 每个主机必须具有备用或空设备。
-- OSD在转换过程中处于脱机状态，这意味着新的写入操作将仅写入OSD的一部分。这会增加由于后续故障而导致数据丢失的风险。（但是，如果在转换完成之前出现故障，则可以启动原始FileStore OSD来提供对其原始数据的访问。）
+* 工具尚未完全实现。
+* 流程未记录。
+* 每个主机必须具有备用或空设备。
+* OSD在转换过程中处于脱机状态，这意味着新的写入操作将仅写入OSD的一部分。这会增加由于后续故障而导致数据丢失的风险。（但是，如果在转换完成之前出现故障，则可以启动原始FileStore OSD来提供对其原始数据的访问。）
+
+
+
+**BlueStore整体架构如下：**
+
+![](/assets/storage-ceph-blustore1.png)
+
+RocksDBStore：封装了rocksdb。BlueStore中的元数据持久化到rocksdb，BlueStore的事物依赖rocksdb实现。
+
+BlueFS：为对接rocksdb实现的最小文件系统，通过File、Dir、FileWriter、FileReader实现文件读取。BlueFS可以管理3类磁盘设备，分为BDEV\_WAL、BDEV\_DB、BDEV\_SLOW。
+
+Allocator：磁盘空间分配器，BlueStore最小分配单元为4k\(SSD\)，64k\(HDD\)，BlueFS最小分配单元为1M。默认实现为BitmapAllocator，还有StupidAllocator、AvlAllocator、HybridAllocator、ZonedAllocator等选择，通过配置bluestore\_allocator和bluefs\_allocator来修改。
+
+KernelDevice：磁盘设备。默认实现为BlockDevice，还有PMEMDevice、NVMEDevice等选择。
+
+## BlueStore元数据
+
+BlueStore直接管理裸设备，没有文件系统，操作系统的page cache使用不上，所以需要自己管理元数据和数据的缓存。其管理结构如下：
+
+![](/assets/storage-ceph-bluestore2.png)Collection：即OSD层的PG，数目比较少，全部缓存在coll\_map unordered\_map中。以前缀PREFIX\_COLL持久化在db中。
+
+Onode：对象元数据，部分缓存，存在Collection的OnodeSpace unordered\_map中，默认使用lru。以前缀PREFIX\_OBJ持久化在db中。
+
+Extent：逻辑空间的off，len属性，对应Blob上的一片逻辑空间。
+
+Blob：物理空间和逻辑空间的转换层，将物理空间上一片不连续的空间转为连续的逻辑空间。
+
+pextent：物理空间的off，len属性，对应盘上真实空间。
+
+Buffer：对象数据，部分缓存，以offset为key存在SharedBlob的BufferSpace map中，默认使用2q管理
+
+## BlueStore写状态机
+
+BlueStore的写分为正常写和Deferred写，也有可能2者结合，如下图所示：
+
+![](/assets/storage-ceph-bluestore3.png)
+
+![](/assets/storage-ceph-bluestore4.png)
+
+* STATE\_PREPARE：待提交事物TransContext txc刚创建的状态。如果有未提交的aio，则设置状态为AIO\_WAIT，同时提交aio。
+
+* STATE\_AIO\_WAIT：通过osr保序aio。设置状态为IO\_DONE。
+* STATE\_IO\_DONE：设置状态为KV\_QUEUED。将事物放入kv\_queue，待线程bstore\_kv\_sync处理。
+* STATE\_KV\_QUEUED：线程bstore\_kv\_sync将kv\_queue中的事物放入kv\_committing，然后再向db提交其中的事物，设置状态为KV\_SUBMITTED，然后sync一次，最后放入kv\_committing\_to\_finalize，待线程bstore\_kv\_final处理。
+* STATE\_KV\_SUBMITTED：线程bstore\_kv\_final从kv\_committing\_to\_finalize取出事物，设置状态为KV\_DONE，将事物放入finisher队列，等待cfin线程回调。
+* STATE\_KV\_DONE：如果有deferred io，将状态置为DEFERRED\_QUEUED，将osr放入deferred\_queue；否则，将状态置为FINISHING。
+* STATE\_DEFERRED\_QUEUED：提交deferred的io，写入完后从deferred\_queue移除，将状态置为DEFERRED\_CLEANUP，然后将DeferredBatch放入deferred\_done\_queue队列，线程bstore\_kv\_sync取出来清理db中的deferred信息，然后放入deferred\_stable\_to\_finalize，线程bstore\_kv\_final取出来进行clean清理以及析构DeferredBatch。
+* STATE\_DEFERRED\_CLEANUP：设置状态为FINISHING。
+* STATE\_FINISHING：设置状态为DONE，从osr队列中摘掉。
+* STATE\_DEFERRED\_DONE：事物完成。
+
+
+
