@@ -16,3 +16,33 @@
 
 
 
+**包处理**
+
+![](/assets/network-virtualnet-ovs-code2.png)
+
+**实现**
+
+
+
+vswitchd
+
+vswitchd 实现在vswitchd/
+
+网桥相关在ofproto/
+
+
+
+ovsdb
+
+ovsdb相关实现在ovsdb/
+
+
+
+datapath
+
+vswitchd在datapath/. datapath-windows是windows实现
+
+
+
+
+
