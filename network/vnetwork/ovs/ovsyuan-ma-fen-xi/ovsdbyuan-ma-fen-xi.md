@@ -15,13 +15,12 @@ ovs-vsctl:通过配置ovs-vswitchd修改ovsdb
 
 ovsdb-tool： ovsdb管理，创建，整理和转化ovsdb，显示ovsdb信息
 
-
-
 ### 关键数据结构
 
 * `ovsdb_schema`
 
 * `ovsdb`
+
 * `ovsdb_server`
 * `ovsdb_table_schema`
 * `ovsdb_table`
@@ -248,6 +247,10 @@ ovsdb_trigger_run(struct ovsdb *db, long long int now)
     }
 }
 ```
+
+## 5. OVSDB Session/Transaction Example \(TODO\) {#5-ovsdb-sessiontransaction-example-todo}
+
+## Summary {#summary}
 
 
 
