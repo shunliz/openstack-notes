@@ -9,8 +9,6 @@ datapath是ovs的转发面，最初是通过内核模块实现的，其他模块
 * 用户空间：dpdk, dpif-netdev 或者dummy datapath.
 * hyperv： window datapath 实现
 
-
-
 ### 内核datapath
 
 ```
@@ -62,16 +60,16 @@ ovs内核模块允许通过用户空间灵活的控制流级别的数据包处�
 ```
 /** struct datapath - datapath for flow-based packet switching */
 struct datapath {
-	struct rcu_head rcu;
-	struct list_head list_node;
+    struct rcu_head rcu;
+    struct list_head list_node;
 
-	struct flow_table table;
-	struct hlist_head *ports; /* Switch ports. */
-	struct dp_stats_percpu __percpu *stats_percpu;
-	possible_net_t net; /* Network namespace ref. */
+    struct flow_table table;
+    struct hlist_head *ports; /* Switch ports. */
+    struct dp_stats_percpu __percpu *stats_percpu;
+    possible_net_t net; /* Network namespace ref. */
 
-	u32 user_features;
-	u32 max_headroom;
+    u32 user_features;
+    u32 max_headroom;
 };
 ```
 
@@ -79,21 +77,21 @@ struct datapath {
 
 ```
 struct sw_flow {
-	struct rcu_head rcu;
-	struct {
-		struct hlist_node node[2];
-		u32 hash;
-	} flow_table, ufid_table;
-	int stats_last_writer;		/* NUMA-node id of the last writer on * 'stats[0]'.  */
-	struct sw_flow_key key;
-	struct sw_flow_id id;
-	struct sw_flow_mask *mask;
-	struct sw_flow_actions __rcu *sf_acts;
-	struct flow_stats __rcu *stats[]; /* One for each NUMA node.  First one
-					   * is allocated at flow creation time,
-					   * the rest are allocated on demand
-					   * while holding the 'stats[0].lock'.
-					   */
+    struct rcu_head rcu;
+    struct {
+        struct hlist_node node[2];
+        u32 hash;
+    } flow_table, ufid_table;
+    int stats_last_writer;        /* NUMA-node id of the last writer on * 'stats[0]'.  */
+    struct sw_flow_key key;
+    struct sw_flow_id id;
+    struct sw_flow_mask *mask;
+    struct sw_flow_actions __rcu *sf_acts;
+    struct flow_stats __rcu *stats[]; /* One for each NUMA node.  First one
+                       * is allocated at flow creation time,
+                       * the rest are allocated on demand
+                       * while holding the 'stats[0].lock'.
+                       */
 };
 ```
 
@@ -101,22 +99,22 @@ struct sw_flow {
 
 ```
 struct table_instance {
-	struct flex_array *buckets;
-	unsigned int n_buckets;
-	struct rcu_head rcu;
-	int node_ver;
-	u32 hash_seed;
-	bool keep_flows;
+    struct flex_array *buckets;
+    unsigned int n_buckets;
+    struct rcu_head rcu;
+    int node_ver;
+    u32 hash_seed;
+    bool keep_flows;
 };
 
 struct flow_table {
-	struct table_instance __rcu *ti;
-	struct table_instance __rcu *ufid_ti;
-	struct mask_cache_entry __percpu *mask_cache;
-	struct mask_array __rcu *mask_array;
-	unsigned long last_rehash;
-	unsigned int count;
-	unsigned int ufid_count;
+    struct table_instance __rcu *ti;
+    struct table_instance __rcu *ufid_ti;
+    struct mask_cache_entry __percpu *mask_cache;
+    struct mask_array __rcu *mask_array;
+    unsigned long last_rehash;
+    unsigned int count;
+    unsigned int ufid_count;
 };
 ```
 
@@ -125,17 +123,17 @@ struct flow_table {
 ```
 /** struct vport - one port within a datapath */
 struct vport {
-	struct net_device *dev;
-	struct datapath	*dp;
-	struct vport_portids __rcu *upcall_portids;
-	u16 port_no;
+    struct net_device *dev;
+    struct datapath    *dp;
+    struct vport_portids __rcu *upcall_portids;
+    u16 port_no;
 
-	struct hlist_node hash_node;
-	struct hlist_node dp_hash_node;
-	const struct vport_ops *ops;
+    struct hlist_node hash_node;
+    struct hlist_node dp_hash_node;
+    const struct vport_ops *ops;
 
-	struct list_head detach_list;
-	struct rcu_head rcu;
+    struct list_head detach_list;
+    struct rcu_head rcu;
 };
 ```
 
@@ -267,7 +265,6 @@ struct xlate_in {
     /* The frozen state to be resumed, as returned by xlate_lookup(). */
     const struct frozen_state *frozen_state;
 };
-
 ```
 
 `lib/dp-packet.h`
@@ -350,7 +347,6 @@ struct dpif_netlink_vport {
     size_t options_len;
 };
 ```
-
 
     static const char *
     get_vport_type(const struct dpif_netlink_vport *vport)
