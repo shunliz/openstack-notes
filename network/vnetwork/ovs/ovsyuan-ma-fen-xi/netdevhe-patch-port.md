@@ -183,6 +183,7 @@ netdev_vport_patch_register(void)
 * `dpdk_ring_class`
 
 * `dpdk_vhost_class`
+
 * `dpdk_vhost_client_class`
 
 ### Patch Port
@@ -226,13 +227,11 @@ int netif_rx(struct sk_buff *skb)
 
 不用额外的内核datapath查找，和到从内核空间到用户空间的路径开销。
 
-
-
 ### Internal Port
 
 Linux bridge port是纯2层的port不能配置IP， linux网桥增加所有物理网卡后，host没有办法连接。
 
-L2 port工作在数据面， 用来转发数据。L3 port工作在控制面，用来管理bridge。 
+L2 port工作在数据面， 用来转发数据。L3 port工作在控制面，用来管理bridge。
 
 为了保证主机仍然可以连接，两种方案
 
@@ -277,25 +276,7 @@ internal port底层还是通过tap实现的。
 4. 禁用ns1默认网络设备, 通常是eth0
 5. 为tap1配置IP，设置为ns1默认网络设备eth0.添加路由
 
-ovs internal port方式接容器到ovs， 和veth pair方式接容器到ovs对比。
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+### ovs internal port方式接容器到ovs， 和veth pair方式接容器到ovs对比？
 
 
 
