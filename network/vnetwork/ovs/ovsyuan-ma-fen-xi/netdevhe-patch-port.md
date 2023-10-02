@@ -174,19 +174,20 @@ netdev_vport_patch_register(void)
                           BUILD_HEADER, PUSH_HEADER, POP_HEADER) }}
 ```
 
-注意所有的vport的send和rx_recv都是NULL， 意味着数据包不能通过vport从用户空间发往内核空间， vport不能从物理网卡接收数据包。 vport用于在datapath之间转包，或者通过调用内核dev_queue_\_xmit\(\)发送包。_
+注意所有的vport的send和rx_recv都是NULL， 意味着数据包不能通过vport从用户空间发往内核空间， vport不能从物理网卡接收数据包。 vport用于在datapath之间转包，或者通过调用内核dev\_queue_\_xmit\(\)发送包。\_
 
 #### dpdk\_netdev
 
 * `dpdk_class`
 
 * `dpdk_ring_class`
+
 * `dpdk_vhost_class`
 * `dpdk_vhost_client_class`
 
 ### Patch Port
 
-patch port是一种vport类型的netdev， 通过`netdev_register_provider(const struct netdev`_`class *newclass)在lib/netdev-vport.c注册。 初始化和注册了一个netdev provider.注册后可以通过netdev`_`open() 打开`
+patch port是一种vport类型的netdev， 通过`netdev_register_provider(const struct netdevclass *newclass)在lib/netdev-vport.c注册。 初始化和注册了一个netdev provider.注册后可以通过netdevopen() 打开`
 
 patch port 只接收一个peer参数，表示对端，和linux veth pair类似，是用来替换veth引入的，用来连接两个bridge。patch port不从物理设备接收数据包，只从另一端的网桥（datapath）接收数据包，OUTPUT到另外一个peer，用来连接两个bridge.
 
@@ -221,11 +222,70 @@ int netif_rx(struct sk_buff *skb)
 
 对于patch port，驱动不会调用netif\_rx\(\)（因为数据包的目的是对端，不是内核协议栈）， 驱动没有过滤代码，所以不能拷贝包，所以不能抓包。同理为啥dpdk的设备也不能使用tcpdump, netstat等工具，不能抓包。
 
-
-
 ### Patch port的性能提升
 
 不用额外的内核datapath查找，和到从内核空间到用户空间的路径开销。
+
+
+
+### Internal Port
+
+Linux bridge port是纯2层的port不能配置IP， linux网桥增加所有物理网卡后，host没有办法连接。
+
+L2 port工作在数据面， 用来转发数据。L3 port工作在控制面，用来管理bridge。 
+
+为了保证主机仍然可以连接，两种方案
+
+* 保留一个物理网卡做管理连接
+* 使用虚拟管理口
+
+**方案1 保留物理管理口**
+
+![](/assets/network-virtualnet-ovs-codeinterport.png)好处：
+
+* 数据面和控制面分离
+* 稳定
+* 即使linux bridge工作异常，仍然可以正常工做。
+
+缺点：
+
+* 资源利用率不高
+
+**方案2 虚拟机管理口**
+
+![](/assets/network-virtualnet-ovs-codeinterport2.png)一个虚拟的port用来连接bridge并且配置了ip，因为所有的物理口都连接了bridge， 这个虚拟机口也要连接到bridge才能通过外接访问到这个虚拟管理口。
+
+问题来了，管理流量的出入也是通过数据面端口走，因为只有物理网卡可以和外接通信，并且物理口是数据面的port。
+
+出主机的的数据包的MAC地址将是虚拟接口的MAC，不是物理接口的MAC，但是数据包是从物理接口出去的。
+
+正常的物理交换机端口不应该配置IP， 配置IP后数据将不会发给交换机处理而直接在这个端口中止并由协议栈接收处理（刚好适合做容器的NIC）。
+
+**为了解决这个问题，ovs引入了internal port**
+
+internal port底层还是通过tap实现的。
+
+**高级用法， internal port作为容器的NIC**
+
+![](/assets/network-virtualnet-ovs-vportinter1.png)
+
+使用ovs internal port连接容器到ovs
+
+1. 获取容器namespace ns1
+2. 创建ovs internal port tap1
+3. 移动tap1从默认namespace到容器namespace ns1
+4. 禁用ns1默认网络设备, 通常是eth0
+5. 为tap1配置IP，设置为ns1默认网络设备eth0.添加路由
+
+ovs internal port方式接容器到ovs， 和veth pair方式接容器到ovs对比。
+
+
+
+
+
+
+
+
 
 
 
