@@ -114,6 +114,7 @@
       * [BGP](network/physicalnet/physicalnet/lu-you/bgp.md)
         * [BGP状态机](network/physicalnet/physicalnet/lu-you/bgp/bgpzhuang-tai-ji.md)
         * [BPG属性](network/physicalnet/physicalnet/lu-you/bgp/bpgshu-xing.md)
+        * [BGP选路策略](network/physicalnet/physicalnet/lu-you/bgp/bgpxuan-lu-ce-lve.md)
       * [OSPF](network/physicalnet/physicalnet/lu-you/ospf.md)
         * [ospf2](network/physicalnet/physicalnet/lu-you/ospf/ospf2.md)
       * [SR-MPLS](network/physicalnet/physicalnet/lu-you/srmpls.md)
