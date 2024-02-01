@@ -122,6 +122,7 @@
     * [TCP](network/physicalnet/physicalnet/tcp.md)
     * [VRRP](network/physicalnet/physicalnet/vrrp.md)
     * [DNS](network/physicalnet/physicalnet/dns.md)
+    * [NAT](network/physicalnet/physicalnet/nat.md)
   * 网络设计
     * CLOS架构
     * [Spine Leaf](network/basic/spine-leaf.md)
